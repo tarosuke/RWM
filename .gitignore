@@ -11,3 +11,10 @@
 *.lai
 *.la
 *.a
+
+# Target files
+rwm.test
+rwm
+
+# Files kde creates
+.directory

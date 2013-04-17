@@ -28,8 +28,10 @@ static int glxAttrs[] = {
 };
 
 
-SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex) :
+SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
+	next(0),
 	xDisplay(xDisplay_),
+	xScreenIndex(xScreenIndex),
 #ifdef TEST
 	width(800),
 	height(600),
@@ -46,24 +48,29 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex) :
 		height,
 		0,
 		BlackPixel(xDisplay, 0),
-		BlackPixel(xDisplay, 0)) ){
+		BlackPixel(xDisplay, 0))),
+	viewList(0){
 //	XCompositeUnredirectWindow(
 //		xDisplay, xWindow, CompositeRedirectAutomatic);
 	XMapWindow( xDisplay, xWindow );
 	XFlush( xDisplay );
-	printf("new screen.\n");
-	printf("%d pix : %d pix\n", width, height);
-
+#ifndef TEST
 	XCompositeRedirectSubwindows(
 		xDisplay,
-		xWindow,
+		XRootWindow(xDisplay, xScreenIndex),
 		CompositeRedirectManual);
 	XSync(xDisplay, false);
-
+#endif
 	XVisualInfo *visual = glXChooseVisual(xDisplay, xScreenIndex, glxAttrs);
 	glxContext = glXCreateContext(xDisplay, visual, NULL, True);
 	XFree(visual);
-//	glXMakeCurrent(xDisplay, xWindow, context);
+
+	if(!script){
+		viewList = new VIEW(0, 0, width, height);
+	}
+
+	next = list;
+	list = this;
 };
 
 
@@ -79,3 +86,5 @@ SCREEN::~SCREEN(){
  */
 void SCREEN::AtPointed(XEvent& ev){
 }
+
+

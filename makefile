@@ -13,8 +13,8 @@ test: rwm.test
 run: rwm
 	./rwm
 
-rwm: makefile $(src) $(wildcard #.h)
+rwm: makefile $(src) $(wildcard *.h)
 	gcc $(copt) -o $@ $(src)
 
-rwm.test: makefile $(src) $(wildcard #.h)
+rwm.test: makefile $(src) $(wildcard *.h)
 	gcc -DTEST $(copt) -o $@ $(src)

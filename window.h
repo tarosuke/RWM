@@ -23,6 +23,7 @@ public:
 	WINDOW(int xWindow_);
 	static void AtPointed(POINT&, XEvent&);
 	static void AtFocused(XEvent&);
+	static void Update();
 private:
 	static LIST<WINDOW> list;
 	const int xWindow;	//Xの窓ID
@@ -40,6 +41,7 @@ private:
 	}geo;
 	bool IsIn(float h, float v);
 	POINT LocalCoords(POINT direction);
+	void Draw(){};
 };
 
 

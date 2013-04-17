@@ -2,6 +2,10 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glx.h>
+
 #include <assert.h>
 #include <stdio.h>
 
@@ -29,3 +33,10 @@ WINDOW::WINDOW(int xWindow_) : xWindow(xWindow_){};
 
 void WINDOW::AtPointed(POINT& sight, XEvent& ev){};
 void WINDOW::AtFocused(XEvent& ev){};
+
+
+void WINDOW::Update(){
+	for(LIST<WINDOW>::ITOR i(list); i; i++){
+		(*i).Draw();
+	}
+}

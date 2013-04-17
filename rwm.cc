@@ -22,6 +22,8 @@ private:
 	WINDOW& FindWindow(XEvent&);
 
 	static WINDOW nullWindow;
+
+	void Update();
 };
 WINDOW RWM::nullWindow;
 
@@ -34,7 +36,7 @@ RWM::RWM() :
 	//Screenの列挙
 	XGrabServer(xDisplay);
 	for(int i(0); i < ScreenCount(xDisplay); i++){
-		new SCREEN(xDisplay, i);
+		new SCREEN(xDisplay, i, 0);
 	}
 	XUngrabServer(xDisplay);
 }
@@ -45,6 +47,7 @@ WINDOW& RWM::FindWindow(XEvent& xEvent){
 };
 
 void RWM::EventLoop(){
+Update();
 	do{
 		while(XPending(xDisplay) || !idleEventRequested){
 			XEvent xEvent;
@@ -52,12 +55,12 @@ void RWM::EventLoop(){
 
 			switch(xEvent.type){
 			case CreateNotify:
+				//TODO:WINDOWの生成、画面でなく空間への配置
+				break;
+			case MapNotify:
 				//TODO:窓を画面外へぶっ飛ばす
 				break;
 			case DestroyNotify:
-				break;
-			case MapNotify:
-				break;
 			case UnmapNotify:
 				break;
 			case ReparentNotify:
@@ -82,7 +85,10 @@ void RWM::EventLoop(){
 }
 
 
-
+void RWM::Update(){
+	SCREEN::Update();
+	for(;;);
+}
 
 
 

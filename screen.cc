@@ -48,8 +48,7 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
 		height,
 		0,
 		BlackPixel(xDisplay, 0),
-		BlackPixel(xDisplay, 0))),
-	viewList(0){
+		BlackPixel(xDisplay, 0))){
 //	XCompositeUnredirectWindow(
 //		xDisplay, xWindow, CompositeRedirectAutomatic);
 	XMapWindow( xDisplay, xWindow );
@@ -65,8 +64,13 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
 	glxContext = glXCreateContext(xDisplay, visual, NULL, True);
 	XFree(visual);
 
+	//画面の実は位置を仮定(スクリプトで上書き予定)
+	realWidth = defaultDotPitch * width;
+	realHeight = defaultDotPitch * height;
+	realDistance = defaultDisplayDistance;
+
 	if(!script){
-		viewList = new VIEW(0, 0, width, height);
+		//スクリプトを解釈してスクリーンを再配置
 	}
 
 	next = list;

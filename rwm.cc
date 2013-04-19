@@ -39,6 +39,10 @@ RWM::RWM() :
 		new SCREEN(xDisplay, i, 0);
 	}
 	XUngrabServer(xDisplay);
+
+	//テスト用窓を生成
+#ifdef TEST
+#endif
 }
 
 WINDOW& RWM::FindWindow(XEvent& xEvent){
@@ -55,10 +59,10 @@ Update();
 
 			switch(xEvent.type){
 			case CreateNotify:
-				//TODO:WINDOWの生成、画面でなく空間への配置
+				//TODO:WINDOWの生成、
 				break;
 			case MapNotify:
-				//TODO:窓を画面外へぶっ飛ばす
+				//TODO:画面でなく空間への配置
 				break;
 			case DestroyNotify:
 			case UnmapNotify:

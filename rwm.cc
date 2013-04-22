@@ -59,10 +59,10 @@ Update();
 
 			switch(xEvent.type){
 			case CreateNotify:
-				//TODO:WINDOWの生成、
+				new WINDOW(xEvent.xcreatewindow);
 				break;
 			case MapNotify:
-				//TODO:画面でなく空間への配置
+				WINDOW::MapIt(xEvent.xmap);
 				break;
 			case DestroyNotify:
 			case UnmapNotify:

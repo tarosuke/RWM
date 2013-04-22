@@ -21,7 +21,13 @@ WINDOW* WINDOW::FindWindow(float h, float v){
 }
 
 
-WINDOW::WINDOW(int xWindow_) : xWindow(xWindow_){};
+WINDOW::WINDOW(XCreateWindowEvent& xe) : xWindow(xe.window), mapped(false){};
+
+
+void WINDOW::Map(XMapEvent& xe){
+}
+
+
 
 
 // WINDOW::POINT LocalCoords(WINDOW::POINT direction){
@@ -35,8 +41,17 @@ void WINDOW::AtPointed(POINT& sight, XEvent& ev){};
 void WINDOW::AtFocused(XEvent& ev){};
 
 
-void WINDOW::Update(){
-	for(LIST<WINDOW>::ITOR i(list); i; i++){
-		(*i).Draw();
+void WINDOW::Draw(){
+	if(!mapped){
+		return;
 	}
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1.0);
+	glRotatef(horiz, 0, 1, 0);
+	glRotatef(virt, -1, 0, 0);
+	glRectf(-width, -height,
+		width, height);
+	glTranslatef(0, 0, -distance);
+	glScalef(0.5, 0.5, 0.5);
+	glPopMatrix();
 }

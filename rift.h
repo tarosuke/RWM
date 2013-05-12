@@ -6,7 +6,7 @@ class RIFT{
 public:
 	RIFT();
 	~RIFT(){ run = false; };
-	void GetMatrix(double matrix[]);
+	static void GetMatrix(double matrix[]);
 private:
 	static volatile bool run;
 	static double rotation[];

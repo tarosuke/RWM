@@ -99,6 +99,17 @@ return;
 				break;
 			}
 		}
+double rotation[16];
+RIFT::GetMatrix(rotation);
+#if 0
+printf("rot: %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %f.\n",
+rotation[0], rotation[1], rotation[2], rotation[3],
+rotation[4], rotation[5], rotation[6], rotation[7],
+rotation[8], rotation[9], rotation[10], rotation[11],
+rotation[12], rotation[13], rotation[14], rotation[15]);
+#else
+printf("Ang: %+f %+f %+f.\n", rotation[0], rotation[1], rotation[2]);
+#endif
 		Update();
 	}while(1);
 }

@@ -5,12 +5,12 @@
 class RIFT{
 public:
 	RIFT();
-	~RIFT(){ ren = false; };
+	~RIFT(){ run = false; };
 	void GetMatrix(double matrix[]);
 private:
-	volatile bool run;
+	static volatile bool run;
 	double rotate[16];
-	static void SensorThread(void* initialData);
+	static int SensorThread(void* initialData);
 };
 
 

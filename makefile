@@ -1,11 +1,11 @@
 all: rwm
 
-copt = -L/usr/X11R6/lib -lglut -lGLU -lGL -lXmu -lXi -lXext -lXcomposite -lX11 -lm -Wall -lstdc++
+COPTS += -IX11 -Ilibovr_nsb -Igl-matrix -Iroom -Irift
 
-src = $(wildcard *.c) $(wildcard *.cc)
+include make.in
 
-clean:
-	rm -f rwm rwm.test *.o *.d
+
+libs= libovr_nsb/libovr_nsb.a gl-matrix/libgl-matrix.a room/room.a -lGL -lGLU -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
 
 test: rwm.test
 	./rwm.test
@@ -13,8 +13,15 @@ test: rwm.test
 run: rwm
 	./rwm
 
-rwm: makefile $(src) $(wildcard *.h)
-	gcc $(copt) -o $@ $(src)
+rwm: makefile $(objs) extralibs
+	gcc -o $@ $(objs) $(libs)
 
-rwm.test: makefile $(src) $(wildcard *.h)
-	gcc -DTEST $(copt) -o $@ $(src)
+rwm.test: COPTS+=-DTEST
+rwm.test: makefile $(objs) extralibs
+	gcc -o $@ $(objs) $(libs)
+
+
+extralibs:
+	make -C gl-matrix
+	make -C libovr_nsb
+	make -C room

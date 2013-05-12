@@ -4,6 +4,13 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <linux/hiddev.h>
+#include <sys/ioctl.h>
+#include <string.h>
+#include <poll.h>
+#include <linux/hiddev.h>
 
 #include "matrix.h"
 #include "list.h"
@@ -22,10 +29,12 @@ private:
 	WINDOW& FindWindow(XEvent&);
 
 	static WINDOW nullWindow;
+	static bool needUpdate;
 
 	void Update();
 };
 WINDOW RWM::nullWindow;
+bool RWM::needUpdate(true);
 
 
 RWM::RWM() :
@@ -40,8 +49,12 @@ RWM::RWM() :
 	}
 	XUngrabServer(xDisplay);
 
-	//テスト用窓を生成
+	//TODO:設定の読み込み
+	//スクリプトによる背景のセットアップ
 #ifdef TEST
+	ROOM::Load(true);
+#else
+	ROOM::Load(false);
 #endif
 }
 
@@ -51,7 +64,6 @@ WINDOW& RWM::FindWindow(XEvent& xEvent){
 };
 
 void RWM::EventLoop(){
-Update();
 	do{
 		while(XPending(xDisplay) || !idleEventRequested){
 			XEvent xEvent;
@@ -71,12 +83,14 @@ Update();
 				break;
 			case MappingNotify:
 				break;
-			case ButtonPress:
-			case ButtonRelease:
 			case MotionNotify:
 				SCREEN::AtPointed(xEvent);
 				break;
+			case ButtonPress:
+			case ButtonRelease:
+return;
 			case KeyPress:
+return;
 			case KeyRelease:
 				WINDOW::AtFocused(xEvent);
 				break;
@@ -85,13 +99,17 @@ Update();
 			}
 		}
 		idleEventRequested = false;
+
+		if(needUpdate){
+			Update();
+			needUpdate = false;
+		}
 	}while(1);
 }
 
 
 void RWM::Update(){
 	SCREEN::Update();
-	for(;;);
 }
 
 
@@ -102,7 +120,7 @@ void RWM::Update(){
 
 
 
-int main(){
+int main(void){
 	static RWM rwm;
 	rwm.EventLoop();
 	return 0;

@@ -18,3 +18,7 @@ rwm
 
 # Files kde creates
 .directory
+
+# others libraries
+gl-matrix
+libovr_nsb

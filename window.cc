@@ -1,6 +1,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xcomposite.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -21,10 +22,16 @@ WINDOW* WINDOW::FindWindow(float h, float v){
 }
 
 
-WINDOW::WINDOW(XCreateWindowEvent& xe) : xWindow(xe.window), mapped(false){};
+WINDOW::WINDOW(XCreateWindowEvent& ev) : xWindow(ev.window), mapped(false){
+	XCompositeRedirectWindow(
+		ev.display,
+		ev.window,
+		CompositeRedirectManual);
+};
 
 
-void WINDOW::Map(XMapEvent& xe){
+void WINDOW::Map(XMapEvent& ev){
+	assert(xWindow == ev.window);
 }
 
 
@@ -37,8 +44,10 @@ void WINDOW::Map(XMapEvent& xe){
 
 
 
-void WINDOW::AtPointed(POINT& sight, XEvent& ev){};
-void WINDOW::AtFocused(XEvent& ev){};
+void WINDOW::AtPointed(POINT& sight, XEvent& ev){
+};
+void WINDOW::AtFocused(XEvent& ev){
+};
 
 
 void WINDOW::Draw(){
@@ -49,9 +58,9 @@ void WINDOW::Draw(){
 	glColor3f(0.5, 0.5, 1.0);
 	glRotatef(horiz, 0, 1, 0);
 	glRotatef(virt, -1, 0, 0);
-	glRectf(-width, -height,
-		width, height);
 	glTranslatef(0, 0, -distance);
 	glScalef(0.5, 0.5, 0.5);
+	glRectf(-width, -height,
+		width, height);
 	glPopMatrix();
 }

@@ -1,13 +1,20 @@
 #ifndef _ROOM_
 #define _ROOM_
 
+#include <assert.h>
+
+#include "q.h"
+
 #include <GL/gl.h>
 
 
-class ROOM{
+class ROOM : public Q<ROOM>::NODE{
 public:
-	static void Load(const char* scriptFilename);
+	static void Load(bool test);
+	static void Unload();
 	static void Update(int remain){
+		assert(userIn);
+
 		glEnable(GL_LIGHT0);
 		const GLfloat v = 0.5;
 		const GLfloat l[] = { v, v, v, 1 };
@@ -20,15 +27,22 @@ public:
 // 		glTranslatef(0, 0, 2);
 		glBegin(GL_TRIANGLE_STRIP);
 			glNormal3f(0, 0, 1);
-			glVertex3f(-0.5, -1, -1);
-			glVertex3f(0.5, -1, -1);
-			glVertex3f(-0.5, 1, -1);
-			glVertex3f(0.5, 1, -1);
+			glVertex3f(-0.5, -1, -2);
+			glVertex3f(0.5, -1, -2);
+			glVertex3f(-0.5, 1, -2);
+			glVertex3f(0.5, 1, -2);
 		glEnd();
 
 		glPopMatrix();
 		glDisable(GL_LIGHT0);
 	};
+	ROOM();
+	~ROOM();
+private:
+	static ROOM* userIn;
+	static Q<ROOM> rooms;
+	static const char* rcPath;
+	Q<class PRIMITIVE> primitives;
 };
 
 

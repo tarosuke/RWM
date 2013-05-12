@@ -1,8 +1,8 @@
-#include <X11/extensions/Xcomposite.h>
 #include <math.h>
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "screen.h"
 
@@ -33,8 +33,8 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
 	xDisplay(xDisplay_),
 	xScreenIndex(xScreenIndex),
 #ifdef TEST
-	width(800),
-	height(600),
+	width(1280),
+	height(800),
 #else
 	width(DisplayWidth(xDisplay_, xScreenIndex)),
 	height(DisplayHeight(xDisplay_, xScreenIndex)),
@@ -52,19 +52,28 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
 //	XCompositeUnredirectWindow(
 //		xDisplay, xWindow, CompositeRedirectAutomatic);
 	XMapWindow( xDisplay, xWindow );
+	XSelectInput(xDisplay, xWindow,
+		SubstructureNotifyMask |
+		StructureNotifyMask |
+		PropertyChangeMask |
+		ExposureMask |
+		ButtonPressMask |
+		ButtonReleaseMask |
+		ButtonMotionMask |
+		KeyPressMask |
+		KeyReleaseMask);
 	XFlush( xDisplay );
-#ifndef TEST
-	XCompositeRedirectSubwindows(
-		xDisplay,
-		XRootWindow(xDisplay, xScreenIndex),
-		CompositeRedirectManual);
 	XSync(xDisplay, false);
-#endif
+
 	XVisualInfo *visual = glXChooseVisual(xDisplay, xScreenIndex, glxAttrs);
 	glxContext = glXCreateContext(xDisplay, visual, NULL, True);
 	XFree(visual);
 
-	//画面の実は位置を仮定(スクリプトで上書き予定)
+	//View行列を初期化
+	for(int i(0); i < 16; matrix[i++] = 0);
+	matrix[0] = matrix[5] = matrix[10] = matrix[15] = 1;
+
+	//画面の実位置を仮定(スクリプトで上書き予定)
 	realWidth = defaultDotPitch * width;
 	realHeight = defaultDotPitch * height;
 	realDistance = defaultDisplayDistance;
@@ -81,7 +90,26 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
 SCREEN::~SCREEN(){
 	glXMakeCurrent(xDisplay, 0, NULL);
 	glXDestroyContext(xDisplay, glxContext);
+	XUnmapWindow(xDisplay, xWindow);
+	XDestroyWindow(xDisplay, xWindow);
 }
+
+void SCREEN::Rotate(const float angle, const float x, const float y, const float z){
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadMatrixf(matrix);
+	glRotatef(angle, x, y, z);
+	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+	glPopMatrix();
+}
+
+
+
+
+
+
+
+
 
 /** イベント変換、回送
  * 1.evのwindowメンバから該当SCREENを探す
@@ -92,3 +120,39 @@ void SCREEN::AtPointed(XEvent& ev){
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SCREEN::VIEW::VIEW(
+	int left_,
+	int top_,
+	int width_,
+	int height_,
+	const GLfloat viewMatrix_[]) :
+	left(left_),
+	top(top_),
+	right(left_ + width_),
+	bottom(top_ + height_){
+	memmove(viewMatrix, viewMatrix_, sizeof(viewMatrix));
+}
+
+void SCREEN::VIEW::Draw(int listID){
+	glPushMatrix();
+	glMultMatrixf(viewMatrix);
+	glCallList(listID);
+	glPopMatrix();
+}

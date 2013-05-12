@@ -13,7 +13,7 @@
 #include "matrix.h"
 #include "list.h"
 #include "window.h"
-#include "room.h"
+#include "room/room.h"
 
 
 class SCREEN{
@@ -30,7 +30,28 @@ public:
 		}
 	}
 	static void AtPointed(XEvent&);
+	void RotateR(const float angle){
+		Rotate(angle, 0, 0, -1);
+	};
+	void RotateP(const float angle){
+		Rotate(angle, -1, 0, 0);
+	};
+	void RotateY(const float angle){
+		Rotate(angle, 0, 1, 0);
+	};
 private:
+	class VIEW{
+	public:
+		VIEW* next;
+		VIEW(int left_, int top_, int width_, int height_, const GLfloat viewMatrix[]);
+		void Draw(int listID);
+	private:
+		int left;
+		int top;
+		int right;
+		int bottom;
+		GLfloat viewMatrix[16];
+	};
 	static SCREEN* list;
 	static const float defaultDotPitch = 0.003;
 	static const float defaultDisplayDistance = 0.7;
@@ -46,6 +67,8 @@ private:
 	float realDistance;
 	int xWindow;
 	GLXContext glxContext;
+	GLfloat matrix[16];
+	void Rotate(const float angle, const float x, const float y, const float z);
 	void Draw(){
 		glXMakeCurrent(xDisplay, xWindow, glxContext);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -59,8 +82,9 @@ private:
 			-realHeight * sizeRatio, realHeight * sizeRatio,
 			nearDistance, farDistance);
 
+		//スクリーン共通マトリクスの読み込み
 		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		glLoadMatrixf(matrix);
 
 		//描画を記録
 		glNewList(xScreenIndex, GL_COMPILE);

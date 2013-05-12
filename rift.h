@@ -9,8 +9,8 @@ public:
 	void GetMatrix(double matrix[]);
 private:
 	static volatile bool run;
-	double rotate[16];
-	static int SensorThread(void* initialData);
+	static double rotation[];
+	static void* SensorThread(void* initialData);
 };
 
 

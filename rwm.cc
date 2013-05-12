@@ -16,6 +16,7 @@
 #include "list.h"
 #include "window.h"
 #include "screen.h"
+#include "rift.h"
 
 
 
@@ -25,21 +26,17 @@ public:
 	void EventLoop();
 private:
 	Display* const xDisplay;
-	bool idleEventRequested;
 	WINDOW& FindWindow(XEvent&);
 
 	static WINDOW nullWindow;
-	static bool needUpdate;
 
 	void Update();
 };
 WINDOW RWM::nullWindow;
-bool RWM::needUpdate(true);
 
 
 RWM::RWM() :
-	xDisplay(XOpenDisplay("")),
-	idleEventRequested(true){
+	xDisplay(XOpenDisplay("")){
 	assert(xDisplay);
 
 	//Screenの列挙
@@ -64,8 +61,9 @@ WINDOW& RWM::FindWindow(XEvent& xEvent){
 };
 
 void RWM::EventLoop(){
+	static RIFT rift;
 	do{
-		while(XPending(xDisplay) || !idleEventRequested){
+		while(XPending(xDisplay)){
 			XEvent xEvent;
 			XNextEvent(xDisplay, &xEvent);
 
@@ -94,16 +92,14 @@ return;
 			case KeyRelease:
 				WINDOW::AtFocused(xEvent);
 				break;
+			case ClientMessage:
+				//その他の再描画リクエスト
+				break;
 			default:
 				break;
 			}
 		}
-		idleEventRequested = false;
-
-		if(needUpdate){
-			Update();
-			needUpdate = false;
-		}
+		Update();
 	}while(1);
 }
 

@@ -30,7 +30,7 @@ private:
 
 	static WINDOW nullWindow;
 
-	void Update();
+	void Update(double rotation[]);
 };
 WINDOW RWM::nullWindow;
 
@@ -102,21 +102,24 @@ return;
 double rotation[16];
 RIFT::GetMatrix(rotation);
 #if 1
-printf("rot: %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %f.\n",
-rotation[0], rotation[1], rotation[2], rotation[3],
-rotation[4], rotation[5], rotation[6], rotation[7],
-rotation[8], rotation[9], rotation[10], rotation[11],
-rotation[12], rotation[13], rotation[14], rotation[15]);
+printf("rot: % f % f % f % f\n",
+	rotation[0], rotation[1], rotation[2], rotation[3]);
+printf("     % f % f % f % f\n",
+       rotation[4], rotation[5], rotation[6], rotation[7]);
+printf("     % f % f % f % f\n",
+       rotation[8], rotation[9], rotation[10], rotation[11]);
+printf("     % f % f % f % f\n\033[4A",
+       rotation[12], rotation[13], rotation[14], rotation[15]);
 #else
 printf("Ang: %+f %+f %+f.\n", rotation[0], rotation[1], rotation[2]);
 #endif
-		Update();
+		Update(rotation);
 	}while(1);
 }
 
 
-void RWM::Update(){
-	SCREEN::Update();
+void RWM::Update(double rotation[]){
+	SCREEN::Update(rotation);
 }
 
 

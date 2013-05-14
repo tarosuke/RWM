@@ -69,10 +69,6 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
 	glxContext = glXCreateContext(xDisplay, visual, NULL, True);
 	XFree(visual);
 
-	//View行列を初期化
-	for(int i(0); i < 16; matrix[i++] = 0);
-	matrix[0] = matrix[5] = matrix[10] = matrix[15] = 1;
-
 	//画面の実位置を仮定(スクリプトで上書き予定)
 	realWidth = defaultDotPitch * width;
 	realHeight = defaultDotPitch * height;
@@ -93,19 +89,6 @@ SCREEN::~SCREEN(){
 	XUnmapWindow(xDisplay, xWindow);
 	XDestroyWindow(xDisplay, xWindow);
 }
-
-void SCREEN::Rotate(const float angle, const float x, const float y, const float z){
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadMatrixf(matrix);
-	glRotatef(angle, x, y, z);
-	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
-	glPopMatrix();
-}
-
-
-
-
 
 
 

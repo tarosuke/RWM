@@ -3,18 +3,17 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <sys/file.h>
+#include <assert.h>
 
 #include "rift.h"
 
 
 volatile bool RIFT::run(true);
-double RIFT::rotation[16];
 Device* RIFT::dev(0);
 Device RIFT::device;
 
 RIFT::RIFT(){
-	//現在の方向をリセット
-	mat4_identity(rotation);
+	assert(!dev);
 
 	//Riftのセンサを準備
 	for(int i(0); i < 99; i++){
@@ -82,17 +81,15 @@ void RIFT::GetMatrix(double matrix[]){
 	if(dev){
 #if 1
 		double m4[16];
-		double rot[16];
 		quat_toMat4(dev->Q, m4);
-		mat4_toRotationMat(m4, rot);
-		mat4_multiply(rotation, rot, rotation);
-		mat4_set(dev->Q, matrix);
+		mat4_toRotationMat(m4, matrix);
 #else
 		matrix[0] = dev->AngV[0];
 		matrix[1] = dev->AngV[1];
 		matrix[2] = dev->AngV[2];
 #endif
-//TODO:非同期に取得した値が一致するまで繰り返し取得、値が一致したら取得完了
+	}else{
+		mat4_identity(matrix);
 	}
 }
 

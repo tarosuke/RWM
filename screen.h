@@ -24,21 +24,12 @@ public:
 	SCREEN(Display* const xDisplay, int xScreenIndex, FILE*);
 	~SCREEN();
 	/** drawListIndex(DisplayList)に格納された内容を再生 */
-	static void Update(){
+	static void Update(double rotation[]){
 		for(SCREEN* s(list); s; s = (*s).next){
-			(*s).Draw();
+			(*s).Draw(rotation);
 		}
 	}
 	static void AtPointed(XEvent&);
-	void RotateR(const float angle){
-		Rotate(angle, 0, 0, -1);
-	};
-	void RotateP(const float angle){
-		Rotate(angle, -1, 0, 0);
-	};
-	void RotateY(const float angle){
-		Rotate(angle, 0, 1, 0);
-	};
 private:
 	class VIEW{
 	public:
@@ -67,9 +58,7 @@ private:
 	float realDistance;
 	int xWindow;
 	GLXContext glxContext;
-	GLfloat matrix[16];
-	void Rotate(const float angle, const float x, const float y, const float z);
-	void Draw(){
+	void Draw(double rotation[]){
 		glXMakeCurrent(xDisplay, xWindow, glxContext);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -84,7 +73,7 @@ private:
 
 		//スクリーン共通マトリクスの読み込み
 		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(matrix);
+		glLoadMatrixd(rotation);
 
 		//描画を記録
 		glNewList(xScreenIndex, GL_COMPILE);

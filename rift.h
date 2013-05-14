@@ -16,7 +16,6 @@ private:
 	static Device* dev;
 	static Device device;
 	static volatile bool run;
-	static double rotation[];
 	static void* SensorThread(void* initialData);
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/file.h>
 
 #include "rift.h"
 
@@ -16,11 +17,10 @@ RIFT::RIFT(){
 	mat4_identity(rotation);
 
 	//Riftのセンサを準備
-#if 1
 	for(int i(0); i < 99; i++){
 		char name[32];
 		snprintf(name, 32, "/dev/hidraw%d", i);
-		int fd(open(name, O_RDWR));
+		const int fd(open(name, O_RDWR | O_NONBLOCK));
 		if(fd < 0){
 			//開けなかった
 			continue;
@@ -37,9 +37,10 @@ RIFT::RIFT(){
 			close(fd);
 			continue;
 		}
-		close(fd);
-		if((fd = open(name, O_RDWR | O_NONBLOCK)) < 0){
-			//開けなかった
+
+		if(flock(fd, LOCK_EX | LOCK_NB) < 0){
+			//使用中
+			close(fd);
 			continue;
 		}
 
@@ -64,13 +65,6 @@ RIFT::RIFT(){
 	dev->EnablePrediction = FALSE;
 	dev->EnableGravity = TRUE;
 	dev->Q[3] = 1.0;
-#else
-	if(!(dev = openRift(0,0))){
-		printf("Could not locate Rift\n");
-		printf("Be sure you have read/write permission to the proper /dev/hidrawX device\n");
-		return;
-	}
-#endif
 
 	printf("Device Info:\n");
 	printf("\tname:     %s\n", dev->name);
@@ -86,7 +80,7 @@ RIFT::RIFT(){
 
 void RIFT::GetMatrix(double matrix[]){
 	if(dev){
-#if 0
+#if 1
 		double m4[16];
 		double rot[16];
 		quat_toMat4(dev->Q, m4);

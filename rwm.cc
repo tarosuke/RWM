@@ -101,7 +101,7 @@ return;
 		}
 double rotation[16];
 RIFT::GetMatrix(rotation);
-#if 0
+#if 1
 printf("rot: %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %.2f / %.2f %.2f %.2f %f.\n",
 rotation[0], rotation[1], rotation[2], rotation[3],
 rotation[4], rotation[5], rotation[6], rotation[7],

@@ -28,7 +28,7 @@ static int glxAttrs[] = {
 };
 
 
-SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
+SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script, RIFT& rift_) :
 	next(0),
 	xDisplay(xDisplay_),
 	xScreenIndex(xScreenIndex),
@@ -48,7 +48,7 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script) :
 		height,
 		0,
 		BlackPixel(xDisplay, 0),
-		BlackPixel(xDisplay, 0))){
+		BlackPixel(xDisplay, 0))), rift(rift_){
 //	XCompositeUnredirectWindow(
 //		xDisplay, xWindow, CompositeRedirectAutomatic);
 	XMapWindow( xDisplay, xWindow );

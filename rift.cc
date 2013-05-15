@@ -51,7 +51,7 @@ RIFT::RIFT(){
 	}
 	if(!dev){
 		printf("Could not locate Rift\n");
-		printf("Be sure you have read/write permission to the proper /dev/hidrawX device\n");
+		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
 		return;
 	}
 

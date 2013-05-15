@@ -30,7 +30,7 @@ private:
 
 	static WINDOW nullWindow;
 
-	void Update(double rotation[]);
+	void Update();
 };
 WINDOW RWM::nullWindow;
 
@@ -39,10 +39,12 @@ RWM::RWM() :
 	xDisplay(XOpenDisplay("")){
 	assert(xDisplay);
 
+	static RIFT rift;
+
 	//Screenの列挙
 	XGrabServer(xDisplay);
 	for(int i(0); i < ScreenCount(xDisplay); i++){
-		new SCREEN(xDisplay, i, 0);
+		new SCREEN(xDisplay, i, 0, rift);
 	}
 	XUngrabServer(xDisplay);
 
@@ -61,7 +63,6 @@ WINDOW& RWM::FindWindow(XEvent& xEvent){
 };
 
 void RWM::EventLoop(){
-	static RIFT rift;
 	do{
 		while(XPending(xDisplay)){
 			XEvent xEvent;
@@ -99,27 +100,13 @@ return;
 				break;
 			}
 		}
-double rotation[16];
-RIFT::GetMatrix(rotation);
-#if 1
-printf("rot: % f % f % f % f\n",
-	rotation[0], rotation[1], rotation[2], rotation[3]);
-printf("     % f % f % f % f\n",
-       rotation[4], rotation[5], rotation[6], rotation[7]);
-printf("     % f % f % f % f\n",
-       rotation[8], rotation[9], rotation[10], rotation[11]);
-printf("     % f % f % f % f\n\033[4A",
-       rotation[12], rotation[13], rotation[14], rotation[15]);
-#else
-printf("Ang: %+f %+f %+f.\n", rotation[0], rotation[1], rotation[2]);
-#endif
-		Update(rotation);
+		Update();
 	}while(1);
 }
 
 
-void RWM::Update(double rotation[]){
-	SCREEN::Update(rotation);
+void RWM::Update(){
+	SCREEN::Update();
 }
 
 

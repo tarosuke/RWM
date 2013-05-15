@@ -27,18 +27,26 @@ public:
 // 		glTranslatef(0, 0, 2);
 		glBegin(GL_TRIANGLE_STRIP);
 			glNormal3f(0, 0, 1);
-			glVertex3f(-0.5, -1, -2);
-			glVertex3f(0.5, -1, -2);
-			glVertex3f(-0.5, 1, -2);
-			glVertex3f(0.5, 1, -2);
+			glVertex3f(-0.5, -1, far);
+			glVertex3f(0.5, -1, far);
+			glVertex3f(-0.5, 1, far);
+			glVertex3f(0.5, 1, far);
 		glEnd();
 
 		glPopMatrix();
 		glDisable(GL_LIGHT0);
+
+		if((far <= -100.0 && dir < 0.0) || (-1.0 <= far && 0.0 < dir)){
+			dir = -dir;
+		}
+		far += dir;
 	};
 	ROOM();
 	~ROOM();
 private:
+	static float far;
+	static float dir;
+
 	static ROOM* userIn;
 	static Q<ROOM> rooms;
 	static const char* rcPath;

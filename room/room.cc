@@ -11,7 +11,8 @@ ROOM* ROOM::userIn(0);
 Q<ROOM> ROOM::rooms;
 const char* ROOM::rcPath = ".rwm/room.cf";
 
-
+float ROOM::far(-100.0);
+float ROOM::dir(0.2);
 
 
 

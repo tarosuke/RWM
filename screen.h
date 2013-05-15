@@ -14,6 +14,7 @@
 #include "list.h"
 #include "window.h"
 #include "room/room.h"
+#include "rift.h"
 
 
 class SCREEN{
@@ -21,12 +22,12 @@ class SCREEN{
 	SCREEN(SCREEN&);
 	void operator=(SCREEN&);
 public:
-	SCREEN(Display* const xDisplay, int xScreenIndex, FILE*);
+	SCREEN(Display* const xDisplay, int xScreenIndex, FILE*, RIFT& rift);
 	~SCREEN();
 	/** drawListIndex(DisplayList)に格納された内容を再生 */
-	static void Update(double rotation[]){
+	static void Update(){
 		for(SCREEN* s(list); s; s = (*s).next){
-			(*s).Draw(rotation);
+			(*s).Draw();
 		}
 	}
 	static void AtPointed(XEvent&);
@@ -58,12 +59,19 @@ private:
 	float realDistance;
 	int xWindow;
 	GLXContext glxContext;
-	void Draw(double rotation[]){
+	RIFT& rift;
+	void _Draw(){
+		glEnable(GL_DEPTH_TEST);
+		WINDOW::Update(); //窓を描画
+		glEnable(GL_LIGHTING);
+		ROOM::Update(20);	//背景を描画
+		glDisable(GL_LIGHTING);
+	}
+	void Draw(){
 		glXMakeCurrent(xDisplay, xWindow, glxContext);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//描画準備
-		glViewport(0, 0, width, height);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		const float sizeRatio(nearDistance / (realDistance * 2));
@@ -73,19 +81,38 @@ private:
 
 		//スクリーン共通マトリクスの読み込み
 		glMatrixMode(GL_MODELVIEW);
+		double rotation[16];
+		rift.GetMatrix(rotation);
 		glLoadMatrixd(rotation);
+		glRotatef(90, 1, 0, 0);
+		glScalef(1, -1, 1);
 
 		//描画を記録
-		glNewList(xScreenIndex, GL_COMPILE);
-		glEnable(GL_DEPTH_TEST);
-		WINDOW::Update(); //窓を描画
-		glEnable(GL_LIGHTING);
-		ROOM::Update(20);	//背景を描画
-		glDisable(GL_LIGHTING);
-		glEndList();
+// 		glNewList(xScreenIndex, GL_COMPILE);
+// 		glEndList();
 
 		//描画
-		glCallList(xScreenIndex);
+		if(!rift.IsEnable()){
+			glCallList(xScreenIndex);
+		}else{
+			const int inset(55);
+
+			glViewport(inset, 0, width / 2, height);
+			glPushMatrix();
+			glTranslatef(0.03, 0, 0);
+// 			glCallList(xScreenIndex);
+			_Draw();
+			glPopMatrix();
+
+			glViewport(width / 2 - inset, 0, width / 2, height);
+			glPushMatrix();
+			glTranslatef(-0.03, 0, 0);
+// 			glCallList(xScreenIndex);
+			_Draw();
+			glPopMatrix();
+
+			//TODO:ここで描画バッファをテクスチャにして歪み付きで描画
+		}
 
 		//画面へ転送
 		glXSwapBuffers(xDisplay, xWindow);

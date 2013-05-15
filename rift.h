@@ -12,6 +12,7 @@ public:
 	RIFT();
 	~RIFT(){ run = false; };
 	static void GetMatrix(double matrix[]);
+	static bool IsEnable(){ return !!dev; };
 private:
 	static Device* dev;
 	static Device device;

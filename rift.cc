@@ -81,8 +81,20 @@ void RIFT::GetMatrix(double matrix[]){
 	if(dev){
 #if 1
 		double m4[16];
-		quat_toMat4(dev->Q, m4);
+		double q[4];
+		q[0] = (*dev).Q[0];
+		q[1] = -(*dev).Q[1];
+		q[2] = -(*dev).Q[2];
+		q[3] = -(*dev).Q[3];
+		quat_toMat4(q, m4);
 		mat4_toRotationMat(m4, matrix);
+		for(int i(0); i < 4; i++){
+			double* row = &matrix[i * 4];
+			row[1] = -row[1];
+			const double t(row[1]);
+			row[1] = row[2];
+			row[2] = t;
+		}
 #else
 		matrix[0] = dev->AngV[0];
 		matrix[1] = dev->AngV[1];

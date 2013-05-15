@@ -84,8 +84,7 @@ private:
 		double rotation[16];
 		rift.GetMatrix(rotation);
 		glLoadMatrixd(rotation);
-		glRotatef(90, 1, 0, 0);
-		glScalef(1, -1, 1);
+		glRotatef(180, 0, 1, 0);
 
 		//描画を記録
 // 		glNewList(xScreenIndex, GL_COMPILE);
@@ -95,7 +94,7 @@ private:
 		if(!rift.IsEnable()){
 			glCallList(xScreenIndex);
 		}else{
-			const int inset(55);
+			const int inset(57);
 
 			glViewport(inset, 0, width / 2, height);
 			glPushMatrix();

@@ -94,6 +94,12 @@ void RIFT::GetMatrix(double matrix[]){
 			const double t(row[1]);
 			row[1] = row[2];
 			row[2] = t;
+
+// 			if(~i & 1){
+// 				for(int j(0); j < 4; j++){
+// 					row[j] = -row[j];
+// 				}
+// 			}
 		}
 #else
 		matrix[0] = dev->AngV[0];

@@ -84,7 +84,7 @@ private:
 		double rotation[16];
 		rift.GetMatrix(rotation);
 		glLoadMatrixd(rotation);
-		glRotatef(180, 0, 1, 0);
+// 		glRotatef(180, 0, 1, 0);
 
 		//描画を記録
 // 		glNewList(xScreenIndex, GL_COMPILE);

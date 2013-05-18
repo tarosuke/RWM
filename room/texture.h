@@ -1,12 +1,15 @@
 #ifndef _TEXTURE_
 #define _TEXTURE_
 
+#include "ppm.h"
 
-class TEXTURE{
+class TEXTURE : private PPM{
 public:
-	void Load(struct FILE*);
+	TEXTURE(const char* path);
+	~TEXTURE();
+	void Bind();
 private:
-	float r,g,b; //とりあえず色だけ
+	unsigned texNum;
 };
 
 #endif

@@ -91,6 +91,9 @@ private:
 // 		glEndList();
 
 		//描画
+// 		glEnable(GL_POLYGON_SMOOTH);
+// 		glEnable(GL_BLEND);
+// 		glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
 		if(!rift.IsEnable()){
 			glCallList(xScreenIndex);
 		}else{

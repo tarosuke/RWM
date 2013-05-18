@@ -22,3 +22,5 @@ rwm
 # others libraries
 gl-matrix
 libovr_nsb
+*.ppm
+

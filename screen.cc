@@ -32,13 +32,8 @@ SCREEN::SCREEN(Display* const xDisplay_, int xScreenIndex, FILE* script, RIFT& r
 	next(0),
 	xDisplay(xDisplay_),
 	xScreenIndex(xScreenIndex),
-#ifdef TEST
-	width(1280),
-	height(800),
-#else
-	width(DisplayWidth(xDisplay_, xScreenIndex)),
-	height(DisplayHeight(xDisplay_, xScreenIndex)),
-#endif
+	width(rift.IsEnable() ? 1280 : DisplayWidth(xDisplay_, xScreenIndex)),
+	height(rift.IsEnable() ? 800 : DisplayHeight(xDisplay_, xScreenIndex)),
 	xWindow(XCreateSimpleWindow(
 		xDisplay,
 		RootWindow(xDisplay, 0),

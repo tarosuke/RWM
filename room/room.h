@@ -22,35 +22,18 @@ public:
 		glLightfv(GL_LIGHT0, GL_DIFFUSE, l);
 		glLightfv(GL_LIGHT0, GL_POSITION, p);
 		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.5);
-		glPushMatrix();
-		glColor3f(0.5, 0.5, 1.0);
-// 		glTranslatef(0, 0, 2);
-		glBegin(GL_TRIANGLE_STRIP);
-			glNormal3f(0, 0, 1);
-			glVertex3f(0.5, -1, far);
-			glVertex3f(1.5, -1, far);
-			glVertex3f(0.5, 1, far);
-			glVertex3f(1.5, 1, far);
-		glEnd();
 
-		glPopMatrix();
-		glDisable(GL_LIGHT0);
-
-		if((far <= -100.0 && dir < 0.0) || (100.0 <= far && 0.0 < dir)){
-			dir = -dir;
-		}
-		far += dir;
+		(*userIn).Draw(remain);
 	};
 	ROOM();
 	~ROOM();
 private:
-	static float far;
-	static float dir;
-
 	static ROOM* userIn;
 	static Q<ROOM> rooms;
 	static const char* rcPath;
 	Q<class PRIMITIVE> primitives;
+
+	void Draw(int remain);
 };
 
 

@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "room.h"
 #include "wall.h"
 #include "primitive.h"
+#include "texture.h"
 
 
 static FILE* scriptFile;
@@ -11,8 +13,6 @@ ROOM* ROOM::userIn(0);
 Q<ROOM> ROOM::rooms;
 const char* ROOM::rcPath = ".rwm/room.cf";
 
-float ROOM::far(-100.0);
-float ROOM::dir(0.2);
 
 
 
@@ -23,9 +23,50 @@ ROOM::ROOM() : Q<ROOM>::NODE(rooms){
 ROOM::~ROOM(){
 }
 
+static TEXTURE* tex(0);
 
+void ROOM::Draw(int remain){
+	static float far(-100.0);
+	static float dir(0.2);
 
+	if(!tex){
+		tex = new TEXTURE("AK2509.ppm");
+	}
 
+const float vp[][2]={
+	{ -0.5, -1 },
+	{ 0.5, -1 },
+	{ -0.5, 1 },
+	{ 0.5, 1 },
+};
+const float tp[][2]={
+	{ 0, 2 },
+	{ 1, 2 },
+	{ 0, 0 },
+	{ 1, 0 },
+};
+
+	glPushMatrix();
+	far = 1;
+	glTranslatef(1, 0, far);
+	(*tex).Bind();
+	glBegin(GL_TRIANGLE_STRIP);
+	glNormal3f(0, 0, 1);
+	for(int v(0); v < 4; v++){
+		glTexCoord2fv(tp[v]);
+		glVertex2fv(vp[v]);
+	}
+	glEnd();
+
+	glPopMatrix();
+	glDisable(GL_LIGHT0);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	if((far <= -100.0 && dir < 0.0) || (100.0 <= far && 0.0 < dir)){
+		dir = -dir;
+	}
+	far += dir;
+}
 
 
 

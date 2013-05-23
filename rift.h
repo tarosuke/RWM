@@ -23,6 +23,7 @@ private:
 	static const int keepAliveInterval = 1000;
 	static void KeepAlive();
 	static void Sample();
+	static void Decode(const char* buff, int size);
 };
 
 

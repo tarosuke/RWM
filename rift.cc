@@ -162,11 +162,12 @@ void RIFT::Sample(){
 	const int rv(read(dev->fd, buff, 256));
 	if(62 == rv){
 		TrackerSensors sensorMsg;
-		if(DecodeTracker((UByte *)buff,&sensorMsg, rv) !=
-			TrackerMessage_SizeError){
-			processTrackerData(dev, &sensorMsg);
-		}
+		DecodeTracker((UByte *)buff,&sensorMsg, rv);
+		processTrackerData(dev, &sensorMsg);
 	}
+}
+
+void RIFT::Decode(const char* buff, int size){
 }
 
 

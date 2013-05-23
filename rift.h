@@ -22,6 +22,7 @@ private:
 	static const int ProductID = 0x0001;
 	static const int keepAliveInterval = 1000;
 	static void KeepAlive();
+	static void Sample();
 };
 
 

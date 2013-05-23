@@ -128,7 +128,8 @@ void* RIFT::SensorThread(void* initialData){
 			dev.fd + 1, &readset, NULL, NULL, &waitTime));
 
 		if (result && FD_ISSET( dev.fd, &readset )){
-			sampleDevice(&dev);
+//			sampleDevice(&dev);
+			Sample();
 		}
 
 		// Send a keepalive - this is too often.  Need to only send on keepalive interval
@@ -152,6 +153,20 @@ void RIFT::KeepAlive(){
 		return;
 	}
 	return;
+}
+
+
+void RIFT::Sample(){
+	char buff[256];
+
+	const int rv(read(dev->fd, buff, 256));
+	if(62 == rv){
+		TrackerSensors sensorMsg;
+		if(DecodeTracker((UByte *)buff,&sensorMsg, rv) !=
+			TrackerMessage_SizeError){
+			processTrackerData(dev, &sensorMsg);
+		}
+	}
 }
 
 

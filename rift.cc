@@ -132,7 +132,26 @@ void* RIFT::SensorThread(void* initialData){
 		}
 
 		// Send a keepalive - this is too often.  Need to only send on keepalive interval
-		sendSensorKeepAlive(&dev);
+		KeepAlive();
 	}
 	return 0;
 }
+
+
+void RIFT::KeepAlive(){
+	char buff[5];
+
+	buff[0] = 8;
+	buff[1] = buff[2] = 0; //command ID
+	buff[3] = keepAliveInterval & 0xFF;
+	buff[4] = keepAliveInterval >> 8;
+
+	const int rv(ioctl(dev->fd, HIDIOCSFEATURE(5), buff));
+	if (rv < 0){
+		perror("sendSensorKeepAlive");
+		return;
+	}
+	return;
+}
+
+

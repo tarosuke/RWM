@@ -20,6 +20,8 @@ private:
 	static void* SensorThread(void* initialData);
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
+	static const int keepAliveInterval = 1000;
+	static void KeepAlive();
 };
 
 

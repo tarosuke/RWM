@@ -8,7 +8,7 @@
 #include "rift.h"
 
 
-RIFT::RIFT() : dev(0), run(true){
+int RIFT::OpenDevice(){
 	//Riftのセンサを準備
 	for(int i(0); i < 99; i++){
 		char name[32];
@@ -38,16 +38,23 @@ RIFT::RIFT() : dev(0), run(true){
 		}
 
 		//この時点でのfdがrift
-		device.fd = fd;
-		dev = &device;
-		getDeviceInfo(dev);
-		break;
+		return fd;
 	}
-	if(!dev){
+	return -1;
+}
+
+RIFT::RIFT() : fd(OpenDevice()), dev(0), run(true){
+	if(fd < 0){
+		run = false;
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
 		return;
 	}
+
+	//デバイスファイルは準備できている
+// 	device.fd = fd;
+	dev = &device;
+	getDeviceInfo(dev);
 
 	//devの初期化
 	dev->keepAliveIntervalMs = 1000;
@@ -111,7 +118,7 @@ void RIFT::SensorThread(){
 	struct timeval waitTime;
 
 	FD_ZERO(&readset);
-	FD_SET((*dev).fd,&readset);
+	FD_SET(fd, &readset);
 
 	while(run){
 		// 500ms
@@ -119,9 +126,9 @@ void RIFT::SensorThread(){
 		waitTime.tv_usec = 500000;
 
 		int result(select(
-			(*dev).fd + 1, &readset, NULL, NULL, &waitTime));
+			fd + 1, &readset, NULL, NULL, &waitTime));
 
-		if(result && FD_ISSET( (*dev).fd, &readset )){
+		if(result && FD_ISSET( fd, &readset )){
 			Sample();
 		}
 
@@ -143,7 +150,7 @@ void RIFT::KeepAlive(){
 	buff[3] = keepAliveInterval & 0xFF;
 	buff[4] = keepAliveInterval >> 8;
 
-	const int rv(ioctl(dev->fd, HIDIOCSFEATURE(5), buff));
+	const int rv(ioctl(fd, HIDIOCSFEATURE(5), buff));
 	if (rv < 0){
 		perror("sendSensorKeepAlive");
 		return;
@@ -155,7 +162,7 @@ void RIFT::KeepAlive(){
 void RIFT::Sample(){
 	char buff[256];
 
-	const int rv(read(dev->fd, buff, 256));
+	const int rv(read(fd, buff, 256));
 	if(62 == rv){
 		TrackerSensors sensorMsg;
 		DecodeTracker((UByte *)buff,&sensorMsg, rv);
@@ -163,7 +170,7 @@ void RIFT::Sample(){
 	}
 }
 
-void RIFT::Decode(const char* buff, int size){
-}
 
+void RIFT::DecodeSensor(const char* buff, int& x, int& y, int& z){
+}
 

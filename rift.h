@@ -26,8 +26,26 @@ private:
 	void SensorThread();
 	void KeepAlive();
 	void Sample();
-	static void DecodeSensor(const char* buff, int& x, int& y, int& z);
-	void Decode(const char* buff, int size);
+	struct REPORT{
+		unsigned char samples;
+		unsigned short timestamp;
+		unsigned short lastCommandID;
+		short temperature;
+		struct S{
+			struct V3{
+				int x;
+				int y;
+				int z;
+			}accel, rotate;
+		}sample[3];
+		struct{
+			short x;
+			short y;
+			short z;
+		}mag;
+	}report;
+	static void DecodeSensor(const char* buff, REPORT::S::V3& sample);
+	void Decode(const char* buff);
 };
 
 

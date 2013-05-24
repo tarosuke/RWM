@@ -166,11 +166,34 @@ void RIFT::Sample(){
 	if(62 == rv){
 		TrackerSensors sensorMsg;
 		DecodeTracker((UByte *)buff,&sensorMsg, rv);
+		Decode(buff);
 		processTrackerData(dev, &sensorMsg);
 	}
 }
 
 
-void RIFT::DecodeSensor(const char* buff, int& x, int& y, int& z){
+void RIFT::DecodeSensor(const char* buff, REPORT::S::V3& v){
+	struct {int x:21;} s;
+
+	v.x = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
+	v.y = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) |
+	((buff[5] & 0xC0) >> 6);
+	v.z = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
+}
+
+void RIFT::Decode(const char* buff){
+	report.samples = buff[1];
+	report.timestamp = *(unsigned short*)&buff[2];
+	report.lastCommandID = *(unsigned short*)&buff[4];
+	report.temperature = *(short*)&buff[6];
+
+	const uint samples(report.samples > 2 ? 3 : report.samples);
+	for(unsigned char i(0); i < samples; i++){
+		DecodeSensor(buff + 8 + 16 * i, report.sample[i].accel);
+		DecodeSensor(buff + 16 + 16 * i, report.sample[i].rotate);
+	}
+	report.mag.x = *(short*)&buff[56];
+	report.mag.y = *(short*)&buff[58];
+	report.mag.z = *(short*)&buff[60];
 }
 

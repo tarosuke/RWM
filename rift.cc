@@ -8,13 +8,7 @@
 #include "rift.h"
 
 
-volatile bool RIFT::run(true);
-Device* RIFT::dev(0);
-Device RIFT::device;
-
-RIFT::RIFT(){
-	assert(!dev);
-
+RIFT::RIFT() : dev(0), run(true){
 	//Riftのセンサを準備
 	for(int i(0); i < 99; i++){
 		char name[32];
@@ -74,7 +68,7 @@ RIFT::RIFT(){
 	//センサデータ取得開始
 	pthread_t f1_thread;
 	dev->runSampleThread = true;
-	pthread_create(&f1_thread, NULL, RIFT::SensorThread, dev);
+	pthread_create(&f1_thread, NULL, RIFT::_SensorThread, (void*)this);
 }
 
 void RIFT::GetMatrix(double matrix[]){
@@ -111,13 +105,13 @@ void RIFT::GetMatrix(double matrix[]){
 	}
 }
 
-void* RIFT::SensorThread(void* initialData){
-	Device& dev(*(Device*)initialData);
+
+void RIFT::SensorThread(){
 	fd_set readset;
 	struct timeval waitTime;
 
 	FD_ZERO(&readset);
-	FD_SET(dev.fd,&readset);
+	FD_SET((*dev).fd,&readset);
 
 	while(run){
 		// 500ms
@@ -125,16 +119,18 @@ void* RIFT::SensorThread(void* initialData){
 		waitTime.tv_usec = 500000;
 
 		int result(select(
-			dev.fd + 1, &readset, NULL, NULL, &waitTime));
+			(*dev).fd + 1, &readset, NULL, NULL, &waitTime));
 
-		if (result && FD_ISSET( dev.fd, &readset )){
-//			sampleDevice(&dev);
+		if(result && FD_ISSET( (*dev).fd, &readset )){
 			Sample();
 		}
 
 		// Send a keepalive - this is too often.  Need to only send on keepalive interval
 		KeepAlive();
 	}
+}
+void* RIFT::_SensorThread(void* initialData){
+	(*(RIFT*)initialData).SensorThread();
 	return 0;
 }
 

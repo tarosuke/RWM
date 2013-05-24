@@ -11,19 +11,20 @@ class RIFT{
 public:
 	RIFT();
 	~RIFT(){ run = false; };
-	static void GetMatrix(double matrix[]);
-	static bool IsEnable(){ return !!dev; };
+	void GetMatrix(double matrix[]);
+	bool IsEnable(){ return !!dev; };
 private:
-	static Device* dev;
-	static Device device;
-	static volatile bool run;
-	static void* SensorThread(void* initialData);
+	Device* dev;
+	Device device;
+	volatile bool run;
+	static void* _SensorThread(void* initialData);
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
 	static const int keepAliveInterval = 1000;
-	static void KeepAlive();
-	static void Sample();
-	static void Decode(const char* buff, int size);
+	void SensorThread();
+	void KeepAlive();
+	void Sample();
+	void Decode(const char* buff, int size);
 };
 
 

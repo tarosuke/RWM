@@ -24,8 +24,6 @@ private:
 	static int OpenDevice();
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
-	void KeepAlive();
-	void Sample();
 	struct REPORT{
 		unsigned char samples;
 		unsigned short timestamp;

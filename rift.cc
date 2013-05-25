@@ -52,9 +52,7 @@ RIFT::RIFT() : fd(OpenDevice()), dev(0), run(true){
 	}
 
 	//デバイスファイルは準備できている
-// 	device.fd = fd;
 	dev = &device;
-	getDeviceInfo(dev);
 
 	//devの初期化
 	dev->keepAliveIntervalMs = 1000;
@@ -65,12 +63,6 @@ RIFT::RIFT() : fd(OpenDevice()), dev(0), run(true){
 	dev->EnablePrediction = FALSE;
 	dev->EnableGravity = TRUE;
 	dev->Q[3] = 1.0;
-
-	printf("Device Info:\n");
-	printf("\tname:     %s\n", dev->name);
-	printf("\tlocation: %s\n", dev->location);
-	printf("\tvendor:   0x%04hx\n", dev->vendorId);
-	printf("\tproduct:  0x%04hx\n", dev->productId);
 
 	//センサデータ取得開始
 	pthread_t f1_thread;
@@ -121,7 +113,7 @@ void RIFT::SensorThread(){
 	FD_SET(fd, &readset);
 
 	while(run){
-		// 500ms
+		// KeepAlive処理のために500msまでは待つ
 		waitTime.tv_sec = 0;
 		waitTime.tv_usec = 500000;
 
@@ -129,11 +121,29 @@ void RIFT::SensorThread(){
 			fd + 1, &readset, NULL, NULL, &waitTime));
 
 		if(result && FD_ISSET( fd, &readset )){
-			Sample();
+			char buff[256];
+			const int rv(read(fd, buff, 256));
+			switch(rv){
+			case 62 * 4 :
+			case 62 * 3 :
+			case 62 * 2 :
+			case 62 :
+				for(int n(0); n < rv; n+= 62){
+					Decode(&buff[n]);
+				}
+				break;
+			}
 		}
 
 		// Send a keepalive - this is too often.  Need to only send on keepalive interval
-		KeepAlive();
+		{
+			char buff[5];
+			buff[0] = 8;
+			buff[1] = buff[2] = 0; //command ID
+			buff[3] = keepAliveInterval & 0xFF;
+			buff[4] = keepAliveInterval >> 8;
+			ioctl(fd, HIDIOCSFEATURE(5), buff);
+		}
 	}
 }
 void* RIFT::_SensorThread(void* initialData){
@@ -142,46 +152,16 @@ void* RIFT::_SensorThread(void* initialData){
 }
 
 
-void RIFT::KeepAlive(){
-	char buff[5];
-
-	buff[0] = 8;
-	buff[1] = buff[2] = 0; //command ID
-	buff[3] = keepAliveInterval & 0xFF;
-	buff[4] = keepAliveInterval >> 8;
-
-	const int rv(ioctl(fd, HIDIOCSFEATURE(5), buff));
-	if (rv < 0){
-		perror("sendSensorKeepAlive");
-		return;
-	}
-	return;
-}
-
-
-void RIFT::Sample(){
-	char buff[256];
-
-	const int rv(read(fd, buff, 256));
-	if(62 == rv){
-		TrackerSensors sensorMsg;
-		DecodeTracker((UByte *)buff,&sensorMsg, rv);
-		Decode(buff);
-		processTrackerData(dev, &sensorMsg);
-	}
-}
-
-
 void RIFT::DecodeSensor(const char* buff, REPORT::S::V3& v){
 	struct {int x:21;} s;
 
 	v.x = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
-	v.y = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) |
-	((buff[5] & 0xC0) >> 6);
+	v.y = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) | ((buff[5] & 0xC0) >> 6);
 	v.z = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
 }
 
 void RIFT::Decode(const char* buff){
+	//NOTE:リトルエンディアン機で動かす前提
 	report.samples = buff[1];
 	report.timestamp = *(unsigned short*)&buff[2];
 	report.lastCommandID = *(unsigned short*)&buff[4];
@@ -195,5 +175,26 @@ void RIFT::Decode(const char* buff){
 	report.mag.x = *(short*)&buff[56];
 	report.mag.y = *(short*)&buff[58];
 	report.mag.z = *(short*)&buff[60];
+
+
+	//確認のための記述
+	TrackerSensors s;
+	s.SampleCount = report.samples;
+	s.Timestamp = report.timestamp;
+	s.LastCommandID = report.lastCommandID;
+	s.Temperature = report.temperature;
+	for(unsigned char i(0); i < samples; i++){
+		s.Samples[i].AccelX = report.sample[i].accel.x;
+		s.Samples[i].AccelY = report.sample[i].accel.y;
+		s.Samples[i].AccelZ = report.sample[i].accel.z;
+		s.Samples[i].GyroX = report.sample[i].rotate.x;
+		s.Samples[i].GyroY = report.sample[i].rotate.y;
+		s.Samples[i].GyroZ = report.sample[i].rotate.z;
+	}
+	s.MagX = report.mag.x;
+	s.MagY = report.mag.y;
+	s.MagZ = report.mag.z;
+
+	processTrackerData(dev, &s);
 }
 

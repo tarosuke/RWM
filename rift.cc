@@ -161,10 +161,6 @@ void RIFT::DecodeSensor(const char* buff, int* const v){
 }
 
 void RIFT::Decode(const char* buff){
-	unsigned char numOfSamples;
-	unsigned short timestamp;
-	unsigned short lastCommandID;
-	short temperature;
 	struct{
 		int accel[3];
 		int rotate[3];
@@ -172,10 +168,10 @@ void RIFT::Decode(const char* buff){
 	short mag[3];
 
 	//NOTE:リトルエンディアン機で動かす前提
-	numOfSamples = buff[1];
-	timestamp = *(unsigned short*)&buff[2];
-	lastCommandID = *(unsigned short*)&buff[4];
-	temperature = *(short*)&buff[6];
+	const unsigned char numOfSamples(buff[1]);
+	const unsigned short timestamp(*(unsigned short*)&buff[2]);
+	const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
+	const short temp(*(short*)&buff[6]);
 
 	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
 	for(unsigned char i(0); i < samples; i++){
@@ -188,21 +184,32 @@ void RIFT::Decode(const char* buff){
 
 #if 0
 	const float timeq(1.0/1000.0);
-	double Acceleration[3];   // 加速度[m/s^2]
-	double RotationRate[3];   // 角速度[rad/s^2]
-	double MagneticField[3];  // 磁力[Gauss]
-	float Temperature;    // センサ表面温度[℃]
-	float TimeDelta;      // 前回レポートからの経過時間[病]
+	const float temperature();    // センサ表面温度[℃]
 
-	lastSampleCount = sampleCount;
+	lastSampleCount = samples;
 	lastTimestamp = timestamp;
+
+	const float TimeDelta(3 < numOfSamples ?
+		(numOfSamples - 2) * timeq : timeq);
+	double magneticField[3];  // 磁力[Gauss]
+	for(int j(0); j < 3; j++){
+		magneticField[j] = 0.0001 * mag[j];
+	}
+	for(unsigned char i(0); i < samples; i++){
+		double acceleration[3];   // 加速度[m/s^2]
+		double angVelocity[3];   // 角速度[rad/s^2]
+		for(int j(0); j < 3; j++){
+			acceleration[j] = 0.0001 * sample[i].accel[j];
+			angVelocity[j] = 0.0001 * sample[i].rotate[j];
+		}
+	}
 #else
 	//libovrを使用
 	TrackerSensors s;
 	s.SampleCount = samples;
 	s.Timestamp = timestamp;
 	s.LastCommandID = lastCommandID;
-	s.Temperature = temperature;
+	s.Temperature = temp;
 	for(unsigned char i(0); i < samples; i++){
 		s.Samples[i].AccelX = sample[i].accel[0];
 		s.Samples[i].AccelY = sample[i].accel[1];

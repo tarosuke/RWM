@@ -27,7 +27,7 @@ private:
 
 	static void DecodeSensor(const char* buff, int* const sample);
 	void Decode(const char* buff);
-	unsigned char lastSampleCount;
+	unsigned char lastSamples;
 	unsigned short lastTimestamp;
 };
 

@@ -24,26 +24,11 @@ private:
 	static int OpenDevice();
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
-	struct REPORT{
-		unsigned char samples;
-		unsigned short timestamp;
-		unsigned short lastCommandID;
-		short temperature;
-		struct S{
-			struct V3{
-				int x;
-				int y;
-				int z;
-			}accel, rotate;
-		}sample[3];
-		struct{
-			short x;
-			short y;
-			short z;
-		}mag;
-	}report;
-	static void DecodeSensor(const char* buff, REPORT::S::V3& sample);
+
+	static void DecodeSensor(const char* buff, int* const sample);
 	void Decode(const char* buff);
+	unsigned char lastSampleCount;
+	unsigned short lastTimestamp;
 };
 
 

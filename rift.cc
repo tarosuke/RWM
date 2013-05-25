@@ -152,49 +152,70 @@ void* RIFT::_SensorThread(void* initialData){
 }
 
 
-void RIFT::DecodeSensor(const char* buff, REPORT::S::V3& v){
+void RIFT::DecodeSensor(const char* buff, int* const v){
 	struct {int x:21;} s;
 
-	v.x = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
-	v.y = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) | ((buff[5] & 0xC0) >> 6);
-	v.z = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
+	v[0] = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
+	v[1] = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) | ((buff[5] & 0xC0) >> 6);
+	v[2] = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
 }
 
 void RIFT::Decode(const char* buff){
+	unsigned char numOfSamples;
+	unsigned short timestamp;
+	unsigned short lastCommandID;
+	short temperature;
+	struct{
+		int accel[3];
+		int rotate[3];
+	}sample[3];
+	short mag[3];
+
 	//NOTE:リトルエンディアン機で動かす前提
-	report.samples = buff[1];
-	report.timestamp = *(unsigned short*)&buff[2];
-	report.lastCommandID = *(unsigned short*)&buff[4];
-	report.temperature = *(short*)&buff[6];
+	numOfSamples = buff[1];
+	timestamp = *(unsigned short*)&buff[2];
+	lastCommandID = *(unsigned short*)&buff[4];
+	temperature = *(short*)&buff[6];
 
-	const uint samples(report.samples > 2 ? 3 : report.samples);
+	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
 	for(unsigned char i(0); i < samples; i++){
-		DecodeSensor(buff + 8 + 16 * i, report.sample[i].accel);
-		DecodeSensor(buff + 16 + 16 * i, report.sample[i].rotate);
+		DecodeSensor(buff + 8 + 16 * i, sample[i].accel);
+		DecodeSensor(buff + 16 + 16 * i, sample[i].rotate);
 	}
-	report.mag.x = *(short*)&buff[56];
-	report.mag.y = *(short*)&buff[58];
-	report.mag.z = *(short*)&buff[60];
+	mag[0] = *(short*)&buff[56];
+	mag[1] = *(short*)&buff[58];
+	mag[2] = *(short*)&buff[60];
 
+#if 0
+	const float timeq(1.0/1000.0);
+	double Acceleration[3];   // 加速度[m/s^2]
+	double RotationRate[3];   // 角速度[rad/s^2]
+	double MagneticField[3];  // 磁力[Gauss]
+	float Temperature;    // センサ表面温度[℃]
+	float TimeDelta;      // 前回レポートからの経過時間[病]
 
-	//確認のための記述
+	lastSampleCount = sampleCount;
+	lastTimestamp = timestamp;
+#else
+	//libovrを使用
 	TrackerSensors s;
-	s.SampleCount = report.samples;
-	s.Timestamp = report.timestamp;
-	s.LastCommandID = report.lastCommandID;
-	s.Temperature = report.temperature;
+	s.SampleCount = samples;
+	s.Timestamp = timestamp;
+	s.LastCommandID = lastCommandID;
+	s.Temperature = temperature;
 	for(unsigned char i(0); i < samples; i++){
-		s.Samples[i].AccelX = report.sample[i].accel.x;
-		s.Samples[i].AccelY = report.sample[i].accel.y;
-		s.Samples[i].AccelZ = report.sample[i].accel.z;
-		s.Samples[i].GyroX = report.sample[i].rotate.x;
-		s.Samples[i].GyroY = report.sample[i].rotate.y;
-		s.Samples[i].GyroZ = report.sample[i].rotate.z;
+		s.Samples[i].AccelX = sample[i].accel[0];
+		s.Samples[i].AccelY = sample[i].accel[1];
+		s.Samples[i].AccelZ = sample[i].accel[2];
+		s.Samples[i].GyroX = sample[i].rotate[0];
+		s.Samples[i].GyroY = sample[i].rotate[1];
+		s.Samples[i].GyroZ = sample[i].rotate[2];
 	}
-	s.MagX = report.mag.x;
-	s.MagY = report.mag.y;
-	s.MagZ = report.mag.z;
+	s.MagX = mag[0];
+	s.MagY = mag[1];
+	s.MagZ = mag[2];
 
 	processTrackerData(dev, &s);
+#endif
 }
 

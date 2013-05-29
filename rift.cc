@@ -64,6 +64,20 @@ RIFT::RIFT() : fd(OpenDevice()), dev(0), run(true){
 	dev->EnableGravity = TRUE;
 	dev->Q[3] = 1.0;
 
+	//取得データの初期化
+	velocity[0] =
+	velocity[1] =
+	velocity[2] =
+	position[0] =
+	position[1] =
+	position[2] =
+	north[0] =
+	north[1] =
+	gravity[0] =
+	gravity[2] = 0;
+	north[2] =
+	gravity[1] = -1;
+
 	//センサデータ取得開始
 	pthread_t f1_thread;
 	dev->runSampleThread = true;
@@ -75,10 +89,17 @@ void RIFT::GetMatrix(double matrix[]){
 #if 1
 		double m4[16];
 		double q[4];
+#if 1
+		q[0] = direction.w;
+		q[1] = direction.i;
+		q[2] = direction.j;
+		q[3] = direction.k;
+		#else
 		q[0] = (*dev).Q[0];
 		q[1] = -(*dev).Q[1];
 		q[2] = -(*dev).Q[2];
 		q[3] = -(*dev).Q[3];
+#endif
 		quat_toMat4(q, m4);
 		mat4_toRotationMat(m4, matrix);
 		for(int i(0); i < 4; i++){
@@ -165,12 +186,10 @@ void RIFT::Decode(const char* buff){
 		int accel[3];
 		int rotate[3];
 	}sample[3];
-	short mag[3];
+	int mag[3];
 
 	//NOTE:リトルエンディアン機で動かす前提
 	const unsigned char numOfSamples(buff[1]);
-	const unsigned short timestamp(*(unsigned short*)&buff[2]);
-	const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
 	const short temp(*(short*)&buff[6]);
 
 	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
@@ -182,28 +201,24 @@ void RIFT::Decode(const char* buff){
 	mag[1] = *(short*)&buff[58];
 	mag[2] = *(short*)&buff[60];
 
-#if 0
-	const float timeq(1.0/1000.0);
-	const float temperature();    // センサ表面温度[℃]
+#if 1
+	const float qtime(1.0/1000.0);
+	temperature = 0.01 * temp;
 
-	lastSampleCount = samples;
-	lastTimestamp = timestamp;
+	const float dt(3 < numOfSamples ?
+		(numOfSamples - 2) * qtime : qtime);
 
-	const float TimeDelta(3 < numOfSamples ?
-		(numOfSamples - 2) * timeq : timeq);
-	double magneticField[3];  // 磁力[Gauss]
-	for(int j(0); j < 3; j++){
-		magneticField[j] = 0.0001 * mag[j];
-	}
+	// 磁界値の変換
+	UpdateMagneticField(mag, dt * samples);
+
+	// 各サンプル値で状況を更新
 	for(unsigned char i(0); i < samples; i++){
-		double acceleration[3];   // 加速度[m/s^2]
-		double angVelocity[3];   // 角速度[rad/s^2]
-		for(int j(0); j < 3; j++){
-			acceleration[j] = 0.0001 * sample[i].accel[j];
-			angVelocity[j] = 0.0001 * sample[i].rotate[j];
-		}
+		UpdateAngularVelocity(sample[i].rotate, dt);
+		UpdateAccelaretion(sample[i].accel, dt);
 	}
 #else
+const unsigned short timestamp(*(unsigned short*)&buff[2]); //NOTE:取得漏れ対策で必要になる
+const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
 	//libovrを使用
 	TrackerSensors s;
 	s.SampleCount = samples;
@@ -224,5 +239,17 @@ void RIFT::Decode(const char* buff){
 
 	processTrackerData(dev, &s);
 #endif
+}
+
+
+void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
+	QON delta(angles, 0.0001 * dt);
+	direction *= delta;
+}
+
+void RIFT::UpdateAccelaretion(const int axis[3], double dt){
+}
+
+void RIFT::UpdateMagneticField(const int axis[3], double dt){
 }
 

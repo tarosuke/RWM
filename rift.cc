@@ -86,7 +86,6 @@ RIFT::RIFT() : fd(OpenDevice()), dev(0), run(true){
 
 void RIFT::GetMatrix(double matrix[]){
 	if(dev){
-#if 1
 		double m4[16];
 		double q[4];
 #if 1
@@ -94,7 +93,7 @@ void RIFT::GetMatrix(double matrix[]){
 		q[1] = direction.i;
 		q[2] = direction.j;
 		q[3] = direction.k;
-		#else
+#else
 		q[0] = (*dev).Q[0];
 		q[1] = -(*dev).Q[1];
 		q[2] = -(*dev).Q[2];
@@ -102,6 +101,7 @@ void RIFT::GetMatrix(double matrix[]){
 #endif
 		quat_toMat4(q, m4);
 		mat4_toRotationMat(m4, matrix);
+#if 0
 		for(int i(0); i < 4; i++){
 			double* row = &matrix[i * 4];
 			row[1] = -row[1];
@@ -115,10 +115,6 @@ void RIFT::GetMatrix(double matrix[]){
 				}
 			}
 		}
-#else
-		matrix[0] = dev->AngV[0];
-		matrix[1] = dev->AngV[1];
-		matrix[2] = dev->AngV[2];
 #endif
 	}else{
 		mat4_identity(matrix);
@@ -143,16 +139,8 @@ void RIFT::SensorThread(){
 
 		if(result && FD_ISSET( fd, &readset )){
 			char buff[256];
-			const int rv(read(fd, buff, 256));
-			switch(rv){
-			case 62 * 4 :
-			case 62 * 3 :
-			case 62 * 2 :
-			case 62 :
-				for(int n(0); n < rv; n+= 62){
-					Decode(&buff[n]);
-				}
-				break;
+			if(62 == read(fd, buff, 256)){
+				Decode(buff);
 			}
 		}
 
@@ -176,9 +164,9 @@ void* RIFT::_SensorThread(void* initialData){
 void RIFT::DecodeSensor(const char* buff, int* const v){
 	struct {int x:21;} s;
 
-	v[0] = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
+	v[2] = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
 	v[1] = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) | ((buff[5] & 0xC0) >> 6);
-	v[2] = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
+	v[0] = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
 }
 
 void RIFT::Decode(const char* buff){

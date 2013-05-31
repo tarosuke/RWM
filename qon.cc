@@ -1,7 +1,7 @@
 #include <math.h>
 
 #include "qon.h"
-
+#include <gl-matrix.h>
 
 QON::QON(double w, double i, double j, double k) :
 	w(w), i(i), j(j), k(k){}
@@ -34,14 +34,26 @@ void QON::InitByCaldan(const double caldan[3]){
 
 void QON::operator*=(const QON& er){
 	QON ed(*this);
-
+#if 1
+#if 1
+	*this = er;
+	w *= 100;
+#else
 	w = ed.w * er.w - ed.i * er.i - ed.j * er.j - ed.k * er.k;
 	i = ed.i * er.w + ed.w * er.i + ed.j * er.k - ed.k * er.j;
 	j = ed.j * er.w + ed.w * er.j + ed.k * er.i - ed.i * er.k;
 	k = ed.k * er.w + ed.w * er.k + ed.i * er.j - ed.j * er.i;
+#endif
+#else
+	double src[4] = { i, j, k, w };
+	double dst[4] = { er.i, er.j, er.k, er.w };
+	quat_multiply(src, dst, 0);
+	w = src[3];
+	i = src[0];
+	j = src[1];
+	k = src[2];
+#endif
 /*
-
-
 	double qax = quat[0], qay = quat[1], qaz = quat[2], qaw = quat[3],
 	qbx = quat2[0], qby = quat2[1], qbz = quat2[2], qbw = quat2[3];
 

@@ -88,11 +88,11 @@ void RIFT::GetMatrix(double matrix[]){
 	if(dev){
 		double m4[16];
 		double q[4];
-#if 1
-		q[0] = direction.w;
-		q[1] = direction.i;
-		q[2] = direction.j;
-		q[3] = direction.k;
+#if 0
+		q[3] = direction.w;
+		q[0] = -direction.i;
+		q[1] = -direction.j;
+		q[2] = -direction.k;
 #else
 		q[0] = (*dev).Q[0];
 		q[1] = -(*dev).Q[1];
@@ -101,7 +101,7 @@ void RIFT::GetMatrix(double matrix[]){
 #endif
 		quat_toMat4(q, m4);
 		mat4_toRotationMat(m4, matrix);
-#if 0
+#if 1
 		for(int i(0); i < 4; i++){
 			double* row = &matrix[i * 4];
 			row[1] = -row[1];
@@ -139,20 +139,21 @@ void RIFT::SensorThread(){
 
 		if(result && FD_ISSET( fd, &readset )){
 			char buff[256];
-			if(62 == read(fd, buff, 256)){
+			const int rb(read(fd, buff, 256));
+			if(62 == rb){
 				Decode(buff);
+			}else{
+				printf("%5d bytes dropped.\n", rb);
 			}
 		}
 
 		// Send a keepalive - this is too often.  Need to only send on keepalive interval
-		{
-			char buff[5];
-			buff[0] = 8;
-			buff[1] = buff[2] = 0; //command ID
-			buff[3] = keepAliveInterval & 0xFF;
-			buff[4] = keepAliveInterval >> 8;
-			ioctl(fd, HIDIOCSFEATURE(5), buff);
-		}
+		char buff[5];
+		buff[0] = 8;
+		buff[1] = buff[2] = 0; //command ID
+		buff[3] = keepAliveInterval & 0xFF;
+		buff[4] = keepAliveInterval >> 8;
+		ioctl(fd, HIDIOCSFEATURE(5), buff);
 	}
 }
 void* RIFT::_SensorThread(void* initialData){
@@ -164,9 +165,9 @@ void* RIFT::_SensorThread(void* initialData){
 void RIFT::DecodeSensor(const char* buff, int* const v){
 	struct {int x:21;} s;
 
-	v[2] = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
+	v[0] = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
 	v[1] = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) | ((buff[5] & 0xC0) >> 6);
-	v[0] = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
+	v[2] = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
 }
 
 void RIFT::Decode(const char* buff){
@@ -178,6 +179,7 @@ void RIFT::Decode(const char* buff){
 
 	//NOTE:リトルエンディアン機で動かす前提
 	const unsigned char numOfSamples(buff[1]);
+	const unsigned short timestamp(*(unsigned short*)&buff[2]);
 	const short temp(*(short*)&buff[6]);
 
 	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
@@ -189,13 +191,22 @@ void RIFT::Decode(const char* buff){
 	mag[1] = *(short*)&buff[58];
 	mag[2] = *(short*)&buff[60];
 
-#if 1
+if(3 < numOfSamples){
+	printf("lost samples: total:%d.\n", numOfSamples);
+}
+#if 0
+	static unsigned short prevTime;
+	const unsigned short deltaT(timestamp - prevTime);
+	prevTime = timestamp;
+
 	const float qtime(1.0/1000.0);
 	temperature = 0.01 * temp;
 
-	const float dt(3 < numOfSamples ?
-		(numOfSamples - 2) * qtime : qtime);
-
+	const float dt((3 < numOfSamples ?
+		(numOfSamples - 2) * qtime : qtime) * deltaT);
+if(2 != deltaT){
+	printf("detlaT(%d).\n", deltaT);
+}
 	// 磁界値の変換
 	UpdateMagneticField(mag, dt * samples);
 
@@ -205,7 +216,6 @@ void RIFT::Decode(const char* buff){
 		UpdateAccelaretion(sample[i].accel, dt);
 	}
 #else
-const unsigned short timestamp(*(unsigned short*)&buff[2]); //NOTE:取得漏れ対策で必要になる
 const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
 	//libovrを使用
 	TrackerSensors s;

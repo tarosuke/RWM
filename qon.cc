@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 
 #include "qon.h"
 #include <gl-matrix.h>
@@ -35,7 +36,7 @@ void QON::InitByCaldan(const double caldan[3]){
 void QON::operator*=(const QON& er){
 	QON ed(*this);
 #if 1
-#if 1
+#if 0
 	*this = er;
 	w *= 100;
 #else

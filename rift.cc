@@ -88,7 +88,7 @@ void RIFT::GetMatrix(double matrix[]){
 	if(dev){
 		double m4[16];
 		double q[4];
-#if 0
+#if 1
 		q[3] = direction.w;
 		q[0] = -direction.i;
 		q[1] = -direction.j;
@@ -101,7 +101,7 @@ void RIFT::GetMatrix(double matrix[]){
 #endif
 		quat_toMat4(q, m4);
 		mat4_toRotationMat(m4, matrix);
-#if 1
+#if 0
 		for(int i(0); i < 4; i++){
 			double* row = &matrix[i * 4];
 			row[1] = -row[1];
@@ -194,10 +194,15 @@ void RIFT::Decode(const char* buff){
 if(3 < numOfSamples){
 	printf("lost samples: total:%d.\n", numOfSamples);
 }
-#if 0
+#if 1
 	static unsigned short prevTime;
 	const unsigned short deltaT(timestamp - prevTime);
 	prevTime = timestamp;
+	static unsigned char prevSamples;
+	if(deltaT > prevSamples){
+		printf("missed small number of samples(%d).\n", prevSamples);
+	}
+	prevSamples = numOfSamples;
 
 	const float qtime(1.0/1000.0);
 	temperature = 0.01 * temp;
@@ -205,7 +210,7 @@ if(3 < numOfSamples){
 	const float dt((3 < numOfSamples ?
 		(numOfSamples - 2) * qtime : qtime) * deltaT);
 if(2 != deltaT){
-	printf("detlaT(%d).\n", deltaT);
+	printf("deltaT(%d).\n", deltaT);
 }
 	// 磁界値の変換
 	UpdateMagneticField(mag, dt * samples);
@@ -236,6 +241,15 @@ const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
 	s.MagZ = mag[2];
 
 	processTrackerData(dev, &s);
+
+	const double dt(0.002);
+	double ang[3] = {
+		(*dev).AngV[0] * dt,
+		(*dev).AngV[1] * dt,
+		(*dev).AngV[2] * dt};
+	QON delta;
+	delta.InitByCaldan(ang);
+	direction *= delta;
 #endif
 }
 

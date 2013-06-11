@@ -162,12 +162,22 @@ void* RIFT::_SensorThread(void* initialData){
 }
 
 
-void RIFT::DecodeSensor(const char* buff, int* const v){
+void RIFT::DecodeSensor(const unsigned char* buff, int v[3]){
 	struct {int x:21;} s;
 
-	v[0] = s.x = (buff[0] << 13) | (buff[1] << 5) | ((buff[2] & 0xF8) >> 3);
-	v[1] = s.x = ((buff[2] & 0x07) << 18) | (buff[3] << 10) | (buff[4] << 2) | ((buff[5] & 0xC0) >> 6);
-	v[2] = s.x = ((buff[5] & 0x3F) << 15) | (buff[6] << 7) | (buff[7] >> 1);
+	v[0] = s.x =
+		((unsigned)buff[0] << 13) |
+		((unsigned)buff[1] << 5) |
+		((buff[2] & 0xF8) >> 3);
+	v[1] = s.x =
+		(((unsigned)buff[2] & 0x07) << 18) |
+		((unsigned)buff[3] << 10) |
+		((unsigned)buff[4] << 2) |
+		((buff[5] & 0xC0) >> 6);
+	v[2] = s.x =
+		(((unsigned)buff[5] & 0x3F) << 15) |
+		((unsigned)buff[6] << 7) |
+		(buff[7] >> 1);
 }
 
 void RIFT::Decode(const char* buff){
@@ -184,34 +194,23 @@ void RIFT::Decode(const char* buff){
 
 	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
 	for(unsigned char i(0); i < samples; i++){
-		DecodeSensor(buff + 8 + 16 * i, sample[i].accel);
-		DecodeSensor(buff + 16 + 16 * i, sample[i].rotate);
+		DecodeSensor((unsigned char*)buff + 8 + 16 * i, sample[i].accel);
+		DecodeSensor((unsigned char*)buff + 16 + 16 * i, sample[i].rotate);
 	}
 	mag[0] = *(short*)&buff[56];
 	mag[1] = *(short*)&buff[58];
 	mag[2] = *(short*)&buff[60];
 
-if(3 < numOfSamples){
-	printf("lost samples: total:%d.\n", numOfSamples);
-}
-#if 1
 	static unsigned short prevTime;
 	const unsigned short deltaT(timestamp - prevTime);
 	prevTime = timestamp;
-	static unsigned char prevSamples;
-	if(deltaT > prevSamples){
-		printf("missed small number of samples(%d).\n", prevSamples);
-	}
-	prevSamples = numOfSamples;
 
 	const float qtime(1.0/1000.0);
 	temperature = 0.01 * temp;
 
 	const float dt((3 < numOfSamples ?
 		(numOfSamples - 2) * qtime : qtime) * deltaT);
-if(2 != deltaT){
-	printf("deltaT(%d).\n", deltaT);
-}
+
 	// 磁界値の変換
 	UpdateMagneticField(mag, dt * samples);
 
@@ -220,37 +219,7 @@ if(2 != deltaT){
 		UpdateAngularVelocity(sample[i].rotate, dt);
 		UpdateAccelaretion(sample[i].accel, dt);
 	}
-#else
-const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
-	//libovrを使用
-	TrackerSensors s;
-	s.SampleCount = samples;
-	s.Timestamp = timestamp;
-	s.LastCommandID = lastCommandID;
-	s.Temperature = temp;
-	for(unsigned char i(0); i < samples; i++){
-		s.Samples[i].AccelX = sample[i].accel[0];
-		s.Samples[i].AccelY = sample[i].accel[1];
-		s.Samples[i].AccelZ = sample[i].accel[2];
-		s.Samples[i].GyroX = sample[i].rotate[0];
-		s.Samples[i].GyroY = sample[i].rotate[1];
-		s.Samples[i].GyroZ = sample[i].rotate[2];
-	}
-	s.MagX = mag[0];
-	s.MagY = mag[1];
-	s.MagZ = mag[2];
-
-	processTrackerData(dev, &s);
-
-	const double dt(0.002);
-	double ang[3] = {
-		(*dev).AngV[0] * dt,
-		(*dev).AngV[1] * dt,
-		(*dev).AngV[2] * dt};
-	QON delta;
-	delta.InitByCaldan(ang);
-	direction *= delta;
-#endif
+// const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
 }
 
 

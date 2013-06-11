@@ -34,7 +34,7 @@ private:
 	double gravity[3]; //向きを整えた平均加速度ベクトル
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
-	static void DecodeSensor(const char* buff, int* const sample);
+	static void DecodeSensor(const unsigned char* buff, int* const sample);
 	void Decode(const char* buff);
 	void UpdateAngularVelocity(const int angles[3], double dt);
 	void UpdateAccelaretion(const int axis[3], double dt);

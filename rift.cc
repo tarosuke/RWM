@@ -208,11 +208,12 @@ void RIFT::Decode(const char* buff){
 	const float qtime(1.0/1000.0);
 	temperature = 0.01 * temp;
 
-	const float dt((3 < numOfSamples ?
-		(numOfSamples - 2) * qtime : qtime) * deltaT);
+// 	const float dt((3 < numOfSamples ?
+// 		(numOfSamples - 2) * qtime : qtime) * deltaT);
+	const double dt(qtime * deltaT / numOfSamples);
 
 	// 磁界値の変換
-	UpdateMagneticField(mag, dt * samples);
+	UpdateMagneticField(mag, dt);
 
 	// 各サンプル値で状況を更新
 	for(unsigned char i(0); i < samples; i++){

@@ -3,23 +3,16 @@
 
 #include "qon.h"
 
-extern "C"{
-	#include <OVR.h>
-	#include <OVR_HID.h>
-}
-
 
 class RIFT{
 public:
 	RIFT();
 	~RIFT(){ run = false; };
 	void GetMatrix(double matrix[]);
-	bool IsEnable(){ return !!dev; };
+	bool IsEnable(){ return 0 <= fd; };
 private:
 	// HID
 	const int fd;
-	Device* dev;
-	Device device;
 	volatile bool run;
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;

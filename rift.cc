@@ -1,11 +1,19 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <pthread.h>
 #include <sys/file.h>
 #include <assert.h>
+#include <linux/types.h>
+#include <linux/input.h>
+#include <linux/hidraw.h>
 
 #include "rift.h"
+
+extern "C"{
+	#include "gl-matrix.h"
+}
 
 
 int RIFT::OpenDevice(){
@@ -43,26 +51,13 @@ int RIFT::OpenDevice(){
 	return -1;
 }
 
-RIFT::RIFT() : fd(OpenDevice()), dev(0), run(true){
+RIFT::RIFT() : fd(OpenDevice()), run(true){
 	if(fd < 0){
 		run = false;
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
 		return;
 	}
-
-	//デバイスファイルは準備できている
-	dev = &device;
-
-	//devの初期化
-	dev->keepAliveIntervalMs = 1000;
-	dev->Coordinates = Coord_Sensor;
-	dev->HWCoordinates = Coord_HMD;
-	dev->Gain = 0.5;
-	dev->YawMult = 1.0;
-	dev->EnablePrediction = FALSE;
-	dev->EnableGravity = TRUE;
-	dev->Q[3] = 1.0;
 
 	//取得データの初期化
 	velocity[0] =
@@ -80,42 +75,19 @@ RIFT::RIFT() : fd(OpenDevice()), dev(0), run(true){
 
 	//センサデータ取得開始
 	pthread_t f1_thread;
-	dev->runSampleThread = true;
 	pthread_create(&f1_thread, NULL, RIFT::_SensorThread, (void*)this);
 }
 
 void RIFT::GetMatrix(double matrix[]){
-	if(dev){
+	if(0 <= fd){
 		double m4[16];
 		double q[4];
-#if 1
 		q[3] = direction.w;
 		q[0] = -direction.i;
 		q[1] = -direction.j;
 		q[2] = -direction.k;
-#else
-		q[0] = (*dev).Q[0];
-		q[1] = -(*dev).Q[1];
-		q[2] = -(*dev).Q[2];
-		q[3] = -(*dev).Q[3];
-#endif
 		quat_toMat4(q, m4);
 		mat4_toRotationMat(m4, matrix);
-#if 0
-		for(int i(0); i < 4; i++){
-			double* row = &matrix[i * 4];
-			row[1] = -row[1];
-			const double t(row[1]);
-			row[1] = row[2];
-			row[2] = t;
-
-			if(~i & 1){
-				for(int j(0); j < 4; j++){
-					row[j] = -row[j];
-				}
-			}
-		}
-#endif
 	}else{
 		mat4_identity(matrix);
 	}

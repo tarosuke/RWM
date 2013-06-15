@@ -1,11 +1,11 @@
 all: rwm
 
-COPTS += -IX11 -Igl-matrix -Iroom -Irift
+COPTS += -IX11 -Iroom -Irift
 
 include make.in
 
 
-libs= gl-matrix/libgl-matrix.a room/room.a -lGL -lGLU -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
+libs= room/room.a -lGL -lGLU -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
 
 test: rwm.test
 	./rwm.test
@@ -22,5 +22,4 @@ rwm.test: makefile $(objs) extralibs
 
 
 extralibs:
-	make -C gl-matrix
 	make -C room

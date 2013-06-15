@@ -81,9 +81,10 @@ private:
 
 		//スクリーン共通マトリクスの読み込み
 		glMatrixMode(GL_MODELVIEW);
-		double rotation[16];
-		rift.GetMatrix(rotation);
-		glLoadMatrixd(rotation);
+		rift.GetView();
+// 		double rotation[16];
+// 		rift.GetMatrix(rotation);
+// 		glLoadMatrixd(rotation);
 // 		glRotatef(180, 0, 1, 0);
 
 		//描画を記録

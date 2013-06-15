@@ -9,11 +9,9 @@
 #include <linux/input.h>
 #include <linux/hidraw.h>
 
-#include "rift.h"
+#include <GL/gl.h>
 
-extern "C"{
-	#include "gl-matrix.h"
-}
+#include "rift.h"
 
 
 int RIFT::OpenDevice(){
@@ -78,18 +76,12 @@ RIFT::RIFT() : fd(OpenDevice()), run(true){
 	pthread_create(&f1_thread, NULL, RIFT::_SensorThread, (void*)this);
 }
 
-void RIFT::GetMatrix(double matrix[]){
-	if(0 <= fd){
-		double m4[16];
-		double q[4];
-		q[3] = direction.w;
-		q[0] = -direction.i;
-		q[1] = -direction.j;
-		q[2] = -direction.k;
-		quat_toMat4(q, m4);
-		mat4_toRotationMat(m4, matrix);
-	}else{
-		mat4_identity(matrix);
+void RIFT::GetView(){
+	glLoadIdentity();
+	if(IsEnable()){
+		QON::ROTATION rotation;
+		direction.GetRotation(rotation);
+		glRotated(-rotation.angle * 180 / M_PI, rotation.x, rotation.y, rotation.z);
 	}
 }
 
@@ -180,8 +172,6 @@ void RIFT::Decode(const char* buff){
 	const float qtime(1.0/1000.0);
 	temperature = 0.01 * temp;
 
-// 	const float dt((3 < numOfSamples ?
-// 		(numOfSamples - 2) * qtime : qtime) * deltaT);
 	const double dt(qtime * deltaT / numOfSamples);
 
 	// 磁界値の変換

@@ -8,7 +8,7 @@ class RIFT{
 public:
 	RIFT();
 	~RIFT(){ run = false; };
-	void GetMatrix(double matrix[]);
+	void GetView();
 	bool IsEnable(){ return 0 <= fd; };
 private:
 	// HID

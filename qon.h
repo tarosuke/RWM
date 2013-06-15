@@ -11,6 +11,13 @@ public:
 	QON(const int caldan[3], double ratio); //同上(ただしintから)
 	void Rotate(const double caldan[3]); //カルダン角(xyzのオイラー角)で回転
 	void operator*=(const QON&); //クオータニオンを「乗算」
+	struct ROTATION{
+		double angle;
+		double x;
+		double y;
+		double z;
+	};
+	void GetRotation(ROTATION&);
 // private:
 	// (w; i, j, k)
 	double w;

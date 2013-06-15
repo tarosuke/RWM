@@ -20,7 +20,5 @@ rwm
 .directory
 
 # others libraries
-gl-matrix
-libovr_nsb
 *.ppm
 

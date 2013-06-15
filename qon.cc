@@ -41,7 +41,7 @@ void QON::operator*=(const QON& er){
 }
 
 void QON::GetRotation(ROTATION& rotation){
-	const double s(1 - (w * w));
+	const double s(sqrt(1 - (w * w)));
 	rotation.x = i / s;
 	rotation.y = j / s;
 	rotation.z = k / s;

@@ -71,7 +71,13 @@ void RIFT::GetView(){
 	if(IsEnable()){
 		QON::ROTATION rotation;
 		direction.GetRotation(rotation);
-		glRotated(-rotation.angle * 180 / M_PI, rotation.x, rotation.y, rotation.z);
+		glRotated(-rotation.angle * 180 / M_PI,
+			rotation.x, rotation.y, rotation.z);
+
+glPointSize(20);
+glBegin(GL_POINTS);
+glVertex3d(north.i, north.j, north.k);
+glEnd();
 	}
 }
 
@@ -178,7 +184,7 @@ void RIFT::Decode(const char* buff){
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
 	direction *= delta;
-// 	north.ReverseRotateBy(delta);
+	north.ReverseRotate(delta);
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
@@ -186,5 +192,12 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
+	const double r(1.0 / sqrt((double)axis[0] * axis[0] +
+		(double)axis[1] * axis[1] +
+		(double)axis[2] * axis[2]));
+	VQON realNorth(r * axis[2], r * axis[1], r * axis[0]);
+
+
+north = realNorth;
 }
 

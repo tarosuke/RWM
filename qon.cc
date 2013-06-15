@@ -50,5 +50,21 @@ void QON::GetRotation(ROTATION& rotation){
 
 
 
-VQON::VQON(double vector[3]) :
-	w(0), i(vector[0]), j(vector[1]), k(vector[2]){}
+
+VQON::VQON(const double vector[3]) :
+	QON(0, vector[0], vector[1], vector[2]){}
+
+void VQON::Rotate(const QON& by){
+	QON r(by.w, -by.i, -by.j, -by.k);
+	r *= *this;
+	r *= by;
+	(QON)*this = r;
+}
+
+void VQON::ReverseRotate(const QON& by){
+	QON p(by);
+	QON r(p.w, -p.i, -p.j, -p.k);
+	p *= *this;
+	p *= r;
+	(QON)*this = p;
+}

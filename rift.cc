@@ -49,27 +49,17 @@ int RIFT::OpenDevice(){
 	return -1;
 }
 
-RIFT::RIFT() : fd(OpenDevice()), run(true){
+RIFT::RIFT() :
+	fd(OpenDevice()),
+	run(true),
+	gravity(0.0, -9.8, 0.0),
+	north(0.0, 0.0, -1.0){
 	if(fd < 0){
 		run = false;
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
 		return;
 	}
-
-	//取得データの初期化
-	velocity[0] =
-	velocity[1] =
-	velocity[2] =
-	position[0] =
-	position[1] =
-	position[2] =
-	north[0] =
-	north[1] =
-	gravity[0] =
-	gravity[2] = 0;
-	north[2] =
-	gravity[1] = -1;
 
 	//センサデータ取得開始
 	pthread_t f1_thread;
@@ -174,26 +164,27 @@ void RIFT::Decode(const char* buff){
 
 	const double dt(qtime * deltaT / numOfSamples);
 
-	// 磁界値の変換
-	UpdateMagneticField(mag, dt);
-
 	// 各サンプル値で状況を更新
 	for(unsigned char i(0); i < samples; i++){
 		UpdateAngularVelocity(sample[i].rotate, dt);
 		UpdateAccelaretion(sample[i].accel, dt);
 	}
-// const unsigned short lastCommandID(*(unsigned short*)&buff[4]);
+
+	// 磁界値の変換と向きの補正
+	UpdateMagneticField(mag);
 }
 
 
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
 	direction *= delta;
+// 	north.ReverseRotateBy(delta);
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
+
 }
 
-void RIFT::UpdateMagneticField(const int axis[3], double dt){
+void RIFT::UpdateMagneticField(const int axis[3]){
 }
 

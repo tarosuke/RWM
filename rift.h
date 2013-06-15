@@ -21,17 +21,17 @@ private:
 
 	// SENSOR
 	QON direction; //方向の四元数(回転オペレータ)
-	double velocity[3]; //移動速度
-	double position[3]; //位置
-	double north[3]; //北を向いているハズのベクトル
-	double gravity[3]; //向きを整えた平均加速度ベクトル
+	VQON velocity; //移動速度
+	VQON position; //位置
+	VQON gravity; //平均加速度ベクトル
+	VQON north; //北を向いているハズのベクトル
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
 	static void DecodeSensor(const unsigned char* buff, int* const sample);
 	void Decode(const char* buff);
 	void UpdateAngularVelocity(const int angles[3], double dt);
 	void UpdateAccelaretion(const int axis[3], double dt);
-	void UpdateMagneticField(const int axis[3], double dt);
+	void UpdateMagneticField(const int axis[3]);
 
 	float temperature; // センサ表面温度[℃]
 };

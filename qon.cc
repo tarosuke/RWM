@@ -4,12 +4,6 @@
 #include "qon.h"
 
 
-QON::QON(double w, double i, double j, double k) :
-	w(w), i(i), j(j), k(k){}
-
-QON::QON(double i, double j, double k) :
-	w(0), i(i), j(j), k(k){}
-
 QON::QON(const double caldan[3]){
 	InitByCaldan(caldan);
 }
@@ -53,3 +47,8 @@ void QON::GetRotation(ROTATION& rotation){
 	rotation.z = k / s;
 	rotation.angle = acos(w) * 2;
 }
+
+
+
+VQON::VQON(double vector[3]) :
+	w(0), i(vector[0]), j(vector[1]), k(vector[2]){}

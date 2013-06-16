@@ -20,6 +20,7 @@ private:
 	static int OpenDevice();
 
 	// SENSOR
+	bool firstCycle;
 	QON direction; //方向の四元数(回転オペレータ)
 	VQON velocity; //移動速度
 	VQON position; //位置
@@ -34,6 +35,7 @@ private:
 	void UpdateMagneticField(const int axis[3]);
 
 	float temperature; // センサ表面温度[℃]
+VQON realNorth;
 };
 
 

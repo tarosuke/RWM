@@ -15,7 +15,7 @@ public:
 		w *= t;
 	};
 
-	//NOTE:Getはriftの値ではなく自由軸回転
+	//NOTE:GetRotationはriftの値ではなく自由軸回転
 	struct ROTATION{
 		double angle;
 		double x;
@@ -23,7 +23,11 @@ public:
 		double z;
 	};
 	void GetRotation(ROTATION&) const;
+	void SetRotation(const ROTATION&); //自由軸回転で設定
 	QON(const ROTATION&); //自由軸回転で初期化
+
+	//回転行列を取得
+	void GetMatrix(double matrix[16]);
 
 	QON(const VQON&, const VQON&); //二つの単位ベクタの差分で初期化
 	QON operator-(){
@@ -58,11 +62,27 @@ public:
 	double Length() const; //ベクトルの長さ
 	void Identifize(); //長さを1にする
 	double In(const VQON& t) const{ //内積
-		return i*t.i + j*t.j + k*t.k;
+		VQON a(*this);
+		VQON b(t);
+		return a.i*b.i + a.j*b.j + a.k*b.k;
 	};
 	VQON Ex(const VQON& t) const{ //外積
-		const VQON r(j*t.k - k*t.j, k*t.i - i*t.k, i*t.j - j*t.i);
+		VQON a(*this);
+		VQON b(t);
+		const VQON r(a.j*b.k - a.k*b.j,
+			a.k*b.i - a.i*b.k,
+			a.i*b.j - a.j*b.i);
 		return r;
+	};
+	void operator+=(const VQON& t){
+		i += t.i;
+		j += t.j;
+		k += t.k;
+	};
+	void operator*=(const double r){
+		i *= r;
+		j *= r;
+		k *= r;
 	};
 };
 

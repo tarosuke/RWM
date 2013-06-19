@@ -55,7 +55,8 @@ RIFT::RIFT() :
 	run(true),
 	firstCycle(true),
 	gravity(0.0, -9.8, 0.0),
-	north(0.0, 0.0, -1.0){
+	north(0.0, 0.0, -1.0),
+	down(0.0, -1.0, 0.0){
 	if(fd < 0){
 		run = false;
 		printf("Could not locate Rift\n");
@@ -71,18 +72,19 @@ RIFT::RIFT() :
 void RIFT::GetView(){
 	glLoadIdentity();
 	if(IsEnable()){
-glPointSize(5);
+glPointSize(3);
 glBegin(GL_POINTS);
 glVertex3d(north.i, north.j, north.k);
 glEnd();
+glPointSize(5);
+glBegin(GL_POINTS);
+glVertex3d(down.i, down.j, down.k);
+glEnd();
+
 		QON::ROTATION rotation;
 		direction.GetRotation(rotation);
 		glRotated(-rotation.angle * 180 / M_PI,
 			rotation.x, rotation.y, rotation.z);
-glPointSize(3);
-glBegin(GL_POINTS);
-glVertex3d(realNorth.i, realNorth.j, realNorth.k);
-glEnd();
 	}
 }
 
@@ -183,6 +185,8 @@ void RIFT::Decode(const char* buff){
 
 	// 磁界値の変換と向きの補正
 	UpdateMagneticField(mag);
+
+	firstCycle = false;
 }
 
 
@@ -190,34 +194,56 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
 	direction *= delta;
 	north.ReverseRotate(delta);
+	down.ReverseRotate(delta);
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
+	VQON accelpt(axis, 0.0001);
+	accelpt.Rotate(direction);
+	if(firstCycle){
+		gravity = accelpt;
+	}else{
+		VQON a(accelpt);
+		a *= 0.0001;
+		gravity *= 0.9999;
+		gravity += a;
+	}
 
+accelpt.print("accel");
+gravity.print("gravity");
+
+// 	velocity += accelpt;
+// accelpt.print("accelpt");
+// velocity.print("velocity");
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
-	const double r(1.0 / sqrt((double)axis[0] * axis[0] +
-		(double)axis[1] * axis[1] +
-		(double)axis[2] * axis[2]));
-	VQON rn(r * axis[2], r * axis[1], r * axis[0]);
-	realNorth = rn;
+// 	QON delta(axis, 0.0001);
+// 	VQON origin(0, 0, -1);;
+// 	origin.Rotate(delta);
+// 	down = origin;
+// origin.print("trueNorth");
 
-north.print("north");
-realNorth.print("realNorth");
-//磁北極と北のはずの方向の差分を作る
-	QON differ(north, realNorth);
-differ.print("differ");
-	//キャリブレーション
-	if(firstCycle){
-		//最初のサイクルは一度に補正して初期値を設定する
-		firstCycle = false;
-	}else{
-		//二度目以降はノイズ除去のために少しづつ補正
-differ.w *= 0.00001;
-// 		differ *= 0.001;
-	}
-// 	direction *= differ;
-// 	north.Rotate(differ);
+
+
+
+// 	const double r(1.0 / sqrt((double)axis[0] * axis[0] +
+// 		(double)axis[1] * axis[1] +
+// 		(double)axis[2] * axis[2]));
+// 	VQON rn((double)axis[2], -(double)axis[1], (double)axis[0]);
+// 	realNorth = rn;
+//
+// north.print("north");
+// realNorth.print("realNorth");
+// //磁北極と北のはずの方向の差分を作る
+// 	QON differ(north, realNorth);
+// differ.print("differ");
+// 	//キャリブレーション
+// 	if(!firstCycle){
+// 		//二度目以降はノイズ除去のために少しづつ補正
+// 		differ *= 0.01;
+// 	}
+// // 	direction *= -differ;
+// 	north.ReverseRotate(differ);
 }
 

@@ -26,6 +26,7 @@ private:
 	VQON position; //位置
 	VQON gravity; //平均加速度ベクトル
 	VQON north; //北を向いているハズのベクトル
+	VQON down; //下を向いてるハズのベクトル
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
 	static void DecodeSensor(const unsigned char* buff, int* const sample);
@@ -35,7 +36,6 @@ private:
 	void UpdateMagneticField(const int axis[3]);
 
 	float temperature; // センサ表面温度[℃]
-VQON realNorth;
 };
 
 

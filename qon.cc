@@ -49,6 +49,10 @@ void QON::GetRotation(QON::ROTATION& rotation) const{
 }
 
 QON::QON(const QON::ROTATION& rot){
+	SetRotation(rot);
+}
+
+void QON::SetRotation(const ROTATION& rot){
 	const double ha(rot.angle * 0.5);
 	const double s(sin(ha));
 	w = cos(ha);
@@ -57,20 +61,47 @@ QON::QON(const QON::ROTATION& rot){
 	k = rot.z * s;
 }
 
+void QON::GetMatrix(double matrix[16]){
+// 	const double ww(w * w * 2);
+	const double xx(i * i * 2);
+	const double yy(j * j * 2);
+	const double zz(k * k * 2);
+	const double xy(i * j * 2);
+	const double yz(j * k * 2);
+	const double zx(k * i * 2);
+	const double wx(w * i * 2);
+	const double wy(w * j * 2);
+	const double wz(w * k * 2);
+	matrix[0] = 1.0 - yy - zz;
+	matrix[1] = xy + wz;
+	matrix[2] = zx - wy;
+	matrix[3] = 0.0;
+	matrix[4] = xy - wz;
+	matrix[5] = 1.0 - zz - xx;
+	matrix[6] = yz + wx;
+	matrix[7] = 0.0;
+	matrix[8] = zx + wy;
+	matrix[9] = yz - wx;
+	matrix[10]= 1.0 - xx - yy;
+	matrix[11] = matrix[12] = matrix[13] = matrix[14] = 0.0;
+	matrix[15] = 1.0;
+}
+
 QON::QON(const VQON& f, const VQON& t){
-	const double in(f.In(t)); //内積(差分の回転角)
-	const VQON ex(f.Ex(t)); //外積(差分の回転軸)
-	const double ha(acos(in) * 0.5);
-	const double s(sin(ha));
-// printf("ha:%lf.\n", ha);
-	w = cos(ha);
-	i = ex.i * s;
-	j = ex.j * s;
-	k = ex.j * s;
+	const double in(t.In(f)); //内積(差分の回転角)
+	VQON ex(t.Ex(f)); //外積(差分の回転軸)
+	ex.Identifize();
+	const double co(in / (f.Length() * t.Length()));
+	const double c(sqrt(0.5 * (1 + co)));
+	const double s(sqrt(0.5 * (1 - co)));
+	w = c;
+	i = s * ex.i;
+	j = s * ex.j;
+	k = s * ex.k;
 }
 
 void QON::print(const char* label) const{
-	printf("%s:%lf; %lf, %lf, %lf.\n", label, w, i, j, k);
+	printf("%s(%lf):% lf; % lf, % lf, % lf.\n", label, sqrt(i*i+j*j+k*k), w, i, j, k);
 }
 
 
@@ -80,10 +111,6 @@ VQON::VQON(const double vector[3]) :
 
 void VQON::ReverseRotate(const QON& by){
 	QON r(by.w, -by.i, -by.j, -by.k);
-// by.print("P");
-// print("Q");
-// r.print("R");
-	Identifize();
 
 	r *= *this;
 	r *= by;
@@ -92,24 +119,19 @@ void VQON::ReverseRotate(const QON& by){
 	i = r.i;
 	j = r.j;
 	k = r.k;
-	Identifize();
 }
 
 void VQON::Rotate(const QON& by){
 	QON p(by);
 	QON r(p.w, -p.i, -p.j, -p.k);
 
-	Identifize();
-
-	p *= *(QON*)this;
+	p *= *this;
 	p *= r;
 
 	w = p.w;
 	i = p.i;
 	j = p.j;
 	k = p.k;
-
-	Identifize();
 }
 
 double VQON::Length() const{

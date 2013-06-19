@@ -200,6 +200,8 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 	VQON accelpt(axis, 0.0001);
 	accelpt.Rotate(direction);
+
+	//重力の検出
 	if(firstCycle){
 		gravity = accelpt;
 	}else{
@@ -208,6 +210,9 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 		gravity *= 0.9999;
 		gravity += a;
 	}
+
+	//重力をキャンセル
+	accelpt -= gravity;
 
 accelpt.print("accel");
 gravity.print("gravity");

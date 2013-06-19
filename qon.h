@@ -84,6 +84,11 @@ public:
 		j *= r;
 		k *= r;
 	};
+	void operator-=(const VQON& t){
+		i -= t.i;
+		j -= t.j;
+		k -= t.k;
+	};
 };
 
 

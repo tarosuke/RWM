@@ -12,7 +12,10 @@ public:
 	void Rotate(const double rift[3]); //riftの値で回転
 	void operator*=(const QON&); //クオータニオンを「乗算」
 	void operator*=(const double t){ //回転角を乗算
-		w *= t;
+		w = (1 - t) + w*t;
+		i *= t;
+		j *= t;
+		k *= t;
 	};
 
 	//NOTE:GetRotationはriftの値ではなく自由軸回転
@@ -60,7 +63,7 @@ public:
 	void ReverseRotate(const QON&); //四元数で逆回転
 	void GetVector(double vector[3]) const; //i,j,kを取得
 	double Length() const; //ベクトルの長さ
-	void Identifize(); //長さを1にする
+	void Normalize(); //長さを1にする
 	double In(const VQON& t) const{ //内積
 		VQON a(*this);
 		VQON b(t);

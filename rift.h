@@ -25,8 +25,6 @@ private:
 	VQON velocity; //移動速度
 	VQON position; //位置
 	VQON gravity; //平均加速度ベクトル
-	VQON north; //北を向いているハズのベクトル
-	VQON down; //下を向いてるハズのベクトル
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
 	static void DecodeSensor(const unsigned char* buff, int* const sample);

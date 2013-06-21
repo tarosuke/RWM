@@ -88,12 +88,16 @@ void QON::GetMatrix(double matrix[16]){
 }
 
 QON::QON(const VQON& f, const VQON& t){
-	const double in(t.In(f)); //内積(差分の回転角)
-	VQON ex(t.Ex(f)); //外積(差分の回転軸)
-	ex.Identifize();
-	const double co(in / (f.Length() * t.Length()));
-	const double c(sqrt(0.5 * (1 + co)));
-	const double s(sqrt(0.5 * (1 - co)));
+	VQON ff(f);
+	VQON tt(t);
+	ff.Normalize();
+	tt.Normalize();
+
+	const double in(tt.In(ff)); //内積(差分の回転角)
+	VQON ex(tt.Ex(ff)); //外積(差分の回転軸)
+
+	const double c(sqrt(0.5 * (1 + in)));
+	const double s(sqrt(0.5 * (1 - in)));
 	w = c;
 	i = s * ex.i;
 	j = s * ex.j;
@@ -115,10 +119,11 @@ void VQON::ReverseRotate(const QON& by){
 	r *= *this;
 	r *= by;
 
-	w = r.w;
+	w = 0.0;
 	i = r.i;
 	j = r.j;
 	k = r.k;
+	Normalize();
 }
 
 void VQON::Rotate(const QON& by){
@@ -128,17 +133,18 @@ void VQON::Rotate(const QON& by){
 	p *= *this;
 	p *= r;
 
-	w = p.w;
+	w = 0.0;
 	i = p.i;
 	j = p.j;
 	k = p.k;
+	Normalize();
 }
 
 double VQON::Length() const{
 	return sqrt(i*i + j*j + k*k);
 }
 
-void VQON::Identifize(){
+void VQON::Normalize(){
 	const double r(1.0 / Length());
 	i *= r;
 	j *= r;

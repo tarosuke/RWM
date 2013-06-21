@@ -40,14 +40,14 @@ const float vp[][2]={
 	{ 0.5, 1 },
 };
 const float tp[][2]={
-	{ 0, 2 },
-	{ 1, 2 },
-	{ 0, 0 },
-	{ 1, 0 },
+	{ -0.5, 2 },
+	{ 0.5, 2 },
+	{ -0.5, 0 },
+	{ 0.5, 0 },
 };
 
 	glPushMatrix();
-// 	far = -2;
+// 	far = -1;
 	glTranslatef(1, 0, far);
 	(*tex).Bind();
 	glBegin(GL_TRIANGLE_STRIP);

@@ -218,13 +218,14 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 void RIFT::UpdateMagneticField(const int axis[3]){
 #if 0
 	VQON north(axis, 1.0);
-	north.Normalize();
 	VQON n(0.0, 0.0, -1.0); //北
-	n.ReverseRotate(direction);
+	north.Rotate(direction);
+	north.k = 0; //地磁気方向のロールは関係ない
+	north.Normalize();
 
 	//北との差分で姿勢を補正
 	QON differ(north, n);
-	differ *= 0.00001;
+	differ *= 0.0001;
 	direction *= differ;
 #endif
 }

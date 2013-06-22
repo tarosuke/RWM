@@ -3,7 +3,6 @@
 #include <float.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <sys/file.h>
 #include <assert.h>
 #include <linux/types.h>
@@ -52,20 +51,23 @@ int RIFT::OpenDevice(){
 
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	run(true),
 	firstCycle(true),
 	gravity(0.0, -9.8, 0.0){
 	if(fd < 0){
-		run = false;
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
 		return;
 	}
 
 	//センサデータ取得開始
-	pthread_t f1_thread;
-	pthread_create(&f1_thread, NULL, RIFT::_SensorThread, (void*)this);
+	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
 }
+
+RIFT::~RIFT(){
+	pthread_cancel(sensorThread);
+	close(fd);
+}
+
 
 void RIFT::GetView(){
 	glLoadIdentity();
@@ -98,7 +100,7 @@ void RIFT::SensorThread(){
 	FD_ZERO(&readset);
 	FD_SET(fd, &readset);
 
-	while(run){
+	for(;; pthread_testcancel()){
 		// KeepAlive処理のために500msまでは待つ
 		waitTime.tv_sec = 0;
 		waitTime.tv_usec = 500000;
@@ -198,38 +200,32 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
-	VQON accelpt(axis, 0.0001);
-	accelpt.Rotate(direction);
+#if 1
+	VQON accel(axis, 0.0001);
+	accel.Rotate(direction); //地面系(のはず)へ変換
+	accel.i = 0; //左右は無関係
+	accel.Normalize();
 
-	//重力の検出
-	if(firstCycle){
-		gravity = accelpt;
-	}else{
-		VQON a(accelpt);
-		a *= 0.0001;
-		gravity *= 0.9999;
-		gravity += a;
-	}
-
-	//重力方向
-	VQON g(gravity); //重力方向
-	g.Normalize();
-	VQON down(0.0, 1.0, 0.0); //真下
+	VQON down(0, -1, 0); //こうなっているはずの値
 
 	//重力方向との差分で姿勢を補正
-	QON differ(down, g);
+	QON differ(accel, down);
 	differ *= 0.0001;
 	direction *= differ;
+#endif
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
+#if 0
 	VQON north(axis, 1.0);
 	north.Normalize();
 	VQON n(0.0, 0.0, -1.0); //北
+	n.ReverseRotate(direction);
 
 	//北との差分で姿勢を補正
 	QON differ(north, n);
 	differ *= 0.00001;
-// 	direction *= differ;
+	direction *= differ;
+#endif
 }
 

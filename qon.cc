@@ -38,6 +38,7 @@ void QON::operator*=(const QON& er){
 	i = ed.i * er.w + ed.w * er.i + ed.j * er.k - ed.k * er.j;
 	j = ed.j * er.w + ed.w * er.j + ed.k * er.i - ed.i * er.k;
 	k = ed.k * er.w + ed.w * er.k + ed.i * er.j - ed.j * er.i;
+	Normalize();
 }
 
 void QON::GetRotation(QON::ROTATION& rotation) const{
@@ -102,10 +103,23 @@ QON::QON(const VQON& f, const VQON& t){
 	i = s * ex.i;
 	j = s * ex.j;
 	k = s * ex.k;
+	Normalize();
 }
 
 void QON::print(const char* label) const{
 	printf("%s(%lf):% lf; % lf, % lf, % lf.\n", label, sqrt(i*i+j*j+k*k), w, i, j, k);
+}
+
+double QON::Length() const{
+	return sqrt(w*w + i*i + j*j + k*k);
+}
+
+void QON::Normalize(){
+	const double r(1.0 / Length());
+	w *= r;
+	i *= r;
+	j *= r;
+	k *= r;
 }
 
 
@@ -146,6 +160,7 @@ double VQON::Length() const{
 
 void VQON::Normalize(){
 	const double r(1.0 / Length());
+	w = 0;
 	i *= r;
 	j *= r;
 	k *= r;

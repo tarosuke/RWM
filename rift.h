@@ -1,25 +1,27 @@
 #ifndef _RIFT_
 #define _RIFT_
 
+#include <pthread.h>
+
 #include "qon.h"
 
 
 class RIFT{
 public:
 	RIFT();
-	~RIFT(){ run = false; };
+	~RIFT();
 	void GetView();
 	bool IsEnable(){ return 0 <= fd; };
 private:
 	// HID
 	const int fd;
-	volatile bool run;
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
 	static const int keepAliveInterval = 1000;
 	static int OpenDevice();
 
 	// SENSOR
+	pthread_t sensorThread;
 	bool firstCycle;
 	QON direction; //方向の四元数(回転オペレータ)
 	VQON velocity; //移動速度

@@ -11,11 +11,12 @@ public:
 	QON(const int rift[3], double ratio); //同上(ただしintから)
 	void Rotate(const double rift[3]); //riftの値で回転
 	void operator*=(const QON&); //クオータニオンを「乗算」
-	void operator*=(const double t){ //回転角を乗算
+	void operator*=(const double t){ //回転角を乗算(TODO:SLARPにする)
 		w = (1 - t) + w*t;
 		i *= t;
 		j *= t;
 		k *= t;
+		Normalize();
 	};
 
 	//NOTE:GetRotationはriftの値ではなく自由軸回転
@@ -38,6 +39,8 @@ public:
 		return r;
 	};
 	void print(const char* label) const;
+	double Length() const;
+	void Normalize();
 // protected:
 	// (w; i, j, k)
 	double w;

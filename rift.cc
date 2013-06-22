@@ -51,8 +51,7 @@ int RIFT::OpenDevice(){
 
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	firstCycle(true),
-	gravity(0.0, -9.8, 0.0){
+	gravity(-9.8){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
@@ -80,10 +79,10 @@ void RIFT::GetView(){
 
 		glTranslated(-position.i, -position.j, -position.k);
 
-// glPointSize(5);
-// glBegin(GL_POINTS);
-// glVertex3d(down.i, down.j, down.k);
-// glEnd();
+glPointSize(5);
+glBegin(GL_POINTS);
+glVertex3d(position.i, position.j, position.k);
+glEnd();
 // glPointSize(3);
 // glBegin(GL_POINTS);
 // glVertex3d(gravity.i, gravity.j, gravity.k);
@@ -189,8 +188,6 @@ void RIFT::Decode(const char* buff){
 
 	// 磁界値の変換と向きの補正
 	UpdateMagneticField(mag);
-
-	firstCycle = false;
 }
 
 
@@ -201,10 +198,26 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 	VQON accel(axis, 0.0001);
+	VQON acc(accel);
+
+	//位置や速度を求める
+	acc.Rotate(direction);
+	acc.j -= gravity;
+	acc *= dt;
+	velocity += acc;
+	velocity *= 0.99;
+	VQON v(velocity);
+	v *= dt;
+	position += v;
+	position *= 0.99;
 
 	const double g(accel.Length());
-	if(9.78 < g && g < 9.98){
-		//おそらく重力加速度のみの時だけ補正
+	if(9.78 < g && g < 9.98){ //おそらく重力加速度のみの時
+		//重力加速度の実測値を更新
+		gravity *= 0.99;
+		gravity += g * 0.01;
+
+		//重力による姿勢補正
 		accel.Normalize();
 
 		VQON down(0, -1, 0); //こうなっているはずの値

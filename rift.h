@@ -22,11 +22,10 @@ private:
 
 	// SENSOR
 	pthread_t sensorThread;
-	bool firstCycle;
 	QON direction; //方向の四元数(回転オペレータ)
 	VQON velocity; //移動速度
 	VQON position; //位置
-	VQON gravity; //平均加速度ベクトル
+	double gravity; //おそらく重力によるものと思われる平均重力加速度
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
 	static void DecodeSensor(const unsigned char* buff, int* const sample);

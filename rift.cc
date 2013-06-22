@@ -202,11 +202,10 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 #if 1
 	VQON accel(axis, 0.0001);
-	accel.Rotate(direction); //地面系(のはず)へ変換
-	accel.i = 0; //左右は無関係
 	accel.Normalize();
 
 	VQON down(0, -1, 0); //こうなっているはずの値
+	down.ReverseRotate(direction);
 
 	//重力方向との差分で姿勢を補正
 	QON differ(accel, down);
@@ -218,10 +217,9 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 void RIFT::UpdateMagneticField(const int axis[3]){
 #if 0
 	VQON north(axis, 1.0);
-	VQON n(0.0, 0.0, -1.0); //北
-	north.Rotate(direction);
-	north.k = 0; //地磁気方向のロールは関係ない
 	north.Normalize();
+	VQON n(0.0, 0.0, -1.0); //北
+	n.ReverseRotate(direction);
 
 	//北との差分で姿勢を補正
 	QON differ(north, n);

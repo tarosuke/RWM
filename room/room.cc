@@ -47,7 +47,7 @@ const float tp[][2]={
 };
 
 	glPushMatrix();
-	far = -1;
+// 	far = -1;
 	glTranslatef(1, 0, far);
 	(*tex).Bind();
 	glBegin(GL_TRIANGLE_STRIP);

@@ -200,18 +200,21 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
-#if 1
 	VQON accel(axis, 0.0001);
-	accel.Normalize();
 
-	VQON down(0, -1, 0); //こうなっているはずの値
-	down.ReverseRotate(direction);
+	const double g(accel.Length());
+	if(9.78 < g && g < 9.98){
+		//おそらく重力加速度のみの時だけ補正
+		accel.Normalize();
 
-	//重力方向との差分で姿勢を補正
-	QON differ(accel, down);
-	differ *= 0.0001;
-	direction *= differ;
-#endif
+		VQON down(0, -1, 0); //こうなっているはずの値
+		down.ReverseRotate(direction);
+
+		//重力方向との差分で姿勢を補正
+		QON differ(accel, down);
+		differ *= 0.0001;
+		direction *= differ;
+	}
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){

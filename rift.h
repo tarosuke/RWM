@@ -15,6 +15,8 @@ public:
 private:
 	// HID
 	const int fd;
+	bool gravityFirstCycle;
+	bool magneticFirstCycle;
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
 	static const int keepAliveInterval = 1000;

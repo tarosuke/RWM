@@ -51,7 +51,9 @@ int RIFT::OpenDevice(){
 
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	gravity(-9.8){
+	gravityFirstCycle(true),
+	magneticFirstCycle(true),
+	gravity(9.8){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
@@ -78,16 +80,6 @@ void RIFT::GetView(){
 			rotation.x, rotation.y, rotation.z);
 
 		glTranslated(-position.i, -position.j, -position.k);
-
-glPointSize(5);
-glBegin(GL_POINTS);
-glVertex3d(position.i, position.j, position.k);
-glEnd();
-// glPointSize(3);
-// glBegin(GL_POINTS);
-// glVertex3d(gravity.i, gravity.j, gravity.k);
-// glEnd();
-
 	}
 }
 
@@ -198,36 +190,47 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 	VQON accel(axis, 0.0001);
-	VQON acc(accel);
 
-	//位置や速度を求める
-	acc.Rotate(direction);
-	acc.j -= gravity;
-	acc *= dt;
-	velocity += acc;
-	velocity *= 0.99;
-	VQON v(velocity);
-	v *= dt;
-	position += v;
-	position *= 0.99;
-
+	//姿勢の補正
 	const double g(accel.Length());
-	if(9.78 < g && g < 9.98){ //おそらく重力加速度のみの時
+	if((9.78 < g && g < 9.98) || gravityFirstCycle){
+		VQON acc(accel);
 		//重力加速度の実測値を更新
 		gravity *= 0.99;
 		gravity += g * 0.01;
 
 		//重力による姿勢補正
-		accel.Normalize();
+		acc.Normalize();
 
 		VQON down(0, -1, 0); //こうなっているはずの値
 		down.ReverseRotate(direction);
 
 		//重力方向との差分で姿勢を補正
-		QON differ(accel, down);
-		differ *= 0.0001;
+		QON differ(acc, down);
+		if(!gravityFirstCycle){
+			differ *= 0.0001;
+		}
+if(gravityFirstCycle){
+	direction.print("before");
+}
 		direction *= differ;
+direction.print("differ");
 	}
+
+	//位置や速度を求める
+	if(dt <= 0.02){ //dtが異常に大きい時は位置更新はしない
+		VQON acc(accel);
+		acc.Rotate(direction);
+		acc.j -= gravity;
+		acc *= dt;
+		velocity += acc;
+		velocity *= 0.99;
+		VQON v(velocity);
+		v *= dt;
+		position += v;
+		position *= 0.99;
+	}
+	gravityFirstCycle = false;
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){

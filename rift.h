@@ -15,19 +15,25 @@ public:
 private:
 	// HID
 	const int fd;
-	bool gravityFirstCycle;
-	bool magneticFirstCycle;
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
 	static const int keepAliveInterval = 1000;
 	static int OpenDevice();
 
 	// SENSOR
+	static const double G = 9.80665;
 	pthread_t sensorThread;
 	QON direction; //方向の四元数(回転オペレータ)
+
+	VQON accel; //加速度
 	VQON velocity; //移動速度
 	VQON position; //位置
 	double gravity; //おそらく重力によるものと思われる平均重力加速度
+
+	VQON magneticField; //磁気の向き
+
+	float temperature; // センサ表面温度[℃]
+
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
 	static void DecodeSensor(const unsigned char* buff, int* const sample);
@@ -36,7 +42,7 @@ private:
 	void UpdateAccelaretion(const int axis[3], double dt);
 	void UpdateMagneticField(const int axis[3]);
 
-	float temperature; // センサ表面温度[℃]
+	void Correction();
 };
 
 

@@ -51,9 +51,7 @@ int RIFT::OpenDevice(){
 
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	gravityFirstCycle(true),
-	magneticFirstCycle(true),
-	gravity(9.8){
+	gravity(G){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
@@ -178,8 +176,44 @@ void RIFT::Decode(const char* buff){
 		UpdateAccelaretion(sample[i].accel, dt);
 	}
 
-	// 磁界値の変換と向きの補正
+	// 磁界値取得
 	UpdateMagneticField(mag);
+
+	//補正
+	Correction();
+}
+
+void RIFT::Correction(){
+	//重力による姿勢補正
+	const double g(accel.Length());
+	const double d((gravity - g) * 50);
+	const double ratio(d*d);
+	VQON acc(accel);
+	acc.Normalize();
+
+	//重力加速度の実測値を更新
+	gravity *= 0.99;
+	gravity += g * 0.01;
+
+	//正しいはずの方向
+	VQON down(0, -1, 0); //こうなっているはずの値
+	down.ReverseRotate(direction);
+
+	//重力方向との差分で姿勢を補正
+	QON differ(acc, down);
+	differ *= 0.0005 / (0.5 + ratio);
+	direction *= differ;
+
+#if 0
+	//磁気による姿勢補正
+	VQON n(0.0, 0.0, -1.0); //北
+	n.ReverseRotate(direction);
+
+	//北との差分で姿勢を補正
+	QON differ(north, n);
+	differ *= 0.0001;
+	direction *= differ;
+#endif
 }
 
 
@@ -189,37 +223,11 @@ void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
-	VQON accel(axis, 0.0001);
-
-	//姿勢の補正
-	const double g(accel.Length());
-	if((9.78 < g && g < 9.98) || gravityFirstCycle){
-		VQON acc(accel);
-		//重力加速度の実測値を更新
-		gravity *= 0.99;
-		gravity += g * 0.01;
-
-		//重力による姿勢補正
-		acc.Normalize();
-
-		VQON down(0, -1, 0); //こうなっているはずの値
-		down.ReverseRotate(direction);
-
-		//重力方向との差分で姿勢を補正
-		QON differ(acc, down);
-		if(!gravityFirstCycle){
-			differ *= 0.0001;
-		}
-if(gravityFirstCycle){
-	direction.print("before");
-}
-		direction *= differ;
-direction.print("differ");
-	}
+	VQON acc(axis, 0.0001);
+	accel = acc;
 
 	//位置や速度を求める
-	if(dt <= 0.02){ //dtが異常に大きい時は位置更新はしない
-		VQON acc(accel);
+	if(dt <= 0.02){ //dtが異常に大きい時は位置更新しない
 		acc.Rotate(direction);
 		acc.j -= gravity;
 		acc *= dt;
@@ -230,20 +238,11 @@ direction.print("differ");
 		position += v;
 		position *= 0.99;
 	}
-	gravityFirstCycle = false;
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
-#if 0
 	VQON north(axis, 1.0);
 	north.Normalize();
-	VQON n(0.0, 0.0, -1.0); //北
-	n.ReverseRotate(direction);
-
-	//北との差分で姿勢を補正
-	QON differ(north, n);
-	differ *= 0.0001;
-	direction *= differ;
-#endif
+	magneticField = north;
 }
 

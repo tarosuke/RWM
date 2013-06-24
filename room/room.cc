@@ -47,8 +47,8 @@ const float tp[][2]={
 };
 
 	glPushMatrix();
-	far = -1;
-	glTranslatef(1, 0, far);
+// 	far = -1;
+	glTranslatef(0, 0, far);
 	(*tex).Bind();
 	glBegin(GL_TRIANGLE_STRIP);
 	glNormal3f(0, 0, 1);
@@ -62,7 +62,7 @@ const float tp[][2]={
 	glDisable(GL_LIGHT0);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	if((far <= -100.0 && dir < 0.0) || (100.0 <= far && 0.0 < dir)){
+	if((far <= -200.0 && dir < 0.0) || (100.0 <= far && 0.0 < dir)){
 		dir = -dir;
 	}
 	far += dir;

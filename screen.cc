@@ -86,6 +86,20 @@ SCREEN::~SCREEN(){
 }
 
 
+void SCREEN::_Draw(){
+	glEnable(GL_DEPTH_TEST);
+	WINDOW::Update(); //窓を描画
+	glEnable(GL_LIGHTING);
+	ROOM::Update(20);	//背景を描画
+	glDisable(GL_LIGHTING);
+}
+
+
+
+
+
+
+
 
 
 

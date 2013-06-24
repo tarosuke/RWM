@@ -60,59 +60,65 @@ private:
 	int xWindow;
 	GLXContext glxContext;
 	RIFT& rift;
-	void _Draw(){
-		glEnable(GL_DEPTH_TEST);
-		WINDOW::Update(); //窓を描画
-		glEnable(GL_LIGHTING);
-		ROOM::Update(20);	//背景を描画
-		glDisable(GL_LIGHTING);
-	}
+	void _Draw();
+	void PrepareDraw();
 	void Draw(){
 		glXMakeCurrent(xDisplay, xWindow, glxContext);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//描画準備
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		const float sizeRatio(nearDistance / (realDistance * 2));
-		glFrustum(-realWidth * sizeRatio, realWidth * sizeRatio,
-			-realHeight * sizeRatio, realHeight * sizeRatio,
-			nearDistance, farDistance);
-
-		//スクリーン共通マトリクスの読み込み
-		glMatrixMode(GL_MODELVIEW);
-		rift.GetView();
-// 		double rotation[16];
-// 		rift.GetMatrix(rotation);
-// 		glLoadMatrixd(rotation);
-// 		glRotatef(180, 0, 1, 0);
-
-		//描画を記録
-// 		glNewList(xScreenIndex, GL_COMPILE);
-// 		glEndList();
-
 		//描画
-// 		glEnable(GL_POLYGON_SMOOTH);
+		glEnable(GL_POLYGON_SMOOTH);
 // 		glEnable(GL_BLEND);
 // 		glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
+		const float sr(nearDistance / (realDistance * 2));
 		if(!rift.IsEnable()){
-			glCallList(xScreenIndex);
-		}else{
-			const int inset(57);
+			glViewport(0, 0, width, height);
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glFrustum(-realWidth * sr, realWidth * sr,
+				-realHeight * sr, realHeight * sr,
+				nearDistance, farDistance);
 
-			glViewport(inset, 0, width / 2, height);
-			glPushMatrix();
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			rift.GetView();
 			glTranslatef(0.03, 0, 0);
-// 			glCallList(xScreenIndex);
+			glScalef(0.5 , 1, 1);
 			_Draw();
-			glPopMatrix();
+		}else{
+			const int hw(width / 2);
+			const int rhw(realWidth / 2);
+			const double inset(0.17);
 
-			glViewport(width / 2 - inset, 0, width / 2, height);
-			glPushMatrix();
-			glTranslatef(-0.03, 0, 0);
-// 			glCallList(xScreenIndex);
+			//左目
+			glViewport(0, 0, hw, height);
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glFrustum((-rhw - inset) * sr, (rhw - inset) * sr,
+				-realHeight * sr, realHeight * sr,
+				nearDistance, farDistance);
+
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			rift.GetView();
+			glTranslatef(0.03, 0, 0);
+			glScalef(0.5 , 1, 1);
 			_Draw();
-			glPopMatrix();
+
+			//右目
+			glViewport(hw, 0, hw, height);
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glFrustum((-rhw + inset) * sr, (rhw + inset) * sr,
+				-realHeight * sr, realHeight * sr,
+				nearDistance, farDistance);
+
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			rift.GetView();
+			glTranslatef(-0.03, 0, 0);
+			glScalef(0.5 , 1, 1);
+			_Draw();
 
 			//TODO:ここで描画バッファをテクスチャにして歪み付きで描画
 		}

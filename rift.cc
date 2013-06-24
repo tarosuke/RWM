@@ -69,7 +69,6 @@ RIFT::~RIFT(){
 
 
 void RIFT::GetView(){
-	glLoadIdentity();
 	if(IsEnable()){
 
 		QON::ROTATION rotation;

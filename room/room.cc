@@ -26,35 +26,30 @@ ROOM::~ROOM(){
 static TEXTURE* tex(0);
 
 void ROOM::Draw(int remain){
-	static float far(-100.0);
-	static float dir(0.2);
-
 	if(!tex){
-		tex = new TEXTURE("AK2509.ppm");
+		tex = new TEXTURE("AK2502.ppm");
 	}
 
-const float vp[][2]={
-	{ -0.5, -1 },
-	{ 0.5, -1 },
-	{ -0.5, 1 },
-	{ 0.5, 1 },
+const float vp[][3]={
+	{ -1, -1.6, 2 },
+	{ 3, -1.6, 2 },
+	{ -1, -1.6, -4 },
+	{ 3, -1.6, -4 }
 };
 const float tp[][2]={
-	{ -0.5, 2 },
-	{ 0.5, 2 },
-	{ -0.5, 0 },
-	{ 0.5, 0 },
+	{ 0, 0 },
+	{ 3/0.6, 0 },
+	{ 0, 6/0.6 },
+	{ 3/0.6, 6/0.6 },
 };
 
 	glPushMatrix();
-// 	far = -1;
-	glTranslatef(0, 0, far);
 	(*tex).Bind();
 	glBegin(GL_TRIANGLE_STRIP);
-	glNormal3f(0, 0, 1);
+	glNormal3f(0, 1, 0);
 	for(int v(0); v < 4; v++){
 		glTexCoord2fv(tp[v]);
-		glVertex2fv(vp[v]);
+		glVertex3fv(vp[v]);
 	}
 	glEnd();
 
@@ -62,10 +57,6 @@ const float tp[][2]={
 	glDisable(GL_LIGHT0);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	if((far <= -200.0 && dir < 0.0) || (100.0 <= far && 0.0 < dir)){
-		dir = -dir;
-	}
-	far += dir;
 }
 
 

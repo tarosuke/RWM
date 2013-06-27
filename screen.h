@@ -100,9 +100,9 @@ private:
 
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
+glScalef(1, 2, 1);
 			rift.GetView();
 			glTranslatef(0.03, 0, 0);
-// 			glScalef(0.5 , 1, 1);
 			_Draw();
 
 			//右目
@@ -115,9 +115,9 @@ private:
 
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
+glScalef(1, 2, 1);
 			rift.GetView();
 			glTranslatef(-0.03, 0, 0);
-// 			glScalef(0.5 , 1, 1);
 			_Draw();
 
 			//TODO:ここで描画バッファをテクスチャにして歪み付きで描画

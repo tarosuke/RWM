@@ -29,18 +29,19 @@ void ROOM::Draw(int remain){
 	if(!tex){
 		tex = new TEXTURE("AK2502.ppm");
 	}
-
+const float h(1.0);
 const float vp[][3]={
-	{ -1, -1.6, 2 },
-	{ 3, -1.6, 2 },
-	{ -1, -1.6, -4 },
-	{ 3, -1.6, -4 }
+	{ -1, -h, 2 },
+	{ 3, -h, 2 },
+	{ -1, -h, -4 },
+	{ 3, -h, -4 }
 };
+const float cSize(0.3);
 const float tp[][2]={
 	{ 0, 0 },
-	{ 3/0.6, 0 },
-	{ 0, 6/0.6 },
-	{ 3/0.6, 6/0.6 },
+	{ 3/cSize, 0 },
+	{ 0, 6/cSize },
+	{ 3/cSize, 6/cSize },
 };
 
 	glPushMatrix();

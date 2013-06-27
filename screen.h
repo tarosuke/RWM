@@ -102,7 +102,7 @@ private:
 			glLoadIdentity();
 			rift.GetView();
 			glTranslatef(0.03, 0, 0);
-			glScalef(0.5 , 1, 1);
+// 			glScalef(0.5 , 1, 1);
 			_Draw();
 
 			//右目
@@ -117,7 +117,7 @@ private:
 			glLoadIdentity();
 			rift.GetView();
 			glTranslatef(-0.03, 0, 0);
-			glScalef(0.5 , 1, 1);
+// 			glScalef(0.5 , 1, 1);
 			_Draw();
 
 			//TODO:ここで描画バッファをテクスチャにして歪み付きで描画

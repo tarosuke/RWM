@@ -186,7 +186,7 @@ void RIFT::Correction(){
 	//重力による姿勢補正
 	const double g(accel.Length());
 	const double d((gravity - g) * 50);
-	const double ratio(d*d);
+	const double gravityUnreliability(d*d);
 	VQON acc(accel);
 	acc.Normalize();
 
@@ -200,7 +200,9 @@ void RIFT::Correction(){
 
 	//重力方向との差分で姿勢を補正
 	QON differ(acc, down);
-	differ *= 0.0005 / (0.5 + ratio);
+	const double in(acc.In(down) * 10);
+	const double nearRatio(in * in * in * in / 100);
+	differ *= 0.005 / (0.5 + gravityUnreliability + nearRatio);
 	direction *= differ;
 
 #if 0

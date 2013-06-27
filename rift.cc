@@ -70,12 +70,16 @@ RIFT::~RIFT(){
 
 void RIFT::GetView(){
 	if(IsEnable()){
+		//アスペクト補正
+		glScalef(1, 2, 1);
 
+		//姿勢補正
 		QON::ROTATION rotation;
 		direction.GetRotation(rotation);
 		glRotated(-rotation.angle * 180 / M_PI,
 			rotation.x, rotation.y, rotation.z);
 
+		//位置補正
 		glTranslated(-position.i, -position.j, -position.k);
 	}
 }

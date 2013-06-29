@@ -95,6 +95,24 @@ public:
 		j -= t.j;
 		k -= t.k;
 	};
+	VQON operator+(const VQON& t) const{
+		VQON r(i + t.i, j + t.j, k + t.k);
+		return r;
+	};
+	VQON operator-(const VQON& t) const{
+		VQON r(i - t.i, j - t.j, k - t.k);
+		return r;
+	};
+	void Max(const VQON& t){
+		if(i < t.i){ i = t.i; }
+		if(j < t.j){ j = t.j; }
+		if(k < t.k){ k = t.k; }
+	};
+	void Min(const VQON& t){
+		if(i > t.i){ i = t.i; }
+		if(j > t.j){ j = t.j; }
+		if(k > t.k){ k = t.k; }
+	};
 };
 
 

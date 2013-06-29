@@ -51,7 +51,12 @@ int RIFT::OpenDevice(){
 
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	gravity(G){
+	gravity(G),
+	magMax(-magMaxValue, -magMaxValue, -magMaxValue),
+	magMin(magMaxValue, magMaxValue, magMaxValue),
+	magReadyX(false),
+	magReadyY(false),
+	magReadyZ(false){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
@@ -81,6 +86,13 @@ void RIFT::GetView(){
 
 		//位置補正
 		glTranslated(-position.i, -position.j, -position.k);
+
+#if 0
+glPointSize(5);
+glBegin(GL_POINTS);
+glVertex3d(magneticField.i, magneticField.j, magneticField.k);
+glEnd();
+#endif
 	}
 }
 
@@ -215,9 +227,9 @@ void RIFT::Correction(){
 	n.ReverseRotate(direction);
 
 	//北との差分で姿勢を補正
-	QON differ(north, n);
-	differ *= 0.0001;
-	direction *= differ;
+	QON magDiffer(magneticField, n);
+	magDiffer *= 0.00001;
+	direction *= magDiffer;
 #endif
 }
 
@@ -246,8 +258,16 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
-	VQON north(axis, 1.0);
-	north.Normalize();
-	magneticField = north;
+#if 0
+	VQON mag(axis, 1.0);
+	magMax.Max(mag);
+	magMin.Min(mag);
+	VQON offset(magMax + magMin);
+	offset *= 0.5;
+	mag -= offset;
+	mag.Normalize();
+	magneticField = mag;
+// mag.print("mag");
+#endif
 }
 

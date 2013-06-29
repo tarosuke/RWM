@@ -67,9 +67,6 @@ private:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//描画
-		glEnable(GL_POLYGON_SMOOTH);
-// 		glEnable(GL_BLEND);
-// 		glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
 		const float sr(nearDistance / (realDistance * 2));
 		if(!rift.IsEnable()){
 			glViewport(0, 0, width, height);
@@ -82,7 +79,6 @@ private:
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
 			rift.GetView();
-			glTranslatef(0.03, 0, 0);
 			glScalef(0.5 , 1, 1);
 			_Draw();
 		}else{

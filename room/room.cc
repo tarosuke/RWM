@@ -10,54 +10,54 @@
 
 static FILE* scriptFile;
 ROOM* ROOM::userIn(0);
-Q<ROOM> ROOM::rooms;
 const char* ROOM::rcPath = ".rwm/room.cf";
 
 
 
 
-ROOM::ROOM() : Q<ROOM>::NODE(rooms){
+ROOM::ROOM(){
 }
 
 
 ROOM::~ROOM(){
 }
 
-static TEXTURE* tex(0);
+
+
 
 void ROOM::Draw(int remain){
-	if(!tex){
-		tex = new TEXTURE("AK2502.ppm");
-	}
-const float h(1.0);
-const float vp[][3]={
-	{ -1, -h, 2 },
-	{ 3, -h, 2 },
-	{ -1, -h, -4 },
-	{ 3, -h, -4 }
-};
-const float cSize(0.3);
-const float tp[][2]={
-	{ 0, 0 },
-	{ 3/cSize, 0 },
-	{ 0, 6/cSize },
-	{ 3/cSize, 6/cSize },
-};
+	//部屋の明るさ
+	glLightfv(GL_LIGHT0, GL_AMBIENT, brightness.raw);
 
-	glPushMatrix();
-	(*tex).Bind();
-	glBegin(GL_TRIANGLE_STRIP);
-	glNormal3f(0, 1, 0);
-	for(int v(0); v < 4; v++){
-		glTexCoord2fv(tp[v]);
-		glVertex3fv(vp[v]);
+	//TODO:壁や床に開ける穴(描画する代わりにステンシルバッファを-1)
+
+	//壁を一気に配置(ステンシルっバッファ <= remainの時だけ)
+	glBegin(GL_QUAD_STRIP);
+	for(int c(0); c < numOfWalls; c++){
+// 		if(walls.texture.id){
+// 			glBindTexture(GL_TEXTURE_2D, 0);
+// 		}
+		glMaterialfv(GL_FRONT_AND_BACK,
+			GL_AMBIENT_AND_DIFFUSE,
+			walls[c].texture.color.raw);
+		glNormal3fv(walls[c].normal);
+// 		glVertex3fv(vp[v]);
+		glVertex3f( walls[c].x, ceilHeight, walls[c].z);
+// 		glVertex3fv(vp[v]);
+		glVertex3f( walls[c].x, floorHeight, walls[c].z);
 	}
+	glVertex3f( walls[0].x, ceilHeight, walls[0].z);
+	glVertex3f( walls[0].x, floorHeight, walls[0].z);
 	glEnd();
 
-	glPopMatrix();
-	glDisable(GL_LIGHT0);
+	//床
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	//天井
+
+	//TODO:固定オブジェクト
+
+	//TODO:可動オブジェクト
+
 }
 
 
@@ -81,10 +81,9 @@ void ROOM::Load(bool test){
 		printf("loading script:%s...", path);
 		puts("OK.");
 	}else{
-		userIn = new ROOM();
+		static TESTROOM testRoom;
 	}
 }
 
 void ROOM::Unload(){
-	rooms.Unload();
 }

@@ -1,15 +1,18 @@
 #ifndef _TEXTURE_
 #define _TEXTURE_
 
-#include "ppm.h"
+#include "image.h"
 
-class TEXTURE : private PPM{
+class TEXTURE{
+	TEXTURE();
 public:
-	TEXTURE(const char* path);
+	TEXTURE(const IMAGE& image);
 	~TEXTURE();
-	void Bind();
+	void Bind(unsigned id);
 private:
-	unsigned texNum;
+	const unsigned size;
+	const unsigned numOfTextures;
+	unsigned texNames[32];
 };
 
 #endif

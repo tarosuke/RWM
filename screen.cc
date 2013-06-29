@@ -121,6 +121,64 @@ void SCREEN::_Draw(){
 	ROOM::Update(20);	//背景を描画
 }
 
+void SCREEN::Draw(){
+	glXMakeCurrent(xDisplay, xWindow, glxContext);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//描画
+	const float sr(nearDistance / (realDistance * 2));
+	if(!rift.IsEnable()){
+		glViewport(0, 0, width, height);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum(-realWidth * sr, realWidth * sr,
+			  -realHeight * sr, realHeight * sr,
+	    nearDistance, farDistance);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		rift.GetView();
+		glScalef(0.5 , 1, 1);
+		_Draw();
+	}else{
+		const int hw(width / 2);
+		const int rhw(realWidth / 2);
+		const double inset(0.17);
+
+		//左目
+		glViewport(0, 0, hw, height);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum((-rhw - inset) * sr, (rhw - inset) * sr,
+			  -realHeight * sr, realHeight * sr,
+	    nearDistance, farDistance);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glTranslatef(0.03, 0, 0);
+		rift.GetView();
+		_Draw();
+
+		//右目
+		glViewport(hw, 0, hw, height);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum((-rhw + inset) * sr, (rhw + inset) * sr,
+			  -realHeight * sr, realHeight * sr,
+	    nearDistance, farDistance);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glTranslatef(-0.03, 0, 0);
+		rift.GetView();
+		_Draw();
+
+		//TODO:ここで描画バッファをテクスチャにして歪み付きで描画
+	}
+
+	//画面へ転送
+	glXSwapBuffers(xDisplay, xWindow);
+}
 
 
 
@@ -139,39 +197,3 @@ void SCREEN::AtPointed(XEvent& ev){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-SCREEN::VIEW::VIEW(
-	int left_,
-	int top_,
-	int width_,
-	int height_,
-	const GLfloat viewMatrix_[]) :
-	left(left_),
-	top(top_),
-	right(left_ + width_),
-	bottom(top_ + height_){
-	memmove(viewMatrix, viewMatrix_, sizeof(viewMatrix));
-}
-
-void SCREEN::VIEW::Draw(int listID){
-	glPushMatrix();
-	glMultMatrixf(viewMatrix);
-	glCallList(listID);
-	glPopMatrix();
-}

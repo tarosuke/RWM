@@ -5,9 +5,10 @@
 #include "texture.h"
 
 
-TEXTURE::TEXTURE(const IMAGE& image) :
-	size(image.GetWidth()),
-	numOfTextures(image.GetHeight() / size){
+void TEXTURE::Load(const IMAGE& image){
+	//サイズとか数とか読み込む
+	size = image.GetWidth();
+	numOfTextures = image.GetHeight() / size;
 
 	//グラボ側でテクスチャの確保
 	glEnable(GL_TEXTURE_2D);
@@ -29,13 +30,20 @@ TEXTURE::TEXTURE(const IMAGE& image) :
 
 	//一応後始末
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//読み込んだよフラグ
+	loaded = true;
 }
 
 TEXTURE::~TEXTURE(){
-	glDeleteTextures(numOfTextures, texNames);
+	if(loaded){
+		glDeleteTextures(numOfTextures, texNames);
+	}
 }
 
 void TEXTURE::Bind(unsigned id){
-	id--;
-	glBindTexture(GL_TEXTURE_2D, id < 32 ? texNames[id] : 0);
+	if(loaded){
+		id--;
+		glBindTexture(GL_TEXTURE_2D, id < 32 ? texNames[id] : 0);
+	}
 }

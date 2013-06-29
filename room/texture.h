@@ -4,15 +4,16 @@
 #include "image.h"
 
 class TEXTURE{
-	TEXTURE();
 public:
-	TEXTURE(const IMAGE& image);
+	TEXTURE() : loaded(false){};
 	~TEXTURE();
+	void Load(const IMAGE& image);
 	void Bind(unsigned id);
 private:
-	const unsigned size;
-	const unsigned numOfTextures;
+	unsigned size;
+	unsigned numOfTextures;
 	unsigned texNames[32];
+	bool loaded;
 };
 
 #endif

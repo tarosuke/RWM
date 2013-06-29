@@ -15,6 +15,9 @@
 #include "window.h"
 #include "room/room.h"
 #include "rift.h"
+#include "room/texture.h"
+#include "view.h"
+
 
 
 class SCREEN{
@@ -32,18 +35,6 @@ public:
 	}
 	static void AtPointed(XEvent&);
 private:
-	class VIEW{
-	public:
-		VIEW* next;
-		VIEW(int left_, int top_, int width_, int height_, const GLfloat viewMatrix[]);
-		void Draw(int listID);
-	private:
-		int left;
-		int top;
-		int right;
-		int bottom;
-		GLfloat viewMatrix[16];
-	};
 	static SCREEN* list;
 	static const float defaultDotPitch = 0.003;
 	static const float defaultDisplayDistance = 0.7;
@@ -60,66 +51,10 @@ private:
 	int xWindow;
 	GLXContext glxContext;
 	RIFT& rift;
+// 	VIEW view;
+//  	TEXTURE texture;
 	void _Draw();
-	void PrepareDraw();
-	void Draw(){
-		glXMakeCurrent(xDisplay, xWindow, glxContext);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//描画
-		const float sr(nearDistance / (realDistance * 2));
-		if(!rift.IsEnable()){
-			glViewport(0, 0, width, height);
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glFrustum(-realWidth * sr, realWidth * sr,
-				-realHeight * sr, realHeight * sr,
-				nearDistance, farDistance);
-
-			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();
-			rift.GetView();
-			glScalef(0.5 , 1, 1);
-			_Draw();
-		}else{
-			const int hw(width / 2);
-			const int rhw(realWidth / 2);
-			const double inset(0.17);
-
-			//左目
-			glViewport(0, 0, hw, height);
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glFrustum((-rhw - inset) * sr, (rhw - inset) * sr,
-				-realHeight * sr, realHeight * sr,
-				nearDistance, farDistance);
-
-			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();
-			glTranslatef(0.03, 0, 0);
-			rift.GetView();
-			_Draw();
-
-			//右目
-			glViewport(hw, 0, hw, height);
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glFrustum((-rhw + inset) * sr, (rhw + inset) * sr,
-				-realHeight * sr, realHeight * sr,
-				nearDistance, farDistance);
-
-			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();
-			glTranslatef(-0.03, 0, 0);
-			rift.GetView();
-			_Draw();
-
-			//TODO:ここで描画バッファをテクスチャにして歪み付きで描画
-		}
-
-		//画面へ転送
-		glXSwapBuffers(xDisplay, xWindow);
-	};
+	void Draw();
 };
 
 #endif

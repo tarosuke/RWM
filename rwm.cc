@@ -12,11 +12,11 @@
 #include <poll.h>
 #include <linux/hiddev.h>
 
-#include "matrix.h"
+#include <rift/rift.h>
+
 #include "list.h"
 #include "window.h"
 #include "screen.h"
-#include "rift.h"
 
 
 

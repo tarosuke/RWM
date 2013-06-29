@@ -1,11 +1,11 @@
 all: rwm
 
-COPTS += -IX11 -Iroom -Irift
+COPTS += -IX11 -I.
 
 include make.in
 
 
-libs= room/room.a -lGL -lGLU -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
+libs= room/room.a rift/rift.a image/image.a -lGL -lGLU -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
 
 test: rwm.test
 	./rwm.test
@@ -23,3 +23,5 @@ rwm.test: makefile $(objs) extralibs
 
 extralibs:
 	make -C room
+	make -C rift
+	make -C image

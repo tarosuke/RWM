@@ -10,12 +10,11 @@
 
 #include <stdio.h>
 
-#include "matrix.h"
 #include "list.h"
 #include "window.h"
-#include "room/room.h"
-#include "rift.h"
-#include "room/texture.h"
+#include <room/room.h>
+#include <rift/rift.h>
+#include <room/texture.h>
 #include "view.h"
 
 

@@ -21,4 +21,6 @@ rwm
 
 # others libraries
 *.ppm
-
+*.xcf
+*.bak
+*.kate-swp

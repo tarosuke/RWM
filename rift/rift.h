@@ -3,15 +3,18 @@
 
 #include <pthread.h>
 
-#include "qon.h"
+#include <toolbox/qon/qon.h>
 
 
 class RIFT{
 public:
 	RIFT();
 	~RIFT();
-	void GetView();
-	bool IsEnable(){ return 0 <= fd; };
+	void GetView() const;
+	void GetReverseView() const;
+	const QON& GetDirection() const{ return direction; };
+	QON PickHorizonal(double ratio);
+	bool IsEnable() const { return 0 <= fd; };
 private:
 	// HID
 	const int fd;

@@ -9,6 +9,9 @@ void TEXTURE::Load(const IMAGE& image){
 	//サイズとか数とか読み込む
 	size = image.GetWidth();
 	numOfTextures = image.GetHeight() / size;
+	if(maxNumOfTextures < numOfTextures){
+		numOfTextures = maxNumOfTextures;
+	}
 
 	//グラボ側でテクスチャの確保
 	glEnable(GL_TEXTURE_2D);
@@ -20,7 +23,8 @@ void TEXTURE::Load(const IMAGE& image){
 		glBindTexture(GL_TEXTURE_2D, texNames[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
 			size, size, 0,
-			GL_RGB, GL_UNSIGNED_BYTE, image.GetImage(0, size * (i - 1)));
+			GL_RGB, GL_UNSIGNED_BYTE,
+			image.GetImage(0, size * (i - 1)));
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
@@ -41,9 +45,9 @@ TEXTURE::~TEXTURE(){
 	}
 }
 
-void TEXTURE::Bind(unsigned id){
+void TEXTURE::Bind(unsigned id) const{
 	if(loaded){
-		id--;
-		glBindTexture(GL_TEXTURE_2D, id < 32 ? texNames[id] : 0);
+		glBindTexture(GL_TEXTURE_2D,
+			id < maxNumOfTextures ? texNames[id] : 0);
 	}
 }

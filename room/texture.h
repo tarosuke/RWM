@@ -7,13 +7,17 @@
 class TEXTURE{
 public:
 	TEXTURE() : loaded(false){};
+	TEXTURE(const class IMAGE& image){
+		Load(image);
+	};
 	~TEXTURE();
 	void Load(const class IMAGE& image);
-	void Bind(unsigned id);
+	void Bind(unsigned id) const;
 private:
+	static const unsigned maxNumOfTextures = 32;
 	unsigned size;
 	unsigned numOfTextures;
-	unsigned texNames[32];
+	unsigned texNames[maxNumOfTextures];
 	bool loaded;
 };
 

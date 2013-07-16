@@ -1,5 +1,5 @@
 CCOPTS +=
-COPTS += -O2 -Wall -Werror
+COPTS += -O2 -Wall -Werror -I..
 
 srcs = $(wildcard *.c) $(wildcard *.cc)
 objs = $(addsuffix .o, $(basename $(srcs)))

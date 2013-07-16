@@ -73,7 +73,7 @@ RIFT::~RIFT(){
 }
 
 
-void RIFT::GetView(){
+void RIFT::GetView() const{
 	if(IsEnable()){
 		//アスペクト補正
 		glScalef(1, 2, 1);
@@ -85,7 +85,7 @@ void RIFT::GetView(){
 			rotation.x, rotation.y, rotation.z);
 
 		//位置補正
-		glTranslated(-position.i, -position.j, -position.k);
+// 		glTranslated(-position.i, -position.j, -position.k);
 
 #if 0
 glPointSize(5);
@@ -95,6 +95,40 @@ glEnd();
 #endif
 	}
 }
+void RIFT::GetReverseView() const{
+	if(IsEnable()){
+		//アスペクト補正
+// 		glScalef(1, 2, 1);
+
+		//姿勢補正
+		QON::ROTATION rotation;
+		direction.GetRotation(rotation);
+		glRotated(rotation.angle * 180 / M_PI,
+			rotation.x, rotation.y, rotation.z);
+
+		//位置補正
+// 		glTranslated(position.i, position.j, position.k);
+	}
+}
+
+
+QON RIFT::PickHorizonal(double ratio){
+	QON r;
+	if(-0.5 < direction.i && direction.i < 0.5 &&
+		-0.5 < direction.k && direction.k < 0.5){
+		//pitchとrollが-60°〜60°の間だけ機能
+		r.w = direction.w;
+		r.j = direction.j;
+		r.i = r.k = 0;
+		direction.j *= 1.0 - ratio;
+		r.j *= ratio;
+		direction.Normalize();
+		r.Normalize();
+	}
+	return r;
+}
+
+
 
 
 void RIFT::SensorThread(){

@@ -1,20 +1,30 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-#include "view.h"
-#include "room/texture.h"
-#include "room/room.h"
-#include "window.h"
+#include <view.h>
+#include <room/texture.h>
+#include <room/room.h>
+#include <rift/rift.h>
+#include <avatar/avatar.h>
+#include <toolbox/qon/glqon.h>
 
 
-VIEW::VIEW(int width_, int height_/*, const TEXTURE& t*/) :
-	width(width_), height(height_)/*, texture(t)*/{
+VIEW::VIEW(int width_, int height_, AVATAR& avatar_, const TEXTURE& t) :
+	width(width_), height(height_), texture(t), avatar(avatar_),
+	displayList(glGenLists(1)){
+
+	//画面の実位置を仮定(スクリプトで上書き予定)
+	realWidth = defaultDotPitch * width;
+	realHeight = defaultDotPitch * height;
+	realDistance = defaultDisplayDistance;
 }
 
-void VIEW::Draw(){
-	//自分の位置(仮)
-	glTranslatef(0.5, -1.0, 0);
+VIEW::~VIEW(){
+	glDeleteLists(displayList, 1);
+	delete &avatar;
+}
 
+void VIEW::DrawForEye(){
 	//基本設定
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_BLEND);
@@ -22,8 +32,8 @@ void VIEW::Draw(){
 	glEnable(GL_DEPTH_TEST);
 
 	//窓描画(窓は陰影などなしでそのまま表示)
-	glDisable(GL_LIGHTING);
-	WINDOW::Update(); //窓を描画
+// 	glDisable(GL_LIGHTING);
+// 	WINDOW::Update(); //窓を描画
 	glEnable(GL_LIGHTING);
 
 	//基本ライト(場所は自分、明るさはAMBIENTへ)
@@ -43,5 +53,31 @@ void VIEW::Draw(){
 	glHint(GL_FOG_HINT, GL_DONT_CARE);
 	glEnable(GL_FOG);
 
-	ROOM::Update(20);	//背景を描画
+	avatar.Draw(20, texture);	//avatarから見た背景を描画
 }
+
+
+void VIEW::Draw(){
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//描画
+	const float sr(nearDistance / (realDistance * 2));
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(-realWidth * sr, realWidth * sr,
+		-realHeight * sr, realHeight * sr,
+		nearDistance, farDistance);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glScalef(0.5 , 1, 1);
+	DrawForEye();
+}
+
+
+void VIEW::Update(float dt){
+	avatar.Update(dt);
+}
+
+

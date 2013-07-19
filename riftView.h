@@ -11,7 +11,7 @@ class RIFTVIEW : public VIEW{
 public:
 	RIFTVIEW(class AVATAR&, const class TEXTURE&);
 	~RIFTVIEW();
-	void Draw();
+	void Draw() const;
 	void Update(float);
 private:
 };

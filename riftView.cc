@@ -18,9 +18,7 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar, const class TEXTURE& texture) :
 RIFTVIEW::~RIFTVIEW(){}
 
 
-void RIFTVIEW::Draw(){
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+void RIFTVIEW::Draw() const{
 	const float sr(nearDistance / (realDistance * 2));
 	const int hw(width / 2);
 	const int rhw(realWidth / 2);

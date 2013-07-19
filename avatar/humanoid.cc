@@ -7,7 +7,7 @@
 #include <rift/rift.h>
 #include "humanoid.h"
 #include <toolbox/qon/glqon.h>
-#include <ghost.h>
+#include <ghost/ghost.h>
 
 
 HUMANOID::HUMANOID(
@@ -28,11 +28,18 @@ void HUMANOID::GetView() const{
 }
 
 void HUMANOID::Update(float dt){
+	//ボタン3が押されていたら立ったり座ったり
+// 	if(8 & ghost.GetActions()){
+// 		position.j += sitting ? 0.5 : -0.5;
+// 		sitting = !sitting;
+// 	}
+
+	//座ってたら移動しない
 	if(sitting){
 		VQON v;
 		QON q;
 		velocity = v;
-		rotVelocity = q;
+		rotVelocity = 0.0;
 		return;
 	}
 
@@ -104,11 +111,6 @@ void HUMANOID::LegVertexes(int type) const{
 	glVertex3f(profile.legOffset,
 		-profile.leg.upperLength - profile.leg.lowerLength, 0);
 	glEnd();
-}
-
-void HUMANOID::Actions(unsigned actionBits){
-	position.j += sitting ? 1.0 : -1.0;
-	sitting = !sitting;
 }
 
 

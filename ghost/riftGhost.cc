@@ -1,7 +1,7 @@
 /********************************************* rift avatar controler:riftghost
  *
  */
-#include <riftghost.h>
+#include "riftGhost.h"
 
 
 const QON& RIFTGHOST::GetHead() const{

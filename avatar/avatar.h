@@ -22,12 +22,6 @@ public:
 	virtual void Draw(const int remain,
 		const class TEXTURE&) const;
 	virtual void Update(float deltaT);
-	//操作ハンドラ
-	virtual void Rotate(float rotation); //x-z面で旋回
-	virtual void Step(float forward, float right);
-	virtual void ForwardStep(float forward);
-	virtual void SideStep(float right);
-	virtual void Actions(unsigned actionBits);
 	//構築/破壊子
 	AVATAR(const class ROOM& initialRoom,
 		class GHOST&,
@@ -40,7 +34,7 @@ protected:
 	VQON position;
 	VQON velocity;
 	QON direction;
-	QON rotVelocity;
+	double rotVelocity;
 	void GetModel() const;
 };
 

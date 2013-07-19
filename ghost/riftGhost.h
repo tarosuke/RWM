@@ -4,12 +4,12 @@
 #ifndef _RIFTGHOST_
 #define _RIFTGHOST_
 
-#include <ghost.h>
+#include <ghost/userGhost.h>
 #include <rift/rift.h>
 
 
 
-class RIFTGHOST : public GHOST{
+class RIFTGHOST : public USERGHOST{
 public:
 	const QON& GetHead() const;
 	const QON PickHeadHorizDir(float ratio);

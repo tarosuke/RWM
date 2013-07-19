@@ -79,8 +79,6 @@ public:
 	void Draw(const int remain,
 		const class TEXTURE&) const;
 	void Update(float dt);
-	//操作ハンドラ
-	void Actions(unsigned actionBits);
 	//構築/破壊子
 	HUMANOID(const class ROOM& initialRoom,
 		const PROFILE&,

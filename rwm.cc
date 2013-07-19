@@ -1,5 +1,3 @@
-#include <GL/glut.h>
-
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,24 +7,22 @@
 #include <riftView.h>
 #include <room/room.h>
 #include <avatar/humanoid.h>
-#include <riftghost.h>
+#include <ghost/riftGhost.h>
+#include <window.h>
 
 
+
+#if 0
 static VIEW* view;
 static AVATAR* avatar;
 
 
 static void display(void){
-	if(view){
-		(*view).Draw();
-		glutSwapBuffers();
-	}
+	WINDOW::root.Draw(&view);
 }
 
 static void Idle(){
-	(*view).Update(0.01); //タイムスタンプを求めてΔtを計算しとく
-	glutPostRedisplay();
-	glutForceJoystickFunc();
+	(*view).Update(0.01); //TODO:タイムスタンプを求めてΔtを計算しとく
 }
 
 static void Key(unsigned char key, int x, int y){
@@ -72,27 +68,19 @@ static void Joystick(unsigned button, int x, int y, int z){
 // printf("%4d %4d %4d %8x.\r", x, y, z, button);
 	(*avatar).Step(0.01 * y * 0.001, 0.01 * x * 0.001);
 }
+#endif
 
 int main(int argc, char *argv[]){
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(1280, 800);
-	glutCreateWindow(argv[0]);
-
 	static TESTROOM testRoom;
 	static HUMANOID::PROFILE profile(1.66);
-	avatar = new HUMANOID(testRoom, profile, *new RIFTGHOST);
 	static PPM textureImage("textureSet.ppm");
 	static TEXTURE texture(textureImage);
-	static RIFTVIEW viewBody(*avatar, texture);
-	view = &viewBody;
+	static GHOST& user(*new RIFTGHOST);
+	static RIFTVIEW view(
+		*new HUMANOID(testRoom, profile, user),
+		texture);
+// 	view = &viewBody;
+	WINDOW::root.Run(user);
 
-	glutDisplayFunc(display);
-	glutJoystickFunc(Joystick, 20);
-	glutIdleFunc(Idle);
-	glutKeyboardFunc(Key);
-	glutSpecialFunc(SKey);
-	glutMainLoop();
 	return 0;
 }

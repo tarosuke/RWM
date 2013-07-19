@@ -5,7 +5,7 @@ COPTS += -IX11 -I.
 include make.in
 
 
-libs= avatar/avatar.a room/room.a rift/rift.a image/image.a toolbox/qon/qon.a -lGL -lGLU -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++ -lglut
+libs= avatar/avatar.a room/room.a rift/rift.a image/image.a ghost/ghost.a toolbox/qon/qon.a toolbox/input/input.a -lGL -lGLU -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
 
 test: rwm.test
 	./rwm.test
@@ -26,4 +26,7 @@ extralibs:
 	make -C rift
 	make -C image
 	make -C avatar
+	make -C ghost
 	make -C toolbox/qon
+	make -C toolbox/input
+

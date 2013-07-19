@@ -4,7 +4,7 @@
 
 #include "avatar.h"
 #include <room/room.h>
-#include <ghost.h>
+#include <ghost/ghost.h>
 #include <toolbox/qon/glqon.h>
 
 
@@ -25,13 +25,28 @@ AVATAR::~AVATAR(){}
 
 void AVATAR::Update(float dt){
 	//向き更新
+	const double rotAccelRatio(1.0 / (10.0 + fabsl(rotVelocity)));
+	rotVelocity = rotVelocity * (1.0 - rotAccelRatio) +
+			ghost.GetRotate() * rotAccelRatio;
+	QON::ROTATION r = { -rotVelocity * dt, 0, 1, 0 };
+	QON rot(r);
 	direction *= ghost.PickHeadHorizDir(0.01);
-	direction *= rotVelocity;
-	rotVelocity *= 0.8;
+	direction *= rot;
+	rotVelocity *= 0.9;
 
 	//位置更新
+	const double accelRatio(1.0 / (10.0 + velocity.Length()));
+	VQON accel(ghost.GetSideStep(), 0.0, -ghost.GetForwardStep());
+	accel *= accelRatio;
+	const double acc(accel.Length());
+	if(0.001 < fabsl(acc)){
+		accel.Rotate(direction);
+		accel *= acc * dt;
+
+		velocity += accel;
+	}
 	in = &((*in).Move)(position.i, position.k, velocity.i, velocity.k, 0.3);
-	velocity *= 0.9;
+	velocity *= 0.95;
 }
 
 void AVATAR::GetView() const{
@@ -62,35 +77,4 @@ void AVATAR::Draw(const int remain,
 	assert(in);
 	(*in).Draw(remain, textures);
 }
-
-
-
-void AVATAR::Rotate(float rotation){
-	QON::ROTATION r = { -rotation, 0.0, 1, 0.0 };
-	QON q(r);
-	rotVelocity = q;
-}
-
-void AVATAR::Step(float forward, float right){
-	VQON delta(right, 0.0, -forward);
-	const double length(delta.Length());
-	delta.Rotate(direction);
-	delta *= length;
-	velocity = delta;
-}
-void AVATAR::ForwardStep(float forward){
-	VQON delta(0.0, 0.0, -forward);
-	const double length(delta.Length());
-	delta.Rotate(direction);
-	delta *= length;
-	velocity = delta;
-}
-void AVATAR::SideStep(float right){
-	VQON delta(right, 0.0, 0.0);
-	const double length(delta.Length());
-	delta.Rotate(direction);
-	delta *= length;
-	velocity = delta;
-}
-void AVATAR::Actions(unsigned){};
 

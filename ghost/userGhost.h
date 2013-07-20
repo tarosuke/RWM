@@ -19,7 +19,7 @@ public:
 	float GetForwardStep();
 	float GetSideStep();
 	unsigned GetActions();
-private:
+protected:
 	JOYSTICK js;
 	mutable QON headDir;
 };

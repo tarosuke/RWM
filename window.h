@@ -35,6 +35,8 @@ public:
 		static const int height = 800;
 	}root;
 private:
+	int wID; //窓ID
+	int tID; //テクスチャID
 };
 
 #endif

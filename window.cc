@@ -179,9 +179,11 @@ void WINDOW::ROOT::Run(GHOST& user){
 		t = t1;
 		VIEW::UpdateAll(d);
 		Draw();
+#if 0
 		t1.tv_sec = 0;
 		t1.tv_nsec = 14000000;
 		nanosleep(&t1, 0);
+#endif
 	}
 }
 

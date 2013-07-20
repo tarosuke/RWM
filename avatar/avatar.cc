@@ -16,7 +16,7 @@ AVATAR::AVATAR(const ROOM& initialRoom, GHOST& g, float y) :
 	initialRoom.GetCenter(x, h, z);
 	VQON p(x, h + y, z);
 	position = p;
-	(*in).RegisterAvatar(roomNode);;
+	(*in).RegisterAvatar(roomNode);
 }
 
 AVATAR::~AVATAR(){}
@@ -70,11 +70,5 @@ void AVATAR::GetModel() const{
 	QON::ROTATION r;
 	direction.GetRotation(r);
 	glRotated(r.angle * 180 / M_PI, r.x, r.y, r.z);
-}
-
-void AVATAR::Draw(const int remain,
-	const class TEXTURE& textures) const{
-	assert(in);
-	(*in).Draw(remain, textures);
 }
 

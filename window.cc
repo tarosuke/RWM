@@ -159,7 +159,7 @@ void WINDOW::ROOT::Run(GHOST& user){
 					break;
 				case ButtonPress:
 				case ButtonRelease:
-					return;
+					break;
 				case KeyPress:
 					break;
 				case KeyRelease:

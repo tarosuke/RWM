@@ -79,6 +79,8 @@ int main(int argc, char *argv[]){
 	static RIFTVIEW view(
 		*new HUMANOID(testRoom, profile, user),
 		texture);
+	static HUMANOID::PROFILE buddyProfile(1.2, 1.1);
+	static HUMANOID buddy(testRoom, buddyProfile, *new GHOST);
 // 	view = &viewBody;
 	WINDOW::root.Run(user);
 

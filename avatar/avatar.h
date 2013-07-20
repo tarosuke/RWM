@@ -19,14 +19,15 @@ public:
 	};
 	//システムハンドラ
 	virtual void GetView() const;
-	virtual void Draw(const int remain,
-		const class TEXTURE&) const;
+	virtual void Draw() const = 0;
 	virtual void Update(float deltaT);
 	//構築/破壊子
 	AVATAR(const class ROOM& initialRoom,
 		class GHOST&,
 		float y);
 	virtual ~AVATAR();
+	//情報取得
+	const class ROOM& GetRoomIn(){ return *in; };
 protected:
 	const class ROOM* in;
 	TOOLBOX::NODE<AVATAR> roomNode;

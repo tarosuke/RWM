@@ -76,8 +76,7 @@ public:
 
 	//システムハンドラ
 	void GetView() const;
-	void Draw(const int remain,
-		const class TEXTURE&) const;
+	void Draw() const;
 	void Update(float dt);
 	//構築/破壊子
 	HUMANOID(const class ROOM& initialRoom,
@@ -86,6 +85,24 @@ public:
 	~HUMANOID();
 
 protected:
+	class POSTURE{
+	public:
+		POSTURE();
+// 	protected:
+		class LIMBS{
+		public:
+			LIMBS(double);
+			class LIMB{
+			public:
+				LIMB(double);
+				QON::ROTATION sh; //肩、股関節
+				double en; //肘、膝
+//TODO:				QON wh; //手首、足首
+			}left, right;
+		}arms, legs;
+		QON::ROTATION upper; //上半身全体(体幹に対する相対角)
+		QON::ROTATION lower; //下半身全体(体幹に対する相対角)
+	}posture;
 	PROFILE profile;
 	bool sitting;
 	void ArmVertexes(int) const;

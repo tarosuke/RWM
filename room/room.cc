@@ -95,6 +95,11 @@ void ROOM::Draw(int remain, const TEXTURE& texture) const{
 
 	//TODO:可動オブジェクト
 
+	//部屋にいるAVATAR
+	for(TOOLBOX::QUEUE<AVATAR>::ITOR i(avatars); i; i++){
+		(*(i.Owner())).Draw();
+	}
+
 	//TODO:隣の部屋
 }
 

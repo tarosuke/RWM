@@ -3,6 +3,7 @@
  */
 #include <GL/gl.h>
 #include <stdio.h>
+#include <math.h>
 
 #include <rift/rift.h>
 #include "humanoid.h"
@@ -37,7 +38,6 @@ void HUMANOID::Update(float dt){
 	//座ってたら移動しない
 	if(sitting){
 		VQON v;
-		QON q;
 		velocity = v;
 		rotVelocity = 0.0;
 		return;
@@ -46,8 +46,7 @@ void HUMANOID::Update(float dt){
 	AVATAR::Update(dt);
 }
 
-void HUMANOID::Draw(const int remain,
-	const TEXTURE& texture) const{
+void HUMANOID::Draw() const{
 	//体
 	glLineWidth(5);
 	glPushMatrix();
@@ -84,9 +83,6 @@ void HUMANOID::Draw(const int remain,
 	glVertex3f(profile.eyeSideOffset, profile.eyeHeight, 0);
 	glEnd();
 	glPopMatrix();
-
-	//アバター以外を描画
-	AVATAR::Draw(remain, texture);
 }
 void HUMANOID::ArmVertexes(int type) const{
 	glBegin(type);
@@ -139,10 +135,23 @@ HUMANOID::PROFILE::PROFILE(float tall, float tr, float wr){
 	for(float* raw(&torso.length); raw <= &leg.lowerLength; raw++){
 		*raw *= tallRatio;;
 	}
+}
 
-printf("Tall:%f.\n", Tall());
-printf("NeckHeight:%f.\n", NeckHeight());
-printf("SightHeight:%f.\n", SightHeight());
 
+
+/*** 姿勢
+ *
+ */
+HUMANOID::POSTURE::POSTURE() : arms(M_PI / 4), legs(0){
+}
+
+HUMANOID::POSTURE::LIMBS::LIMBS(double initialDir) :
+	left(initialDir), right(initialDir){
+}
+
+HUMANOID::POSTURE::LIMBS::LIMB::LIMB(double initialDir){
+	sh.angle = -initialDir;
+	sh.x = sh.z = 0;
+	sh.y = 1;
 }
 

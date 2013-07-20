@@ -33,7 +33,7 @@ VIEW::~VIEW(){
 }
 
 void VIEW::DrawForEye() const{
-	avatar.Draw(20, texture);	//avatarから見た背景を描画
+	avatar.GetRoomIn().Draw(20, texture);	//avatarがいる部屋を描画
 }
 
 

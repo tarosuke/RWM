@@ -9,13 +9,15 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include <window.h>
 #include <view.h>
 #include <toolbox/cyclic/cyclic.h>
 
 
-WINDOW::ROOT WINDOW::root; //ルートウインドウのシングルトン
+WINDOW::ROOT WINDOW::root; //根窓
+TOOLBOX::QUEUE<WINDOW> WINDOW::windowList; //窓リスト
 
 
 static int glxAttrs[] = {
@@ -143,42 +145,105 @@ void WINDOW::ROOT::Run(GHOST& user){
 
 			switch(ev.type){
 				case CreateNotify:
+					AtCreate(ev.xcreatewindow);
 					break;
 				case MapNotify:
+					AtMap(ev.xmap);
 					break;
 				case DestroyNotify:
+					AtDestroy(ev.xdestroywindow);
+					break;
 				case UnmapNotify:
-					break;
-				case ReparentNotify:
-					break;
-				case MappingNotify:
-					break;
-				case MotionNotify:
-					break;
-				case ButtonPress:
-				case ButtonRelease:
-					break;
-				case KeyPress:
-					break;
-				case KeyRelease:
-					break;
-				case ClientMessage:
-					//その他の再描画リクエスト
+					AtUnmap(ev.xunmap);
 					break;
 				default:
+					//TODO:keyDown/Upの時などの処理を考える
 					break;
 			}
 		}
 		VIEW::UpdateAll(duration.GetDuration());
 		Draw();
 #if 0
+#if 0
 		t1.tv_sec = 0;
 		t1.tv_nsec = 14000000;
 		nanosleep(&t1, 0);
+#else
+		usleep(14000);
+#endif
 #endif
 	}
 }
 
 
+WINDOW* WINDOW::FindWindowByID(unsigned wID){
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		WINDOW& w(*i.Owner());
+		if(wID == w.wID){
+			return &w;
+		}
+	}
+	return 0;
+}
 
+WINDOW::~WINDOW(){
+	node.Detach();
+	//TODO:テクスチャの解放とか
+}
+
+
+
+
+void WINDOW::ROOT::AtCreate(XCreateWindowEvent& e){
+	if(rootWindowID == e.window){
+		//ルートなので処理不要
+		return;
+	}
+	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	if(!w){
+		//外部生成窓なので追随して生成
+		new WINDOW(e.window);
+	}
+}
+
+void WINDOW::ROOT::AtMap(XMapEvent& e){
+	if(rootWindowID == e.window){
+		//ルートなので処理不要
+		return;
+	}
+	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	assert(w);
+	//map状態を変更(trueなので以後Drawする)
+	(*w).mapped = true;
+}
+void WINDOW::ROOT::AtDestroy(XDestroyWindowEvent& e){
+	if(rootWindowID == e.window){
+		//ルートなので処理不要
+		return;
+	}
+	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	assert(w);
+	//ウインドウを消去
+	delete w;
+}
+void WINDOW::ROOT::AtUnmap(XUnmapEvent& e){
+	if(rootWindowID == e.window){
+		//ルートなので処理不要
+		return;
+	}
+	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	assert(w);
+	//map状態を変更(falseなので以後Drawしなくなる)
+	(*w).mapped = false;
+}
+
+
+
+
+
+
+
+WINDOW::WINDOW(int wID) : wID(wID), mapped(false), node(*this){
+	windowList.Add(node);
+}
 

@@ -10,8 +10,6 @@ class RIFT{
 public:
 	RIFT();
 	~RIFT();
-	void GetView() const;
-	void GetReverseView() const;
 	const QON& GetDirection() const{ return direction; };
 	QON PickHorizonal(double ratio);
 	bool IsEnable() const { return 0 <= fd; };

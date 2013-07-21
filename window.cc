@@ -9,11 +9,10 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <time.h>
 
 #include <window.h>
 #include <view.h>
-
+#include <toolbox/cyclic/cyclic.h>
 
 
 WINDOW::ROOT WINDOW::root; //ルートウインドウのシングルトン
@@ -136,8 +135,7 @@ void WINDOW::ROOT::Draw(){
 }
 
 void WINDOW::ROOT::Run(GHOST& user){
-	struct timespec t;
-	clock_gettime(CLOCK_MONOTONIC, &t);
+	DURATION duration;
 	for(;;){
 		while(XPending(xDisplay)){
 			XEvent ev;
@@ -171,13 +169,7 @@ void WINDOW::ROOT::Run(GHOST& user){
 					break;
 			}
 		}
-		struct timespec t1;
-		clock_gettime(CLOCK_MONOTONIC, &t1);
-		const double f0(t.tv_sec + 0.000000001 * t.tv_nsec);
-		const double f1(t1.tv_sec + 0.000000001 * t1.tv_nsec);
-		const double d(f1 - f0);
-		t = t1;
-		VIEW::UpdateAll(d);
+		VIEW::UpdateAll(duration.GetDuration());
 		Draw();
 #if 0
 		t1.tv_sec = 0;

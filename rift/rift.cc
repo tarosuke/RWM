@@ -9,8 +9,6 @@
 #include <linux/input.h>
 #include <linux/hidraw.h>
 
-#include <GL/gl.h>
-
 #include "rift.h"
 
 
@@ -68,46 +66,9 @@ RIFT::RIFT() :
 }
 
 RIFT::~RIFT(){
-	pthread_cancel(sensorThread);
-	close(fd);
-}
-
-
-void RIFT::GetView() const{
-	if(IsEnable()){
-		//アスペクト補正
-		glScalef(1, 2, 1);
-
-		//姿勢補正
-		QON::ROTATION rotation;
-		direction.GetRotation(rotation);
-		glRotated(-rotation.angle * 180 / M_PI,
-			rotation.x, rotation.y, rotation.z);
-
-		//位置補正
-// 		glTranslated(-position.i, -position.j, -position.k);
-
-#if 0
-glPointSize(5);
-glBegin(GL_POINTS);
-glVertex3d(magneticField.i, magneticField.j, magneticField.k);
-glEnd();
-#endif
-	}
-}
-void RIFT::GetReverseView() const{
-	if(IsEnable()){
-		//アスペクト補正
-// 		glScalef(1, 2, 1);
-
-		//姿勢補正
-		QON::ROTATION rotation;
-		direction.GetRotation(rotation);
-		glRotated(rotation.angle * 180 / M_PI,
-			rotation.x, rotation.y, rotation.z);
-
-		//位置補正
-// 		glTranslated(position.i, position.j, position.k);
+	if(0 <= fd){
+		pthread_cancel(sensorThread);
+		close(fd);
 	}
 }
 

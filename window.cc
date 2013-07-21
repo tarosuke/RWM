@@ -16,7 +16,6 @@
 #include <toolbox/cyclic/cyclic.h>
 
 
-WINDOW::ROOT WINDOW::root; //根窓
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList; //窓リスト
 
 
@@ -186,8 +185,18 @@ WINDOW* WINDOW::FindWindowByID(unsigned wID){
 	return 0;
 }
 
+void WINDOW::DrawAll(){
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		WINDOW& w(*i.Owner());
+		if(w.mapped){
+		}
+	}
+}
+
 WINDOW::~WINDOW(){
 	node.Detach();
+// 	XUnmapWindow(room.wID);
+// 	XDestroyWindow(wID);
 	//TODO:テクスチャの解放とか
 }
 

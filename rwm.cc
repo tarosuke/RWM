@@ -13,6 +13,7 @@
 
 
 int main(int argc, char *argv[]){
+	static WINDOW::ROOT root;
 	static TESTROOM testRoom;
 	static HUMANOID::PROFILE profile(1.66);
 	static PPM textureImage("textureSet.ppm");
@@ -23,7 +24,7 @@ int main(int argc, char *argv[]){
 		texture);
 	static HUMANOID::PROFILE buddyProfile(1.2, 1.1);
 	static HUMANOID buddy(testRoom, buddyProfile, *new GHOST);
-	WINDOW::root.Run(user);
+	root.Run(user);
 
 	return 0;
 }

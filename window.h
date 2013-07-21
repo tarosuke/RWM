@@ -20,26 +20,28 @@
 
 class WINDOW{
 public:
-	static class ROOT{ //TESTの時は窓を開いて、でなければrootを取得
+	class ROOT{ //TESTの時は窓を開いて、でなければrootを取得
 		friend class WINDOW;
 	public:
-		void Run(class GHOST&);
-		void Draw();
-	private:
 		ROOT();
 		~ROOT();
+		void Run(class GHOST&);
+	private:
 		Display* const xDisplay;
 		const unsigned rootWindowID;
 		GLXContext glxContext;
 		static const int width = 1280;
 		static const int height = 800;
+		void Draw();
 		void AtCreate(XCreateWindowEvent&);
 		void AtMap(XMapEvent&);
 		void AtDestroy(XDestroyWindowEvent&);
 		void AtUnmap(XUnmapEvent&);
-	}root;
+	};
+	static void DrawAll();
 protected:
-	~WINDOW(); //自身をwindowListから削除して消滅
+	virtual ~WINDOW(); //自身をwindowListから削除して消滅
+// 	virtual void Draw();
 private:
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(unsigned wID);
@@ -47,6 +49,10 @@ private:
 	int tID; //テクスチャID
 	bool mapped; //tureならDrawされた時に反応して物体を生成する
 	TOOLBOX::NODE<WINDOW> node;
+
+	unsigned width;
+	unsigned height;
+
 	WINDOW(int wID); //wIDを持つWINDOWを生成、windowListへ追加
 };
 

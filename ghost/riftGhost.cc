@@ -11,3 +11,7 @@ const QON& RIFTGHOST::GetHead() const{
 const QON RIFTGHOST::PickHeadHorizDir(float ratio){
 	return rift.PickHorizonal(ratio);
 }
+
+float RIFTGHOST::GetSideStep(){
+	return js.GetAxis(3);
+}

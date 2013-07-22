@@ -13,6 +13,7 @@ class RIFTGHOST : public USERGHOST{
 public:
 	const QON& GetHead() const;
 	const QON PickHeadHorizDir(float ratio);
+	float GetSideStep();
 private:
 	RIFT rift;
 };

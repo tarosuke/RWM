@@ -162,15 +162,6 @@ void WINDOW::ROOT::Run(GHOST& user){
 		}
 		VIEW::UpdateAll(duration.GetDuration());
 		Draw();
-#if 0
-#if 0
-		t1.tv_sec = 0;
-		t1.tv_nsec = 14000000;
-		nanosleep(&t1, 0);
-#else
-		usleep(14000);
-#endif
-#endif
 	}
 }
 

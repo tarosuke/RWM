@@ -145,6 +145,9 @@ const ROOM& ROOM::Move(double& x, double& y, double& dx, double& dy, float radiu
 				//跳ね返す
 				dx += distance * nx * 2;
 				dy += distance * ny * 2;
+
+				//弾かれて既に確認済みの壁に当たるとチェックされないので再チェック
+				continue;
 			}
 		}
 	}

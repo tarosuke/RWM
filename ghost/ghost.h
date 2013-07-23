@@ -10,8 +10,8 @@
  * さらにOclulus Riftに対応したRIFTGHOST。リモートユーザのためのREMOTEGHOST。
  * 例えばRUBBERDUCHGHOST(別名：うなづきちゃん)のようなNPCのためのGHOSTもある。
  *
- * なお、定期的に呼ばれるという事はないのでバックグラウンドで何か処理が必要なときは、
- * pthreadあるいはforkなどでバックグラウンド処理のためのスレッドを起こす必要がある。
+ * なお、定期的にUpdateが呼ばれるのですぐに終わるような処理ならその時に実行する
+ * 時間がかかるようならpthreadやLinuxスレッドを使うこと。
  */
 #ifndef _GHOST_
 #define _GHOST_
@@ -22,6 +22,8 @@ public:
 	//頭操作
 	virtual const class QON& GetHead() const;
 	virtual const QON PickHeadHorizDir(float ratio);
+	//その他の動作
+	virtual void Update(const class AVATAR&);
 	//操作取得
 	virtual float GetRotate();
 	virtual float GetForwardStep();

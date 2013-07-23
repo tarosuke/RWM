@@ -21,3 +21,4 @@ float GHOST::GetForwardStep(){ return 0.0; }
 float GHOST::GetSideStep(){ return 0.0; }
 unsigned GHOST::GetActions(){ return 0; }
 
+void GHOST::Update(const class AVATAR&){}

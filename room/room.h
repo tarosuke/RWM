@@ -26,6 +26,9 @@ public:
 	void GetCenter(float& x, float& y, float& z) const;
 	void Draw(int remain, const class TEXTURE&) const;
 	void RegisterAvatar(TOOLBOX::NODE<class AVATAR>& node) const;
+	const TOOLBOX::QUEUE<class AVATAR>& GetAvatars(){
+		return avatars;
+	};
 protected:
 	static const float boxSize = 5000;
 

@@ -24,6 +24,9 @@ AVATAR::~AVATAR(){}
 
 
 void AVATAR::Update(float dt){
+	//ghostのアップデート
+	ghost.Update(*this);
+
 	//向き更新
 	const double rotAccelRatio(1.0 / (10.0 + fabsl(rotVelocity)));
 	rotVelocity = rotVelocity * (1.0 - rotAccelRatio) +

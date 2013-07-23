@@ -61,14 +61,18 @@ void ROOM::Draw(unsigned remain, const TEXTURE& texture) const{
 	//部屋の明るさ
 	glLightfv(GL_LIGHT0, GL_AMBIENT, brightness.raw);
 
-	//TODO:壁や床に開ける穴(描画する代わりにステンシルバッファを-1)
+	//壁や床に開ける穴(描画する代わりにステンシルバッファを-1)
 	glStencilFunc(GL_ALWAYS, remain - 1, ~0);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	for(TOOLBOX::QUEUE<LINKPANEL>::ITOR i(panels); i; i++){
-		(*i.Owner()).Draw();
+		(*i.Owner()).Draw(remain - 1);
 	}
 	glStencilFunc(GL_EQUAL, remain, ~0);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+	//再び描画できるようにする
+	glColorMask(1,1,1,1);
+	glDepthMask(1);
 
 	//床
 	glNormal3f(0, 1, 0);
@@ -104,6 +108,9 @@ void ROOM::Draw(unsigned remain, const TEXTURE& texture) const{
 	//最初の座標を設定して部屋を閉じる
 	VertexAndTexture(0, hl, vl);
 	glEnd();
+
+	//部屋以外の物体はステンシルテストはしない
+	glDisable(GL_STENCIL_TEST);
 
 	//TODO:固定オブジェクト
 

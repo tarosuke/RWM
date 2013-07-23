@@ -9,7 +9,7 @@
 
 class LINKPANEL{
 public:
-	void Draw(){};
+	void Draw(unsigned follow);
 };
 
 

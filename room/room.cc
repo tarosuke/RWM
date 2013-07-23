@@ -5,13 +5,14 @@
 
 #include "room.h"
 #include "texture.h"
+#include "linkPanel.h"
 #include <avatar/avatar.h>
 
 
 
+TOOLBOX::QUEUE<ROOM> ROOM::rooms;
 
-
-ROOM::ROOM(){
+ROOM::ROOM() : roomsNode(*this){
 }
 
 
@@ -48,13 +49,26 @@ void ROOM::FloorAndCeil(float h,
 	glEnd();
 }
 
-void ROOM::Draw(int remain, const TEXTURE& texture) const{
+void ROOM::Draw(unsigned remain, const TEXTURE& texture) const{
+	if(!remain){
+		//もう追いかけない
+		return;
+	}
+
 	glEnable(GL_TEXTURE);
+	glEnable(GL_STENCIL_TEST);
 
 	//部屋の明るさ
 	glLightfv(GL_LIGHT0, GL_AMBIENT, brightness.raw);
 
 	//TODO:壁や床に開ける穴(描画する代わりにステンシルバッファを-1)
+	glStencilFunc(GL_ALWAYS, remain - 1, ~0);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	for(TOOLBOX::QUEUE<LINKPANEL>::ITOR i(panels); i; i++){
+		(*i.Owner()).Draw();
+	}
+	glStencilFunc(GL_EQUAL, remain, ~0);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
 	//床
 	glNormal3f(0, 1, 0);
@@ -169,6 +183,28 @@ void ROOM::GetCenter(float& x, float& y, float& z) const{
 
 void ROOM::RegisterAvatar(TOOLBOX::NODE<AVATAR>& node) const{
 	avatars.Add(node);
+}
+
+void ROOM::RegisterLinkPanel(TOOLBOX::NODE<LINKPANEL>& node){
+	panels.Add(node);
+}
+
+
+
+ROOM::ROOMLINK::ROOMLINK(unsigned rn) : roomNo(rn), target(0){}
+
+ROOM::ROOMLINK::operator const ROOM*(){
+	if(target){
+		return target;
+	}
+
+	unsigned n(0);
+	for(TOOLBOX::QUEUE<ROOM>::ITOR i(ROOM::rooms); i; i++, n++){
+		if(n == roomNo){
+			return i.Owner();
+		}
+	}
+	return 0;
 }
 
 

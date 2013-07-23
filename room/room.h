@@ -24,13 +24,26 @@ public:
 	~ROOM();
 	const ROOM& Move(double& x, double& y, double& dx, double& dy, float radial) const;
 	void GetCenter(float& x, float& y, float& z) const;
-	void Draw(int remain, const class TEXTURE&) const;
+	void Draw(unsigned remain, const class TEXTURE&) const;
 	void RegisterAvatar(TOOLBOX::NODE<class AVATAR>& node) const;
+	void RegisterLinkPanel(TOOLBOX::NODE<class LINKPANEL>&);
 	const TOOLBOX::QUEUE<class AVATAR>& GetAvatars(){
 		return avatars;
 	};
+	class ROOMLINK{
+	public:
+		ROOMLINK(unsigned roomNo);
+		operator const ROOM*();
+	private:
+		unsigned roomNo;
+		ROOM* target;
+	};
 protected:
+	static TOOLBOX::QUEUE<ROOM> rooms;
+	TOOLBOX::NODE<ROOM> roomsNode;
 	static const float boxSize = 5000;
+
+	mutable TOOLBOX::QUEUE<class LINKPANEL> panels;
 
 	int numOfWalls;
 	struct PLANE{

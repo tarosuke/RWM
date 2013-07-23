@@ -6,6 +6,7 @@
 
 class VIEW{
 public:
+	static const unsigned roomFollowDepth = 16;
 	VIEW(int width, int height, class AVATAR&, const class TEXTURE&);
 	virtual ~VIEW();
 	static void DrawAll(){

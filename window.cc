@@ -29,7 +29,7 @@ static int glxAttrs[] = {
 	GLX_BLUE_SIZE, 8,
 	GLX_ALPHA_SIZE, 8,
 	GLX_DEPTH_SIZE, 24,
-	GLX_STENCIL_SIZE, 0,
+	GLX_STENCIL_SIZE, 8,
 	GLX_ACCUM_RED_SIZE, 0,
 	GLX_ACCUM_GREEN_SIZE, 0,
 	GLX_ACCUM_BLUE_SIZE, 0,
@@ -76,12 +76,17 @@ WINDOW::ROOT::ROOT() :
 	XFlush( xDisplay );
 	XSync(xDisplay, false);
 
+	//OpenGLに諸条件を設定
 	XVisualInfo *visual =
 		glXChooseVisual(xDisplay, DefaultScreen(xDisplay), glxAttrs);
 	glxContext = glXCreateContext(xDisplay, visual, NULL, True);
 	XFree(visual);
 
+	//設定した描画条件をカレントにする
 	glXMakeCurrent(xDisplay, rootWindowID, glxContext);
+
+	//部屋をたどる数をステンシルバッファの初期値に設定
+	glClearStencil(VIEW::roomFollowDepth);
 }
 
 WINDOW::ROOT::~ROOT(){
@@ -102,7 +107,11 @@ for(;; sleep(1000));
 
 
 void WINDOW::ROOT::Draw(){
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//バッファのクリア
+	glClear(GL_COLOR_BUFFER_BIT |
+		GL_DEPTH_BUFFER_BIT |
+		GL_STENCIL_BUFFER_BIT);
+
 	//基本設定
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_BLEND);

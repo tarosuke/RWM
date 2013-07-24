@@ -86,7 +86,7 @@ protected:
 
 class TESTROOM : public ROOM{
 public:
-	TESTROOM(){
+	TESTROOM(float offset){
 		const int now(4);
 		numOfWalls = now;
 		static const struct{
@@ -100,8 +100,8 @@ public:
 
 		for(int c(0); c < now; c++){
 			walls[c].x = positions[c].x;
-			walls[c].z = positions[c].z;
-			walls[c].texture.id = 4;
+			walls[c].z = positions[c].z + offset;
+			walls[c].texture.id = 3;
 			walls[c].texture.color.r =
 			walls[c].texture.color.g =
 			walls[c].texture.color.b = 0.5;

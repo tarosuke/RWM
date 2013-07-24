@@ -13,6 +13,7 @@
 TOOLBOX::QUEUE<ROOM> ROOM::rooms;
 
 ROOM::ROOM() : roomsNode(*this){
+	rooms.Add(roomsNode);
 }
 
 
@@ -57,6 +58,8 @@ void ROOM::Draw(unsigned remain, const TEXTURE& texture) const{
 
 	glEnable(GL_TEXTURE);
 	glEnable(GL_STENCIL_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	//部屋の明るさ
 	glLightfv(GL_LIGHT0, GL_AMBIENT, brightness.raw);
@@ -65,7 +68,7 @@ void ROOM::Draw(unsigned remain, const TEXTURE& texture) const{
 	glStencilFunc(GL_ALWAYS, remain - 1, ~0);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	for(TOOLBOX::QUEUE<LINKPANEL>::ITOR i(panels); i; i++){
-		(*i.Owner()).Draw(remain - 1);
+		(*i.Owner()).Draw(remain - 1, texture);
 	}
 	glStencilFunc(GL_EQUAL, remain, ~0);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -75,10 +78,12 @@ void ROOM::Draw(unsigned remain, const TEXTURE& texture) const{
 	glDepthMask(1);
 
 	//床
+	glFrontFace(GL_CW);
 	glNormal3f(0, 1, 0);
 	FloorAndCeil(floorHeight, floor, texture);
 
 	//天井
+	glFrontFace(GL_CCW);
 	glNormal3f(0, -1, 0);
 	FloorAndCeil(ceilHeight, ceil, texture);
 
@@ -89,6 +94,7 @@ void ROOM::Draw(unsigned remain, const TEXTURE& texture) const{
 		GL_AMBIENT_AND_DIFFUSE, walls[0].texture.color.raw);
 
 	//座標設定開始
+	glFrontFace(GL_CW);
 	glBegin(GL_TRIANGLE_STRIP);
 	float hl(0.0);
 	const float vl(ceilHeight - floorHeight);
@@ -205,13 +211,13 @@ ROOM::ROOMLINK::operator const ROOM*(){
 		return target;
 	}
 
-	unsigned n(0);
-	for(TOOLBOX::QUEUE<ROOM>::ITOR i(ROOM::rooms); i; i++, n++){
-		if(n == roomNo){
-			return i.Owner();
+	TOOLBOX::QUEUE<ROOM>::ITOR i(ROOM::rooms);
+	for(unsigned n(0); n < roomNo; n++, i++){
+		if(!i){
+			return 0;
 		}
 	}
-	return 0;
+	return i.Owner();;
 }
 
 

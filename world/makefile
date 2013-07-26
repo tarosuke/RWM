@@ -1,3 +1,3 @@
-target = room.a
+target = world.a
 COPTS += -I ..
 include ../make.in

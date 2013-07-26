@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #include <window.h>
-#include <view.h>
+#include <view/view.h>
 #include <toolbox/cyclic/cyclic.h>
 
 

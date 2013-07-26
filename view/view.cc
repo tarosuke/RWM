@@ -1,9 +1,9 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-#include <view.h>
-#include <room/texture.h>
-#include <room/room.h>
+#include "view.h"
+#include <world/texture.h>
+#include <world/room.h>
 #include <rift/rift.h>
 #include <avatar/avatar.h>
 #include <toolbox/qon/glqon.h>

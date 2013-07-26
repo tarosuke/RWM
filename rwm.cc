@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <room/texture.h>
+#include <world/texture.h>
 #include <image/ppm.h>
-#include <riftView.h>
-#include <room/room.h>
-#include <room/linkPanel.h>
+#include <view/riftView.h>
+#include <world/room.h>
+#include <world/linkPanel.h>
 #include <avatar/humanoid.h>
 #include <ghost/riftGhost.h>
 #include <window.h>

@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #include "avatar.h"
-#include <room/room.h>
+#include <world/room.h>
 #include <ghost/ghost.h>
 #include <toolbox/qon/glqon.h>
 

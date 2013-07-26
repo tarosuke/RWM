@@ -2,20 +2,23 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <GL/gl.h>
+
 #include "avatar.h"
+#include <world/world.h>
 #include <world/room.h>
 #include <ghost/ghost.h>
 #include <toolbox/qon/glqon.h>
 
 
-AVATAR::AVATAR(const ROOM& initialRoom, GHOST& g, float y) :
-	in(&initialRoom), roomNode(*this),
-	ghost(g){
+AVATAR::AVATAR(const WORLD& world, GHOST& g, float y) :
+	roomNode(*this), ghost(g), position(0, y, 0){
 	direction.Normalize();
-	float x, h, z;
-	initialRoom.GetCenter(x, h, z);
-	VQON p(x, h + y, z);
-	position = p;
+
+	const WORLD::ENTRY ep(world.GetEntry());
+	in = ep.room;
+assert(in);
+	position += ep.position;
 	(*in).RegisterAvatar(roomNode);
 }
 
@@ -48,7 +51,7 @@ void AVATAR::Update(float dt){
 
 		velocity += accel;
 	}
-	in = &((*in).Move)(position.i, position.k, velocity.i, velocity.k, 0.3);
+	position += velocity;
 	velocity *= 0.95;
 }
 

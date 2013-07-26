@@ -79,7 +79,7 @@ public:
 	void Draw() const;
 	void Update(float dt);
 	//構築/破壊子
-	HUMANOID(const class ROOM& initialRoom,
+	HUMANOID(const class WORLD& world,
 		const PROFILE&,
 		class GHOST&);
 	~HUMANOID();

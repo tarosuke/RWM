@@ -2,7 +2,6 @@
 #include <GL/glx.h>
 
 #include "view.h"
-#include <world/texture.h>
 #include <world/room.h>
 #include <rift/rift.h>
 #include <avatar/avatar.h>
@@ -12,11 +11,10 @@
 TOOLBOX::QUEUE<VIEW> VIEW::views;
 
 
-VIEW::VIEW(int width_, int height_, AVATAR& avatar_, const TEXTURE& t) :
+VIEW::VIEW(int width_, int height_, AVATAR& avatar_) :
 	node(*this),
 	width(width_),
 	height(height_),
-	texture(t),
 	avatar(avatar_),
 	displayList(glGenLists(1)){
 	views.Add(node);
@@ -33,7 +31,7 @@ VIEW::~VIEW(){
 }
 
 void VIEW::DrawForEye() const{
-	avatar.GetRoomIn().Draw(roomFollowDepth, texture);	//avatarがいる部屋から描画
+	avatar.GetRoomIn().Draw(roomFollowDepth); //avatarがいる部屋から描画
 }
 
 

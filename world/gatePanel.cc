@@ -1,6 +1,7 @@
 /******************************************************************* linkpanel
  * 他の部屋への穴
  */
+#if 0
 #include "linkPanel.h"
 #include "texture.h"
 
@@ -39,3 +40,4 @@ void LINKPANEL::Draw(unsigned remain, const TEXTURE& texture){
 	}
 }
 
+#endif

@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "texture.h"
+#include "texset.h"
 
 
-void TEXTURE::Load(const IMAGE& image){
+void TEXSET::Load(const IMAGE& image){
 	//サイズとか数とか読み込む
 	size = image.GetWidth();
 	numOfTextures = image.GetHeight() / size;
@@ -39,13 +39,13 @@ void TEXTURE::Load(const IMAGE& image){
 	loaded = true;
 }
 
-TEXTURE::~TEXTURE(){
+TEXSET::~TEXSET(){
 	if(loaded){
 		glDeleteTextures(numOfTextures, texNames);
 	}
 }
 
-void TEXTURE::Bind(unsigned id) const{
+void TEXSET::Bind(unsigned id) const{
 	if(loaded){
 		glBindTexture(GL_TEXTURE_2D,
 			id < maxNumOfTextures ? texNames[id] : 0);

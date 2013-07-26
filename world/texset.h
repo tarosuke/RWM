@@ -4,13 +4,13 @@
 #include <image/image.h>
 
 
-class TEXTURE{
+class TEXSET{
 public:
-	TEXTURE() : loaded(false){};
-	TEXTURE(const class IMAGE& image){
+	TEXSET() : loaded(false){};
+	TEXSET(const class IMAGE& image){
 		Load(image);
 	};
-	~TEXTURE();
+	~TEXSET();
 	void Load(const class IMAGE& image);
 	void Bind(unsigned id) const;
 private:

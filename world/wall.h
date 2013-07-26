@@ -1,13 +1,15 @@
-/************************************************************ 部屋の壁とか：panel
+/************************************************************ 部屋の壁とか：WALL
  *
  */
-#ifndef _PANEL_
-#define _PANEL_
+#ifndef _WALL_
+#define _WALL_
 
-#include <toolbox/queue/queue.h>
+#include "object.h"
 
-class PANEL{
-	PANEL();
+
+
+class WALL : public PANEL{
+	WALL();
 public:
 	struct PROFILE{
 		struct POINT{
@@ -18,12 +20,11 @@ public:
 		float floorHeight;
 		float ceilHeight;
 	};
-	PANEL(class ROOM&, const PROFILE&);
-	virtual ~PANEL();
-	virtual void Draw(const class TEXTURE&);
-	virtual void Move();
+	WALL(class ROOM&, const PROFILE&);
+	virtual ~WALL();
+	void Draw(const class TEXSET&);
+	void Collision(class OBJECT&);
 private:
-	TOOLBOX::NODE<PANEL> panelNode;
 	const PROFILE profile;
 	const float dx;
 	const float dz;

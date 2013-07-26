@@ -12,10 +12,10 @@
 
 
 HUMANOID::HUMANOID(
-	const class ROOM& initialRoom,
+	const class WORLD& world,
 	const PROFILE& profile_,
 	class GHOST& ghost_) :
-	AVATAR(initialRoom, ghost_, profile_.SightHeight()),
+	AVATAR(world, ghost_, profile_.SightHeight()),
 	profile(profile_),
 	sitting(false){
 }

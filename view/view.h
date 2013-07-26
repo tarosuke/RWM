@@ -7,7 +7,7 @@
 class VIEW{
 public:
 	static const unsigned roomFollowDepth = 16;
-	VIEW(int width, int height, class AVATAR&, const class TEXTURE&);
+	VIEW(int width, int height, class AVATAR&);
 	virtual ~VIEW();
 	static void DrawAll(){
 		for(TOOLBOX::QUEUE<VIEW>::ITOR i(views); i; i++){
@@ -37,7 +37,6 @@ protected:
 	float realWidth;
 	float realHeight;
 	float realDistance;
-	const class TEXTURE& texture;
 	class AVATAR& avatar;
 	const int displayList;
 	virtual void Draw() const;

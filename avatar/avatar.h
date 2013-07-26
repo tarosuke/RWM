@@ -22,7 +22,7 @@ public:
 	virtual void Draw() const = 0;
 	virtual void Update(float deltaT);
 	//構築/破壊子
-	AVATAR(const class ROOM& initialRoom,
+	AVATAR(const class WORLD& initialWorld,
 		class GHOST&,
 		float y);
 	virtual ~AVATAR();

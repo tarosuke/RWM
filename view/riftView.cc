@@ -4,15 +4,14 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include "riftView.h"
-#include <world/texture.h>
 #include <world/room.h>
 #include <rift/rift.h>
 #include <avatar/avatar.h>
 #include <toolbox/qon/glqon.h>
 
 
-RIFTVIEW::RIFTVIEW(AVATAR& avatar, const class TEXTURE& texture) :
-	VIEW(1280, 800, avatar, texture){
+RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
+	VIEW(1280, 800, avatar){
 }
 
 RIFTVIEW::~RIFTVIEW(){}

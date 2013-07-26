@@ -1,6 +1,7 @@
 /******************************************************************* linkpanel
  * 他の部屋への穴
  */
+#if 0
 #ifndef _LINKPANEL_
 #define _LINKPANEL_
 
@@ -24,3 +25,4 @@ private:
 
 #endif
 
+#endif

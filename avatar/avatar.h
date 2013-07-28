@@ -22,14 +22,12 @@ public:
 	//システムハンドラ
 	virtual void GetView() const;
 	//QBJECTハンドラ
-	virtual void Update(float deltaT);
+	void Update(float deltaT);
 	//構築/破壊子
 	AVATAR(const class WORLD& initialWorld,
 		class GHOST&,
 		float y);
 	virtual ~AVATAR();
-	//情報取得
-	const class ROOM& GetRoomIn(){ return *in; };
 protected:
 	class GHOST& ghost;
 	QON direction;

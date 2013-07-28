@@ -45,5 +45,21 @@ void WALL::Draw(const TEXSET& texSet){
 	glEnd();
 }
 
-void WALL::Collision(OBJECT&){
+void WALL::Collision(OBJECT& o){
+	//壁の法線
+	const float nx(dnz);
+	const float ny(-dnx);
+
+	//oの相対位置(oの半径でオフセット)
+	const VQON ora(o.Radius());
+	VQON op(nx * ora.i - profile.p0.x, 0, ny * ora.k - profile.p0.y);
+	op += o.Position();
+	VQON ov(o.Velocity());
+
+	//壁ベクトルとoの相対位置の内積を計算(正なら内側)
+	const float distance(op.k*dnx - op.i*dnz);
+	if(distance < 0){
+		VQON a(nx * distance * 2, 0, ny * distance * 2);
+		o.Accel(a);
+	}
 }

@@ -14,7 +14,7 @@
 class OBJECT{
 	OBJECT();
 public:
-	OBJECT(const class WORLD& world);
+	OBJECT(const class WORLD& world); //TODO:半径の設定
 	virtual ~OBJECT();
 	virtual void Update(float dt)=0;
 	virtual void Draw(const class TEXSET&) const =0;
@@ -25,10 +25,12 @@ public:
 	const VQON& Radius() const { return radius; };
 	void Accel(const VQON& accel){ //物体を加速して衝突の結果を反映する
 		velocity += accel;
+		position += accel;
 	};
-	virtual void MoveTo(const class ROOM&); //部屋を移動
+	virtual void MoveTo(class ROOM&); //部屋を移動
+	class ROOM& RoomIn(){ return *in; };
 protected:
-	const class ROOM* in;
+	class ROOM* in;
 	//位置や速度
 	VQON position;
 	VQON velocity;

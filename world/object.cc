@@ -6,7 +6,7 @@
 #include "world.h"
 
 
-OBJECT::OBJECT(const WORLD& world) : node(*this){
+OBJECT::OBJECT(const WORLD& world) : radius(0.3, 0, 0.3), node(*this){
 	const WORLD::ENTRY ep(world.GetEntry());
 	in = ep.room;
 	position += ep.position;
@@ -15,7 +15,7 @@ OBJECT::OBJECT(const WORLD& world) : node(*this){
 
 OBJECT::~OBJECT(){}
 
-void OBJECT::MoveTo(const ROOM& to){
+void OBJECT::MoveTo(ROOM& to){
 	in = &to;
 	to.AddObject(node);
 }

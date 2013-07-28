@@ -26,12 +26,12 @@ public:
 	void Collision(class OBJECT&);
 private:
 	const PROFILE profile;
-	const float dx;
+	const float dx; //壁の端点から端点
 	const float dz;
-	const float norm;
-	const float dnx;
+	const float norm; //壁の長さ
+	const float dnx; //正規化した壁の端点から端点
 	const float dnz;
-	const float txu0;
+	const float txu0; //テクスチャ座標
 	const float txu1;
 	const float txv0;
 	const float txv1;

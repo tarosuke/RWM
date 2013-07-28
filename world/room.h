@@ -33,16 +33,11 @@ public:
 	void AddObject(TOOLBOX::NODE<OBJECT>& node) const{
 		objects.Add(node);
 	};
-	//AVATAR関連
-	void RegisterAvatar(TOOLBOX::NODE<AVATAR>& node) const{
-		avatars.Add(node);
-	};
 private:
 	TOOLBOX::NODE<ROOM> node;
 	mutable TOOLBOX::QUEUE<GATE> gates;
 	mutable TOOLBOX::QUEUE<PANEL> panels;
 	mutable TOOLBOX::QUEUE<OBJECT> objects;
-	mutable TOOLBOX::QUEUE<AVATAR> avatars;
 	WORLD& world;
 	const TEXSET& texSet;
 };

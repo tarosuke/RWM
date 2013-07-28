@@ -31,7 +31,7 @@ VIEW::~VIEW(){
 }
 
 void VIEW::DrawForEye() const{
-	avatar.GetRoomIn().Draw(roomFollowDepth); //avatarがいる部屋から描画
+	avatar.RoomIn().Draw(roomFollowDepth); //avatarがいる部屋から描画
 }
 
 
@@ -53,7 +53,7 @@ void VIEW::Draw() const{
 
 
 void VIEW::Update(float dt){
-	avatar.Update(dt);
+	avatar.RoomIn().Update(dt);
 }
 
 

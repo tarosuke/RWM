@@ -12,7 +12,6 @@ public:
 	RIFTVIEW(class AVATAR&);
 	~RIFTVIEW();
 	void Draw() const;
-	void Update(float);
 private:
 };
 

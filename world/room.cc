@@ -61,26 +61,18 @@ void ROOM::Draw(unsigned remain) const{
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR i(objects); i; i++){
 		(*i).Draw(texSet);
 	}
-
-	//AVATARを描画
-	for(TOOLBOX::QUEUE<AVATAR>::ITOR i(avatars); i; i++){
-		(*i).Draw(texSet);
-	}
 }
 
 void ROOM::Update(float dt){
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR i(objects); i; i++){
 		(*i).Update(dt);
 	}
-	for(TOOLBOX::QUEUE<AVATAR>::ITOR i(avatars); i; i++){
-		(*i).Update(dt);
-	}
 
-	//TODO:衝突判定、再移動
-// 	for(TOOLBOX::QUEUE<OBJECT>::ITOR i(movables); i; i++){
-// 		CollisionObjects(i, links);
-// 		CollisionObjects(i, inMovables);
-// 		CollisionObjects(i, movables);
-// 	}
+	//TODO:OBJECT同士の衝突処理
+	for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
+		for(TOOLBOX::QUEUE<PANEL>::ITOR p(panels); p; p++){
+		(*p).Collision(*o);
+		}
+	}
 }
 

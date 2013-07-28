@@ -63,8 +63,3 @@ void RIFTVIEW::Draw() const{
 }
 
 
-void RIFTVIEW::Update(float dt){
-	avatar.Update(dt);
-}
-
-

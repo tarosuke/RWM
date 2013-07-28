@@ -43,15 +43,19 @@ WORLD::WORLD(const char* worldFile){
 	wp.p1.y = 1;
 	new WALL(room, wp);
 
-	wp.p0.y = -1;
-	wp.p1.y = 1;
+	wp.texOffset.x = 2 / 0.3;
+	wp.p0.y = 1;
+	wp.p1.y = -1;
 	wp.floorHeight = 0;
 	wp.ceilHeight = 0.7;
-// 	new WALL(room, wp);
+	new WALL(room, wp);
 	wp.floorHeight = 2;
 	wp.ceilHeight = 2.4;
-// 	new WALL(room, wp);
+	wp.texOffset.y = 2 / 0.3;
+	new WALL(room, wp);
 
+	wp.texOffset.x = 4 / 0.3;
+	wp.texOffset.y = 0;
 	wp.floorHeight = 0;
 	wp.ceilHeight = 2.4;
 	wp.p0.y = -1;

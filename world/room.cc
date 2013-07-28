@@ -8,6 +8,7 @@
 #include <avatar/avatar.h>
 
 #include <GL/gl.h>
+#include <stdio.h>
 
 
 ROOM::ROOM(WORLD& into) :
@@ -41,7 +42,7 @@ void ROOM::Draw(unsigned remain) const{
 
 	//リンクオブジェクトを描画
 	glStencilFunc(GL_ALWAYS, remain - 1, ~0);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 	for(TOOLBOX::QUEUE<GATE>::ITOR i(gates); i; i++){
 		(*i).Draw(remain - 1, texSet);
 	}
@@ -68,11 +69,22 @@ void ROOM::Update(float dt){
 		(*i).Update(dt);
 	}
 
-	//TODO:OBJECT同士の衝突処理
+	//衝突処理
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
 		for(TOOLBOX::QUEUE<PANEL>::ITOR p(panels); p; p++){
-		(*p).Collision(*o);
+			(*p).Collision(*o);
 		}
 	}
+	for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
+		for(TOOLBOX::QUEUE<OBJECT>::ITOR p(objects); p; p++){
+			OBJECT* const o0(o);
+			OBJECT* const o1(p);
+			if(o0 != o1){
+				(*o1).Collision(*o0);
+			}
+		}
+	}
+
+	//TODO:通過処理
 }
 

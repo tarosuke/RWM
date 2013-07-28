@@ -1,28 +1,36 @@
-/******************************************************************* linkpanel
+/******************************************************************* gatepanel
  * 他の部屋への穴
  */
-#if 0
-#ifndef _LINKPANEL_
-#define _LINKPANEL_
+#ifndef _GATEPANEL_
+#define _GATEPANEL_
 
-#include "room.h"
+#include "object.h"
+#include "world.h"
 
 
-class LINKPANEL{
-	LINKPANEL();
+class GATEPANEL : public GATE{
+	GATEPANEL();
 public:
-	LINKPANEL(unsigned linkTo) : roomsNode(*this), link(linkTo){};
-	void Draw(unsigned remain, const class TEXTURE&);
-	TOOLBOX::NODE<LINKPANEL> roomsNode;
+	struct PROFILE{
+		struct POINT{
+			float x;
+			float z;
+		}p0, p1;
+		unsigned toRoom;
+		float floorHeight;
+		float ceilHeight;
+	};
+	GATEPANEL(WORLD& world, class ROOM& into, const PROFILE& profile_) :
+		GATE(into),
+		profile(profile_),
+		to(world, profile_.toRoom){
+	};
+	void Draw(unsigned remain, const class TEXSET&);
+	void Collision(class OBJECT&);
 private:
- 	ROOM::ROOMLINK link;
-// 	const float left;
-// 	const float top;
-// 	const float right;
-// 	const float bottom;
+	const PROFILE profile;
+	WORLD::GATE to;
 };
 
-
-#endif
 
 #endif

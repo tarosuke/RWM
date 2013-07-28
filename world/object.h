@@ -19,7 +19,7 @@ public:
 	virtual void Update(float dt)=0;
 	virtual void Draw(const class TEXSET&) const =0;
 	//衝突処理関連
-	virtual void Collision(){}; //TODO:OBJECT同士の衝突処理
+	virtual void Collision(const OBJECT&){}; //TODO:OBJECT同士の衝突処理
 	const VQON& Position() const { return position; };
 	const VQON& Velocity() const { return velocity; };
 	const VQON& Radius() const { return radius; };

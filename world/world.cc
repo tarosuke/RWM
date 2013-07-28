@@ -1,11 +1,14 @@
 /*************************************************************** a world:WORLD
  *
  */
+#include <stdio.h>
+
 #include "world.h"
 #include "room.h"
 #include "texset.h"
 #include "wall.h"
 #include "plane.h"
+#include "gatePanel.h"
 
 #include <image/ppm.h>
 
@@ -22,6 +25,7 @@ WORLD::WORLD(const char* worldFile){
 	PPM textureImage("textureSet.ppm");
 	texSet.Load(textureImage);
 
+#if 1
 	ROOM& room(*new ROOM(*this));
 	WALL::PROFILE wp = {
 		{ -2, -3 }, { 2, -3 },
@@ -34,7 +38,23 @@ WORLD::WORLD(const char* worldFile){
 	wp.p0.y = 3;
 	wp.p1.x = -2;
 	new WALL(room, wp);
+
 	wp.p0.x = -2;
+	wp.p1.y = 1;
+	new WALL(room, wp);
+
+	wp.p0.y = -1;
+	wp.p1.y = 1;
+	wp.floorHeight = 0;
+	wp.ceilHeight = 0.7;
+// 	new WALL(room, wp);
+	wp.floorHeight = 2;
+	wp.ceilHeight = 2.4;
+// 	new WALL(room, wp);
+
+	wp.floorHeight = 0;
+	wp.ceilHeight = 2.4;
+	wp.p0.y = -1;
 	wp.p1.y = -3;
 	new WALL(room, wp);
 
@@ -48,29 +68,32 @@ WORLD::WORLD(const char* worldFile){
 	pp.floor = false;
 	new PLANE(room, pp);
 
+	const GATEPANEL::PROFILE gp = {
+		{ -2, -1 }, { -2, 1 },
+		1, 0.7, 2.0
+	};
+	new GATEPANEL(*this, room, gp);
+#endif
+
 	//天箱
 	ROOM& skyBox(*new ROOM(*this));
-	wp.p0.x = wp.p1.x = -1000;
-	wp.p1.y = -1000;
-	wp.p0.y = 1000;
-	wp.texSize.x = 2000;
-	wp.texSize.y = -2000;
-	wp.textureID = 5;
-	wp.floorHeight = -1000;
-	wp.ceilHeight = 1000;
-	new WALL(skyBox, wp);
-	wp.p1.x = 1000;
-	wp.p0.y = wp.p1.y = -1000;
-	wp.textureID = 6;
-	new WALL(skyBox, wp);
-	wp.p0.x = wp.p1.x = wp.p1.y = 1000;
-	wp.p0.y = -1000;
-	wp.textureID = 7;
-	new WALL(skyBox, wp);
-	wp.p1.x = -1000;
-	wp.p0.y = wp.p1.y = wp.p0.x = 1000;
-	wp.textureID = 8;
-	new WALL(skyBox, wp);
+	WALL::PROFILE sp = {
+		{ -1000, 1000 }, { -1000, -1000 },
+		{ 0, 0 }, { 2000, -2000 },
+		5, -1000, 1000 };
+	new WALL(skyBox, sp);
+	sp.p1.x = 1000;
+	sp.p0.y = sp.p1.y = -1000;
+	sp.textureID = 6;
+	new WALL(skyBox, sp);
+	sp.p0.x = sp.p1.x = sp.p1.y = 1000;
+	sp.p0.y = -1000;
+	sp.textureID = 7;
+	new WALL(skyBox, sp);
+	sp.p1.x = -1000;
+	sp.p0.y = sp.p1.y = sp.p0.x = 1000;
+	sp.textureID = 8;
+	new WALL(skyBox, sp);
 
 	PLANE::PROFILE bpp = {
 		{ { -1000, -1000 }, { 1000, -1000 },
@@ -82,6 +105,7 @@ WORLD::WORLD(const char* worldFile){
 	bpp.textureID = 10;
 	bpp.floor = true;
 	new PLANE(skyBox, bpp);
+printf("room:%p skyBox:%p.\n", &room, &skyBox);
 }
 
 void WORLD::Add(TOOLBOX::NODE<ROOM>& room){
@@ -97,7 +121,10 @@ const WORLD::ENTRY& WORLD::GetEntry() const{
 WORLD::GATE::operator ROOM*(){
 	if(!room){
 		TOOLBOX::QUEUE<ROOM>::ITOR r(world.rooms);
-		for(unsigned n(0); n < rID; n++, r++);
+		for(unsigned n(0); n < rID && r; n++, r++){
+printf("id:%u %p.\n", n, (ROOM*)r);
+		};
+printf("%p.\n", (ROOM*)r);
 		room = r;
 	}
 	return room;

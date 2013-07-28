@@ -76,7 +76,7 @@ public:
 
 	//システムハンドラ
 	void GetView() const;
-	void Draw() const;
+	void Draw(const class TEXSET&) const;
 	void Update(float dt);
 	//構築/破壊子
 	HUMANOID(const class WORLD& world,

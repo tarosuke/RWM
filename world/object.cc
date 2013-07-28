@@ -3,13 +3,24 @@
  */
 #include "object.h"
 #include "room.h"
+#include "world.h"
 
 
-OBJECT::OBJECT(ROOM& into) : node(*this){
-	into.AddObject(node);
+OBJECT::OBJECT(const WORLD& world) : node(*this){
+	const WORLD::ENTRY ep(world.GetEntry());
+	in = ep.room;
+	position += ep.position;
+	(*in).AddObject(node);
 }
 
 OBJECT::~OBJECT(){}
+
+void OBJECT::MoveTo(const ROOM& to){
+	in = &to;
+	to.AddObject(node);
+}
+
+
 
 PANEL::PANEL(ROOM& into) : node(*this){
 	into.AddPanel(node);

@@ -9,8 +9,10 @@
 #include <toolbox/qon//qon.h>
 #include <toolbox/queue/queue.h>
 
+#include <world/object.h>
 
-class AVATAR{
+
+class AVATAR : public OBJECT{
 	AVATAR();
 	void operator=(AVATAR&);
 public:
@@ -19,7 +21,7 @@ public:
 	};
 	//システムハンドラ
 	virtual void GetView() const;
-	virtual void Draw() const = 0;
+	//QBJECTハンドラ
 	virtual void Update(float deltaT);
 	//構築/破壊子
 	AVATAR(const class WORLD& initialWorld,
@@ -29,14 +31,11 @@ public:
 	//情報取得
 	const class ROOM& GetRoomIn(){ return *in; };
 protected:
-	const class ROOM* in;
-	TOOLBOX::NODE<AVATAR> roomNode;
 	class GHOST& ghost;
-	VQON position;
-	VQON velocity;
 	QON direction;
 	double rotVelocity;
 	void GetModel() const;
+private:
 };
 
 

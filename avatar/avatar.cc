@@ -12,14 +12,9 @@
 
 
 AVATAR::AVATAR(const WORLD& world, GHOST& g, float y) :
-	roomNode(*this), ghost(g), position(0, y, 0){
+	OBJECT(world), ghost(g){
 	direction.Normalize();
-
-	const WORLD::ENTRY ep(world.GetEntry());
-	in = ep.room;
-assert(in);
-	position += ep.position;
-	(*in).RegisterAvatar(roomNode);
+	position.j = y;
 }
 
 AVATAR::~AVATAR(){}

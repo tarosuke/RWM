@@ -64,7 +64,7 @@ void ROOM::Draw(unsigned remain) const{
 
 	//AVATARを描画
 	for(TOOLBOX::QUEUE<AVATAR>::ITOR i(avatars); i; i++){
-		(*i).Draw();
+		(*i).Draw(texSet);
 	}
 }
 

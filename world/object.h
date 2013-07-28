@@ -4,6 +4,7 @@
 #ifndef _OBJECT_
 #define _OBJECT_
 
+#include <toolbox/qon//qon.h>
 #include <toolbox/queue/queue.h>
 
 
@@ -13,11 +14,25 @@
 class OBJECT{
 	OBJECT();
 public:
-	OBJECT(class ROOM& into);
+	OBJECT(const class WORLD& world);
 	virtual ~OBJECT();
-	virtual void Collision(OBJECT&)=0;
 	virtual void Update(float dt)=0;
-	virtual void Draw(const class TEXSET&)=0;
+	virtual void Draw(const class TEXSET&) const =0;
+	//衝突処理関連
+	virtual void Collision(){}; //TODO:OBJECT同士の衝突処理
+	const VQON& Position() const { return position; };
+	const VQON& Velocity() const { return velocity; };
+	const VQON& Radius() const { return radius; };
+	void Accel(const VQON& accel){ //物体を加速して衝突の結果を反映する
+		velocity += accel;
+	};
+	virtual void MoveTo(const class ROOM&); //部屋を移動
+protected:
+	const class ROOM* in;
+	//位置や速度
+	VQON position;
+	VQON velocity;
+	VQON radius;
 private:
 	TOOLBOX::NODE<OBJECT> node;
 };
@@ -30,8 +45,8 @@ class PANEL{
 public:
 	PANEL(class ROOM& into);
 	virtual ~PANEL();
-	virtual void Collision(OBJECT&)=0;
 	virtual void Draw(const class TEXSET&)=0;
+	virtual void Collision(OBJECT&)=0;
 private:
 	TOOLBOX::NODE<PANEL> node;
 };
@@ -44,8 +59,8 @@ class GATE{
 public:
 	GATE(class ROOM& into);
 	virtual ~GATE();
-	virtual void Collision(GATE&)=0;
 	virtual void Draw(unsigned remain, const class TEXSET&)=0;
+	virtual void Collision(OBJECT&)=0;
 private:
 	TOOLBOX::NODE<GATE> node;
 };

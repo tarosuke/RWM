@@ -30,7 +30,7 @@ public:
 	void AddPanel(TOOLBOX::NODE<PANEL>& node){
 		panels.Add(node);
 	};
-	void AddObject(TOOLBOX::NODE<OBJECT>& node){
+	void AddObject(TOOLBOX::NODE<OBJECT>& node) const{
 		objects.Add(node);
 	};
 	//AVATAR関連

@@ -46,7 +46,7 @@ void HUMANOID::Update(float dt){
 	AVATAR::Update(dt);
 }
 
-void HUMANOID::Draw() const{
+void HUMANOID::Draw(const class TEXSET&) const{
 	//体
 	glLineWidth(5);
 	glPushMatrix();

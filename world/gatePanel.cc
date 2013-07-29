@@ -38,6 +38,8 @@ void GATEPANEL::Draw(unsigned remain, const TEXSET& texSet){
 		 glVertex3f(profile.p1.x, profile.ceilHeight, profile.p1.z);
 		glEnd();
 		(*next).Draw(remain);
+		glEnable(GL_STENCIL_TEST);
+		glEnable(GL_CULL_FACE);
 	}
 }
 

@@ -25,7 +25,6 @@ WORLD::WORLD(const char* worldFile){
 	PPM textureImage("textureSet.ppm");
 	texSet.Load(textureImage);
 
-#if 1
 	ROOM& room(*new ROOM(*this));
 	WALL::PROFILE wp = {
 		{ -2, -3 }, { 2, -3 },
@@ -38,27 +37,7 @@ WORLD::WORLD(const char* worldFile){
 	wp.p0.y = 3;
 	wp.p1.x = -2;
 	new WALL(room, wp);
-
 	wp.p0.x = -2;
-	wp.p1.y = 1;
-	new WALL(room, wp);
-
-	wp.texOffset.x = 2 / 0.3;
-	wp.p0.y = 1;
-	wp.p1.y = -1;
-	wp.floorHeight = 0;
-	wp.ceilHeight = 0.7;
-	new WALL(room, wp);
-	wp.floorHeight = 2;
-	wp.ceilHeight = 2.4;
-	wp.texOffset.y = 2 / 0.3;
-	new WALL(room, wp);
-
-	wp.texOffset.x = 4 / 0.3;
-	wp.texOffset.y = 0;
-	wp.floorHeight = 0;
-	wp.ceilHeight = 2.4;
-	wp.p0.y = -1;
 	wp.p1.y = -3;
 	new WALL(room, wp);
 
@@ -77,7 +56,6 @@ WORLD::WORLD(const char* worldFile){
 		1, 0.7, 2.0
 	};
 	new GATEPANEL(*this, room, gp);
-#endif
 
 	//天箱
 	ROOM& skyBox(*new ROOM(*this));

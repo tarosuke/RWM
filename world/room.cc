@@ -85,6 +85,11 @@ void ROOM::Update(float dt){
 		}
 	}
 
-	//TODO:通過処理
+	//通過処理
+	for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
+		for(TOOLBOX::QUEUE<GATE>::ITOR g(gates); g; g++){
+			(*g).Collision(*o);
+		}
+	}
 }
 

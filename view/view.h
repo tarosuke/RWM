@@ -28,7 +28,7 @@ public:
 protected:
 	static const float defaultDotPitch = 0.003;
 	static const float defaultDisplayDistance = 0.7;
-	static const float nearDistance = 0.1;
+	static const float nearDistance = 0.001;
 	static const float farDistance = 10000;
 	static TOOLBOX::QUEUE<VIEW> views;
 	TOOLBOX::NODE<VIEW> node;

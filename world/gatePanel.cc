@@ -6,12 +6,26 @@
 #include "room.h"
 
 #include <GL/gl.h>
+#include <math.h>
 #include <stdio.h>
+
+
+
+GATEPANEL::GATEPANEL(WORLD& world, ROOM& into, const PROFILE& profile_) :
+	GATE(into),
+	profile(profile_),
+	to(world, profile_.toRoom),
+	dx(profile_.p1.x - profile_.p0.x),
+	dz(profile_.p1.z - profile_.p0.z),
+	norm(sqrt(dx*dx + dz*dz)),
+	dnx(dx / norm),
+	dnz(dz / norm){};
+
 
 
 void GATEPANEL::Draw(unsigned remain, const TEXSET& texSet){
 	const ROOM* const next(to);
-	glFrontFace(GL_CCW);
+	glFrontFace(GL_CW);
 	if(!next){
 		//リンク先がない場合
 		glColorMask(1,1,1,1);
@@ -38,61 +52,31 @@ void GATEPANEL::Draw(unsigned remain, const TEXSET& texSet){
 		 glVertex3f(profile.p1.x, profile.ceilHeight, profile.p1.z);
 		glEnd();
 		(*next).Draw(remain);
+
+		//隣の部屋を描画して壊れた設定を元に戻す
+		glStencilFunc(GL_ALWAYS, remain, ~0);
+		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 		glEnable(GL_STENCIL_TEST);
 		glEnable(GL_CULL_FACE);
 	}
 }
 
 
-void GATEPANEL::Collision(class OBJECT&){}; //TODO:通過処理
+void GATEPANEL::Collision(class OBJECT& o){
+	//oの相対位置
+	VQON op(-profile.p0.x, 0, -profile.p0.z);
+	op += o.Position();
+	VQON ov(o.Velocity());
 
-
-
-
-
-
-
-
-
-
-
-#if 0
-#include "linkPanel.h"
-#include "texture.h"
-
-
-void LINKPANEL::Draw(unsigned remain, const TEXTURE& texture){
-	//ステンシルバッファにだけ描画させる
-	const ROOM* const next(link);
-
-	glFrontFace(GL_CCW);
-	if(!next){
-		//リンク先がない場合
-		glColorMask(1,1,1,1);
-		glDepthMask(1);
-		texture.Bind(4);
-		glBegin(GL_TRIANGLE_STRIP);
-			glTexCoord2f(0.9 / 0.3, 2 / 0.3);
-			glVertex3f(0.6, 0, 3);
-			glTexCoord2f(0.9 / 0.3, 0);
-			glVertex3f(0.6, 2, 3);
-			glTexCoord2f(0, 2 / 0.3);
-			glVertex3f(1.5, 0, 3);
-			glTexCoord2f(0, 0);
-			glVertex3f(1.5, 2, 3);
-		glEnd();
-	}else{
-		//TODO:リンク先がある場合
-		glColorMask(0,0,0,0);
-		glDepthMask(0);
-		glBegin(GL_TRIANGLE_STRIP);
-			glVertex3f(0.6, 0, 3);
-			glVertex3f(0.6, 2, 3);
-			glVertex3f(1.5, 0, 3);
- 			glVertex3f(1.5, 2, 3);
-		glEnd();
-		(*next).Draw(remain, texture);
+	//壁ベクトルとoの相対位置の内積を計算(正なら内側)
+	const float distance(op.k*dnx - op.i*dnz);
+	if(distance < 0){
+		ROOM* const next(to);
+		if(next && profile.throuable){
+			o.MoveTo(*next);
+		}else{
+			//TODO:反発
+		}
 	}
 }
 
-#endif

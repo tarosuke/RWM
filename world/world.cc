@@ -30,7 +30,7 @@ WORLD::WORLD(const char* worldFile){
 		{ -2, -3 }, { 2, -3 },
 		{ 0, 0 }, { 0.3, 0.3 },
 		3, 0.0, 2.4 };
-	new WALL(room, wp);
+// 	new WALL(room, wp);
 	wp.p0.x = 2;
 	wp.p1.y = 3;
 	new WALL(room, wp);
@@ -39,7 +39,7 @@ WORLD::WORLD(const char* worldFile){
 	new WALL(room, wp);
 	wp.p0.x = -2;
 	wp.p1.y = -3;
-	new WALL(room, wp);
+// 	new WALL(room, wp);
 
 	PLANE::PROFILE pp = {
 		{ { -2, -3 }, { 2, -3 }, { 2, 3 }, { -2, 3 } },
@@ -51,10 +51,17 @@ WORLD::WORLD(const char* worldFile){
 	pp.floor = false;
 	new PLANE(room, pp);
 
-	const GATEPANEL::PROFILE gp = {
-		{ -2, -1 }, { -2, 1 },
-		1, 0.7, 2.0
+	GATEPANEL::PROFILE gp = {
+		{ -2, 1 }, { -2, -1 },
+		1, 0.7, 2.0, false
 	};
+	new GATEPANEL(*this, room, gp);
+	gp.p0.x = -2;
+	gp.p1.x = 2;
+	gp.p0.z = gp.p1.z = -3;
+	gp.floorHeight = 0;
+	gp.ceilHeight = 2.4;
+	gp.throuable = true;
 	new GATEPANEL(*this, room, gp);
 
 	//天箱
@@ -87,7 +94,6 @@ WORLD::WORLD(const char* worldFile){
 	bpp.textureID = 10;
 	bpp.floor = true;
 	new PLANE(skyBox, bpp);
-printf("room:%p skyBox:%p.\n", &room, &skyBox);
 }
 
 void WORLD::Add(TOOLBOX::NODE<ROOM>& room){
@@ -103,10 +109,7 @@ const WORLD::ENTRY& WORLD::GetEntry() const{
 WORLD::GATE::operator ROOM*(){
 	if(!room){
 		TOOLBOX::QUEUE<ROOM>::ITOR r(world.rooms);
-		for(unsigned n(0); n < rID && r; n++, r++){
-printf("id:%u %p.\n", n, (ROOM*)r);
-		};
-printf("%p.\n", (ROOM*)r);
+		for(unsigned n(0); n < rID && r; n++, r++);
 		room = r;
 	}
 	return room;

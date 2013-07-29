@@ -19,17 +19,19 @@ public:
 		unsigned toRoom;
 		float floorHeight;
 		float ceilHeight;
+		bool throuable;
 	};
-	GATEPANEL(WORLD& world, class ROOM& into, const PROFILE& profile_) :
-		GATE(into),
-		profile(profile_),
-		to(world, profile_.toRoom){
-	};
+	GATEPANEL(WORLD& world, class ROOM& into, const PROFILE& profile);
 	void Draw(unsigned remain, const class TEXSET&);
 	void Collision(class OBJECT&);
 private:
 	const PROFILE profile;
 	WORLD::GATE to;
+	const float dx; //壁の端点から端点
+	const float dz;
+	const float norm; //壁の長さ
+	const float dnx; //正規化した壁の端点から端点
+	const float dnz;
 };
 
 

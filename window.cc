@@ -132,13 +132,13 @@ void WINDOW::ROOT::Draw(){
 	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0);
 
 	//フォグ
-	glFogi(GL_FOG_MODE, GL_LINEAR);
-	glFogi(GL_FOG_START, 10);
-	glFogi(GL_FOG_END, 5000);
-	const GLfloat fogColor[] = { 0.6, 0.6, 0.6, 0.6 };
-	glFogfv(GL_FOG_COLOR, fogColor);
-	glHint(GL_FOG_HINT, GL_DONT_CARE);
-	glEnable(GL_FOG);
+// 	glFogi(GL_FOG_MODE, GL_LINEAR);
+// 	glFogi(GL_FOG_START, 10);
+// 	glFogi(GL_FOG_END, 5000);
+// 	const GLfloat fogColor[] = { 0.6, 0.6, 0.6, 0.6 };
+// 	glFogfv(GL_FOG_COLOR, fogColor);
+// 	glHint(GL_FOG_HINT, GL_DONT_CARE);
+// 	glEnable(GL_FOG);
 
 	VIEW::DrawAll();
 	glXSwapBuffers(xDisplay, rootWindowID);

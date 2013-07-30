@@ -6,6 +6,7 @@
 #include "object.h"
 
 #include <avatar/avatar.h>
+#include <view/view.h>
 
 #include <GL/gl.h>
 #include <stdio.h>
@@ -50,7 +51,9 @@ void ROOM::Draw(unsigned remain) const{
 	//壁や床、天井を描画
 	glColorMask(1,1,1,1);
 	glDepthMask(1);
-	glStencilFunc(GL_EQUAL, remain, ~0);
+	glStencilFunc(
+		VIEW::roomFollowDepth - 1 <= remain ?
+		GL_LEQUAL : GL_EQUAL, remain, ~0);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	for(TOOLBOX::QUEUE<PANEL>::ITOR i(panels); i; i++){
 		(*i).Draw(texSet);

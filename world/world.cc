@@ -30,7 +30,7 @@ WORLD::WORLD(const char* worldFile){
 		{ -2, -3 }, { 2, -3 },
 		{ 0, 0 }, { 0.3, 0.3 },
 		3, 0.0, 2.4 };
-// 	new WALL(room, wp);
+	new WALL(room, wp);
 	wp.p0.x = 2;
 	wp.p1.y = 3;
 	new WALL(room, wp);
@@ -39,7 +39,7 @@ WORLD::WORLD(const char* worldFile){
 	new WALL(room, wp);
 	wp.p0.x = -2;
 	wp.p1.y = -3;
-// 	new WALL(room, wp);
+	new WALL(room, wp);
 
 	PLANE::PROFILE pp = {
 		{ { -2, -3 }, { 2, -3 }, { 2, 3 }, { -2, 3 } },
@@ -56,11 +56,11 @@ WORLD::WORLD(const char* worldFile){
 		1, 0.7, 2.0, false
 	};
 	new GATEPANEL(*this, room, gp);
-	gp.p0.x = -2;
-	gp.p1.x = 2;
+	gp.p0.x = -1.5;
+	gp.p1.x = 1.5;
 	gp.p0.z = gp.p1.z = -3;
 	gp.floorHeight = 0;
-	gp.ceilHeight = 2.4;
+	gp.ceilHeight = 2;
 	gp.throuable = true;
 	new GATEPANEL(*this, room, gp);
 

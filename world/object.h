@@ -62,7 +62,7 @@ public:
 	GATE(class ROOM& into);
 	virtual ~GATE();
 	virtual void Draw(unsigned remain, const class TEXSET&)=0;
-	virtual void Collision(OBJECT&)=0;
+	virtual bool Collision(OBJECT&)=0;
 private:
 	TOOLBOX::NODE<GATE> node;
 };

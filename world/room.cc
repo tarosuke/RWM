@@ -42,18 +42,18 @@ void ROOM::Draw(unsigned remain) const{
 	glLightfv(GL_LIGHT0, GL_AMBIENT, brightness);
 
 	//リンクオブジェクトを描画
-	glStencilFunc(GL_ALWAYS, remain - 1, ~0);
-	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 	for(TOOLBOX::QUEUE<GATE>::ITOR i(gates); i; i++){
-		(*i).Draw(remain - 1, texSet);
+		(*i).Draw(remain, texSet);
 	}
 
 	//壁や床、天井を描画
 	glColorMask(1,1,1,1);
 	glDepthMask(1);
-	glStencilFunc(
-		VIEW::roomFollowDepth - 1 <= remain ?
-		GL_LEQUAL : GL_EQUAL, remain, ~0);
+	if(VIEW::roomFollowDepth == remain){
+		glStencilFunc(GL_EQUAL, remain, ~0);
+	}else{
+		glStencilFunc(GL_EQUAL, remain, ~0);
+	}
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	for(TOOLBOX::QUEUE<PANEL>::ITOR i(panels); i; i++){
 		(*i).Draw(texSet);
@@ -72,10 +72,20 @@ void ROOM::Update(float dt){
 		(*i).Update(dt);
 	}
 
-	//衝突処理
+	//通過処理
+	bool goingNext(false);
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
-		for(TOOLBOX::QUEUE<PANEL>::ITOR p(panels); p; p++){
-			(*p).Collision(*o);
+		for(TOOLBOX::QUEUE<GATE>::ITOR g(gates); g; g++){
+			goingNext |= (*g).Collision(*o);
+		}
+	}
+
+	//衝突処理
+	if(!goingNext){ //GATEを通過しようとしているときは壁には衝突しない
+		for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
+			for(TOOLBOX::QUEUE<PANEL>::ITOR p(panels); p; p++){
+				(*p).Collision(*o);
+			}
 		}
 	}
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
@@ -85,13 +95,6 @@ void ROOM::Update(float dt){
 			if(o0 != o1){
 				(*o1).Collision(*o0);
 			}
-		}
-	}
-
-	//通過処理
-	for(TOOLBOX::QUEUE<OBJECT>::ITOR o(objects); o; o++){
-		for(TOOLBOX::QUEUE<GATE>::ITOR g(gates); g; g++){
-			(*g).Collision(*o);
 		}
 	}
 }

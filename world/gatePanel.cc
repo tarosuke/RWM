@@ -25,6 +25,8 @@ GATEPANEL::GATEPANEL(WORLD& world, ROOM& into, const PROFILE& profile_) :
 
 void GATEPANEL::Draw(unsigned remain, const TEXSET& texSet){
 	const ROOM* const next(to);
+	glStencilFunc(GL_EQUAL, remain, ~0);
+	glStencilOp(GL_KEEP, GL_DECR, GL_DECR);
 	glFrontFace(GL_CW);
 	if(!next){
 		//リンク先がない場合
@@ -51,18 +53,19 @@ void GATEPANEL::Draw(unsigned remain, const TEXSET& texSet){
 		 glVertex3f(profile.p1.x, profile.floorHeight, profile.p1.z);
 		 glVertex3f(profile.p1.x, profile.ceilHeight, profile.p1.z);
 		glEnd();
-		(*next).Draw(remain);
+		(*next).Draw(remain - 1);
 
 		//隣の部屋を描画して壊れた設定を元に戻す
-		glStencilFunc(GL_ALWAYS, remain, ~0);
-		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 		glEnable(GL_STENCIL_TEST);
 		glEnable(GL_CULL_FACE);
 	}
 }
 
 
-void GATEPANEL::Collision(class OBJECT& o){
+bool GATEPANEL::Collision(class OBJECT& o){
+	//oの半径
+	VQON radius(o.Radius());
+
 	//oの相対位置
 	VQON op(-profile.p0.x, 0, -profile.p0.z);
 	op += o.Position();
@@ -70,13 +73,16 @@ void GATEPANEL::Collision(class OBJECT& o){
 
 	//壁ベクトルとoの相対位置の内積を計算(正なら内側)
 	const float distance(op.k*dnx - op.i*dnz);
-	if(distance < 0){
+	op -= ov;
+	const float d2(op.k*dnx - op.i*dnz);
+	if(distance < 0.15 && 0.15 <= d2 && profile.throuable){
 		ROOM* const next(to);
-		if(next && profile.throuable){
-			o.MoveTo(*next);
-		}else{
-			//TODO:反発
-		}
+		o.MoveTo(*next);
+		return true;
+	}else if(profile.throuable && distance < radius.i){
+		const float dot(op.i*dnx + op.k*dnz);
+		return 0 <= dot && dot <= 1;
 	}
+	return false;
 }
 

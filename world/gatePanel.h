@@ -23,7 +23,7 @@ public:
 	};
 	GATEPANEL(WORLD& world, class ROOM& into, const PROFILE& profile);
 	void Draw(unsigned remain, const class TEXSET&);
-	void Collision(class OBJECT&);
+	bool Collision(class OBJECT&);
 private:
 	const PROFILE profile;
 	WORLD::GATE to;

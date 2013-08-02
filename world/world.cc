@@ -61,7 +61,16 @@ WORLD::WORLD(const char* worldFile){
 	gp.p0.z = gp.p1.z = -3;
 	gp.floorHeight = 0;
 	gp.ceilHeight = 2;
+	gp.throuable = false;
+	new GATEPANEL(*this, room, gp);
+
+	gp.p0.z = gp.p1.z = 3;
+	gp.p0.x = 1.5;
+	gp.p1.x = 0.6;
+	gp.floorHeight = 0;
+	gp.ceilHeight = 2;
 	gp.throuable = true;
+	gp.toRoom = 2;
 	new GATEPANEL(*this, room, gp);
 
 	//天箱
@@ -94,6 +103,43 @@ WORLD::WORLD(const char* worldFile){
 	bpp.textureID = 10;
 	bpp.floor = true;
 	new PLANE(skyBox, bpp);
+
+	//隣室
+	ROOM& r2(*new ROOM(*this));
+	WALL::PROFILE wp2 = {
+		{ -2, -3 + 6.1 }, { 2, -3 + 6.1 },
+		{ 0, 0 }, { 0.3, 0.3 },
+		3, 0.0, 2.4 };
+	new WALL(r2, wp2);
+	wp2.p0.x = 2;
+	wp2.p1.y = 3 + 6.1;
+	new WALL(r2, wp2);
+	wp2.p0.y = 3 + 6.1;
+	wp2.p1.x = -2;
+	new WALL(r2, wp2);
+	wp2.p0.x = -2;
+	wp2.p1.y = -3 + 6.1;
+	new WALL(r2, wp2);
+
+	PLANE::PROFILE pp2 = {
+		{ { -2, -3 + 6.1 }, { 2, -3 + 6.1 }, { 2, 3 + 6.1 }, { -2, 3 + 6.1 } },
+		{ 0, 0 }, { 0.6, 0.6 },
+		1, 4, 0, true };
+	new PLANE(r2, pp2);
+	pp2.textureID = 2;
+	pp2.height = 2.4;
+	pp2.floor = false;
+	new PLANE(r2, pp2);
+
+	gp.p0.z = gp.p1.z = 3.1;
+	gp.p1.x = 1.5;
+	gp.p0.x = 0.6;
+	gp.floorHeight = 0;
+	gp.ceilHeight = 2;
+	gp.throuable = true;
+	gp.toRoom = 0;
+	new GATEPANEL(*this, r2, gp);
+
 }
 
 void WORLD::Add(TOOLBOX::NODE<ROOM>& room){

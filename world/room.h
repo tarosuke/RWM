@@ -40,6 +40,7 @@ private:
 	mutable TOOLBOX::QUEUE<OBJECT> objects;
 	WORLD& world;
 	const TEXSET& texSet;
+	mutable bool drawing;
 };
 
 #endif

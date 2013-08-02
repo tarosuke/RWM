@@ -15,7 +15,8 @@
 ROOM::ROOM(WORLD& into) :
 	node(*this),
 	world(into),
-	texSet(into.GetTextureSet()){
+	texSet(into.GetTextureSet()),
+	drawing(false){
 	into.Add(node);
 };
 
@@ -25,12 +26,12 @@ ROOM::~ROOM(){
 
 
 
-
 void ROOM::Draw(unsigned remain) const{
-	if(!remain){
-		//もう追いかけない
+	if(drawing || !remain){
+		//描画ループか追跡限界なので描画しない
 		return;
 	}
+	drawing = true;
 
 	glEnable(GL_TEXTURE);
 	glEnable(GL_STENCIL_TEST);
@@ -65,9 +66,13 @@ void ROOM::Draw(unsigned remain) const{
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR i(objects); i; i++){
 		(*i).Draw(texSet);
 	}
+
+	//描画完了
+	drawing = false;
 }
 
 void ROOM::Update(float dt){
+printf("%f[fps].\r", 1.0 / dt);
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR i(objects); i; i++){
 		(*i).Update(dt);
 	}

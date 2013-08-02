@@ -51,7 +51,7 @@ void HUMANOID::Draw(const class TEXSET&) const{
 	glLineWidth(5);
 	glPushMatrix();
 	GetModel();
-	glTranslatef(0, -profile.eyeHeight, -0.5);
+	glTranslatef(0, -profile.eyeHeight, 0);
 	//torso
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);
@@ -69,7 +69,7 @@ void HUMANOID::Draw(const class TEXSET&) const{
 	//頭
 	glPushMatrix();
 	GetModel();
-	glTranslatef(0, -profile.eyeHeight, -0.5);
+	glTranslatef(0, -profile.eyeHeight, 0);
 	const GLQON headDir(ghost.GetHead());
 	headDir.GetModel();
 	glBegin(GL_LINE_LOOP);

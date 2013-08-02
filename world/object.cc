@@ -16,7 +16,6 @@ OBJECT::OBJECT(const WORLD& world) : radius(0.3, 0, 0.3), node(*this){
 OBJECT::~OBJECT(){}
 
 void OBJECT::MoveTo(ROOM& to){
-	node.Detach();
 	in = &to;
 	to.AddObject(node);
 }

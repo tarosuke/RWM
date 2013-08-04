@@ -19,8 +19,10 @@ rwm
 # Files kde creates
 .directory
 
-# others libraries
+# others libraries etc.
 *.ppm
 *.xcf
 *.bak
 *.kate-swp
+*.png
+*.svg

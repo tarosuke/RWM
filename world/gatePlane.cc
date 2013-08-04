@@ -20,6 +20,9 @@ GATEPLANE::~GATEPLANE(){}
 
 void GATEPLANE::Draw(unsigned remain, const TEXSET& texSet){
 	const ROOM* const next(to);
+	glStencilFunc(GL_EQUAL, remain, ~0);
+	glStencilOp(GL_KEEP, GL_DECR, GL_DECR);
+	glFrontFace(GL_CCW);
 	glNormal3f(0, normaly, 0);
 	glFrontFace(face);
 	if(!next){
@@ -37,10 +40,10 @@ void GATEPLANE::Draw(unsigned remain, const TEXSET& texSet){
 		glEnd();
 	}else{
 		//リンク先がある場合
+		glColorMask(0,0,0,0);
+		glDepthMask(0);
 		glBegin(GL_TRIANGLE_FAN);
 		for(unsigned n(0); n < profile.numOfCorners; n++){
-			glColorMask(0,0,0,0);
-			glDepthMask(0);
 			const float x(profile.points[n].x);
 			const float z(profile.points[n].y);
 			glVertex3f(x, profile.height, z);
@@ -48,11 +51,9 @@ void GATEPLANE::Draw(unsigned remain, const TEXSET& texSet){
 		glEnd();
 
 		//隣の部屋を描画
-		(*next).Draw(remain);
+		(*next).Draw(remain - 1);
 
 		//隣の部屋を描画して壊れた設定を元に戻す
-		glStencilFunc(GL_ALWAYS, remain, ~0);
-		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 		glEnable(GL_STENCIL_TEST);
 		glEnable(GL_CULL_FACE);
 	}

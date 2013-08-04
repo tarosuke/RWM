@@ -72,7 +72,7 @@ void ROOM::Draw(unsigned remain) const{
 }
 
 void ROOM::Update(float dt){
-printf("%f[fps].\r", 1.0 / dt);
+// printf("%f[fps].\r", 1.0 / dt);
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR i(objects); i; i++){
 		(*i).Update(dt);
 	}

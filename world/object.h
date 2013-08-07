@@ -1,4 +1,4 @@
-/********************************************** abstract object in room:QBJECT
+/********************************************** abstract object in room:OBJECT
  *
  */
 #ifndef _OBJECT_
@@ -14,13 +14,16 @@
 class OBJECT{
 	OBJECT();
 public:
+	static const double G = 9.80665;
 	OBJECT(const class WORLD& world); //TODO:半径の設定
 	virtual ~OBJECT();
+	virtual void Fall(float dt){}; //これは落ちない物体
 	virtual void Update(float dt)=0;
 	virtual void Draw(const class TEXSET&) const =0;
 	//衝突処理関連
 	virtual void Collision(const OBJECT&){}; //TODO:OBJECT同士の衝突処理
 	const VQON& Position() const { return position; };
+	virtual float Height() const{ return 0.0; };
 	const VQON& Velocity() const { return velocity; };
 	const VQON& Radius() const { return radius; };
 	void Accel(const VQON& accel){ //物体を加速して衝突の結果を反映する
@@ -37,6 +40,12 @@ protected:
 	VQON radius;
 private:
 	TOOLBOX::NODE<OBJECT> node;
+};
+
+class FALLABLE : public OBJECT{ //落ちる物体
+public:
+	FALLABLE(const class WORLD& world) : OBJECT(world){};
+	void Fall(float dt){ /*VQON g(0,-G * dt,0); velocity += g;*/ };
 };
 
 /***** 動かない物体

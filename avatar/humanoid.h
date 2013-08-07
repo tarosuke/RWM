@@ -78,6 +78,7 @@ public:
 	void GetView() const;
 	void Draw(const class TEXSET&) const;
 	void Update(float dt);
+	float Height() const{ return profile.SightHeight(); };
 	//構築/破壊子
 	HUMANOID(const class WORLD& world,
 		const PROFILE&,

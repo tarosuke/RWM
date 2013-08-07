@@ -12,7 +12,7 @@
 #include <world/object.h>
 
 
-class AVATAR : public OBJECT{
+class AVATAR : public FALLABLE{
 	AVATAR();
 	void operator=(AVATAR&);
 public:

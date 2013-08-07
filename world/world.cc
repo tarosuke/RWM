@@ -122,24 +122,24 @@ WORLD::WORLD(const char* worldFile){
 	wp2.p1.y = -3 + 6.1;
 	new WALL(r2, wp2);
 
-// 	PLANE::PROFILE pp2 = {
-// 		{ { -2, -3 + 6.1 }, { 2, -3 + 6.1 }, { 2, 3 + 6.1 }, { -2, 3 + 6.1 } },
-// 		{ 0, 0 }, { 0.6, 0.6 },
-// 		3, 4, 0, true };
-// 	new PLANE(r2, pp2);
-// 	pp2.textureID = 2;
-// 	pp2.height = 2.4;
-// 	pp2.floor = false;
-// 	new PLANE(r2, pp2);
-
-	GATEPLANE::PROFILE gpp = {
-		{ { -2, -3 + 6.1 }, { 2, -3 + 6.1 },
-			{ 2, 3 + 6.1 }, { -2, 3 + 6.1 } },
+	PLANE::PROFILE pp2 = {
+		{ { -2, -3 + 6.1 }, { 2, -3 + 6.1 }, { 2, 3 + 6.1 }, { -2, 3 + 6.1 } },
+		{ 0, 0 }, { 0.6, 0.6 },
 		1, 4, 0, true };
-	new GATEPLANE(*this, r2, gpp);
-	gpp.height = 2.4;
-	gpp.floor = false;
-	new GATEPLANE(*this, r2, gpp);
+	new PLANE(r2, pp2);
+	pp2.textureID = 2;
+	pp2.height = 2.4;
+	pp2.floor = false;
+	new PLANE(r2, pp2);
+
+// 	GATEPLANE::PROFILE gpp = {
+// 		{ { -2, -3 + 6.1 }, { 2, -3 + 6.1 },
+// 			{ 2, 3 + 6.1 }, { -2, 3 + 6.1 } },
+// 		1, 4, 0, true };
+// 	new GATEPLANE(*this, r2, gpp);
+// 	gpp.height = 2.4;
+// 	gpp.floor = false;
+// 	new GATEPLANE(*this, r2, gpp);
 
 	gp.p0.z = gp.p1.z = 3.1;
 	gp.p1.x = 1.5;

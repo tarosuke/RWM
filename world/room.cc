@@ -50,11 +50,7 @@ void ROOM::Draw(unsigned remain) const{
 	//壁や床、天井を描画
 	glColorMask(1,1,1,1);
 	glDepthMask(1);
-	if(VIEW::roomFollowDepth == remain){
-		glStencilFunc(GL_EQUAL, remain, ~0);
-	}else{
-		glStencilFunc(GL_EQUAL, remain, ~0);
-	}
+	glStencilFunc(GL_EQUAL, remain, ~0);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	for(TOOLBOX::QUEUE<PANEL>::ITOR i(panels); i; i++){
 		(*i).Draw(texSet);
@@ -74,7 +70,8 @@ void ROOM::Draw(unsigned remain) const{
 void ROOM::Update(float dt){
 // printf("%f[fps].\r", 1.0 / dt);
 	for(TOOLBOX::QUEUE<OBJECT>::ITOR i(objects); i; i++){
-		(*i).Update(dt);
+		(*i).Fall(dt); //落下処理
+		(*i).Update(dt); //移動処理
 	}
 
 	//通過処理

@@ -12,7 +12,7 @@
 
 
 AVATAR::AVATAR(const WORLD& world, GHOST& g, float y) :
-	OBJECT(world), ghost(g){
+	FALLABLE(world), ghost(g){
 	direction.Normalize();
 	position.j = y;
 }

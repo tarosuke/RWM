@@ -35,5 +35,11 @@ void PLANE::Draw(const TEXSET& texSet){
 	glEnd();
 }
 
-void PLANE::Collision(OBJECT&){
+void PLANE::Collision(OBJECT& o){
+	const VQON& p(o.Position());
+	const float d(p.j - o.Height());
+	if(d < 0){
+		const VQON a(0, -d, 0);
+		o.Accel(a);
+	}
 }

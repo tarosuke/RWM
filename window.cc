@@ -119,8 +119,8 @@ void WINDOW::ROOT::Draw(){
 	glEnable(GL_DEPTH_TEST);
 
 	//窓描画(窓は陰影などなしでそのまま表示)
-	// 	glDisable(GL_LIGHTING);
-	// 	WINDOW::Update(); //窓を描画
+	glDisable(GL_LIGHTING);
+	WINDOW::DrawAll(); //窓を描画
 	glEnable(GL_LIGHTING);
 
 	//基本ライト(場所は自分、明るさはAMBIENTへ)
@@ -148,21 +148,36 @@ void WINDOW::ROOT::Run(GHOST& user){
 	DURATION duration;
 	for(;;){
 		while(XPending(xDisplay)){
-			XEvent ev;
-			XNextEvent(xDisplay, &ev);
+			XEvent e;
+			XNextEvent(xDisplay, &e);
+			XAnyEvent& ev(*(XAnyEvent*)&e);
+			if(ev.display != xDisplay){
+				//別のdisplayなので処理不要
+				continue;
+			}
 
+			if(ev.type == MappingNotify){
+				//MappingNotifyはev.windowが無効なので別処理
+				AtMapping(e.xmapping);
+				continue;
+			}
+
+			if(ev.window == rootWindowID){
+				//根窓は表示されないので無視
+				continue;
+			}
 			switch(ev.type){
 				case CreateNotify:
-					AtCreate(ev.xcreatewindow);
+					AtCreate(e.xcreatewindow);
 					break;
 				case MapNotify:
-					AtMap(ev.xmap);
+					AtMap(e.xmap);
 					break;
 				case DestroyNotify:
-					AtDestroy(ev.xdestroywindow);
+					AtDestroy(e.xdestroywindow);
 					break;
 				case UnmapNotify:
-					AtUnmap(ev.xunmap);
+					AtUnmap(e.xunmap);
 					break;
 				default:
 					//TODO:keyDown/Upの時などの処理を考える
@@ -189,14 +204,17 @@ void WINDOW::DrawAll(){
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		WINDOW& w(*i.Owner());
 		if(w.mapped){
+			w.Draw();
 		}
 	}
 }
 
+void WINDOW::Draw(){
+
+}
+
 WINDOW::~WINDOW(){
 	node.Detach();
-// 	XUnmapWindow(room.wID);
-// 	XDestroyWindow(wID);
 	//TODO:テクスチャの解放とか
 }
 
@@ -204,42 +222,30 @@ WINDOW::~WINDOW(){
 
 
 void WINDOW::ROOT::AtCreate(XCreateWindowEvent& e){
-	if(rootWindowID == e.window){
-		//ルートなので処理不要
-		return;
-	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(!w){
 		//外部生成窓なので追随して生成
-		new WINDOW(e.window);
+		WINDOW& nw = *new WINDOW(e.window);
+		nw.horiz = ((float)(e.x)/(width - e.width)) - 0.5;
+		nw.vert = ((float)(e.y)/(height - e.height)) - 0.5;
+		nw.width = e.width;
+		nw.height = e.height;
 	}
 }
 
 void WINDOW::ROOT::AtMap(XMapEvent& e){
-	if(rootWindowID == e.window){
-		//ルートなので処理不要
-		return;
-	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	assert(w);
 	//map状態を変更(trueなので以後Drawする)
 	(*w).mapped = true;
 }
 void WINDOW::ROOT::AtDestroy(XDestroyWindowEvent& e){
-	if(rootWindowID == e.window){
-		//ルートなので処理不要
-		return;
-	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	assert(w);
 	//ウインドウを消去
 	delete w;
 }
 void WINDOW::ROOT::AtUnmap(XUnmapEvent& e){
-	if(rootWindowID == e.window){
-		//ルートなので処理不要
-		return;
-	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	assert(w);
 	//map状態を変更(falseなので以後Drawしなくなる)
@@ -248,11 +254,13 @@ void WINDOW::ROOT::AtUnmap(XUnmapEvent& e){
 
 
 
+//窓の標準散開角(単位はOpenGLに合わせて°)
+float WINDOW::horizAngle(120.0);
+float WINDOW::vertAngle(90.0);
 
 
 
-
-WINDOW::WINDOW(int wID) : wID(wID), mapped(false), node(*this){
+WINDOW::WINDOW(int wID) : wID(wID), node(*this), mapped(false){
 	windowList.Add(node);
 }
 

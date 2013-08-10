@@ -20,40 +20,57 @@
 
 class WINDOW{
 public:
-	class ROOT{ //TESTの時は窓を開いて、でなければrootを取得
-		friend class WINDOW;
-	public:
-		ROOT();
-		~ROOT();
-		void Run(class GHOST&);
-	private:
-		Display* const xDisplay;
-		const unsigned rootWindowID;
-		GLXContext glxContext;
-		static const int width = 1280;
-		static const int height = 800;
-		void Draw();
-		void AtCreate(XCreateWindowEvent&);
-		void AtMap(XMapEvent&);
-		void AtDestroy(XDestroyWindowEvent&);
-		void AtUnmap(XUnmapEvent&);
-	};
-	static void DrawAll();
+	static void Init();
+	static void Run(class GHOST&);
 protected:
+	WINDOW(); //自分でXCreateWindowする
 	virtual ~WINDOW(); //自身をwindowListから削除して消滅
-// 	virtual void Draw();
+	virtual void Draw();
+	static Display* xDisplay;
+	static unsigned rootWindowID;
+	static GLXContext glxContext;
+	static int rootWidth;
+	static int rootHeight;
+
+	unsigned wID; //窓ID
 private:
+	//根窓関連
+	static void Quit();
+	static void AtCreate(XCreateWindowEvent&);
+	static void AtMap(XMapEvent&);
+	static void AtDestroy(XDestroyWindowEvent&);
+	static void AtUnmap(XUnmapEvent&);
+	static void AtMapping(XMappingEvent&){};
+	static void DrawAll();
+
+	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(unsigned wID);
-	unsigned wID; //窓ID
-	int tID; //テクスチャID
-	bool mapped; //tureならDrawされた時に反応して物体を生成する
-	TOOLBOX::NODE<WINDOW> node;
 
+	//単体窓関連
+	TOOLBOX::NODE<WINDOW> node;
+	bool mapped; //tureならDrawされた時に反応して物体を生成する
+	int tID; //窓の内容を転送するテクスチャID
+
+	//窓の広がり(horizやvertを掛けて角度を決める。単位は°)
+	static float horizAngle;
+	static float vertAngle;
+	//位置というか角度(普通は-0.5〜0.5に正規化されている)
+	float horiz;
+	float vert;
+	//ピクセルサイズ
 	unsigned width;
 	unsigned height;
 
 	WINDOW(int wID); //wIDを持つWINDOWを生成、windowListへ追加
+};
+
+//RWM側で生成した窓
+class INTERNAL_WINDOW : public WINDOW{
+public:
+	~INTERNAL_WINDOW(){
+		XDestroyWindow(xDisplay, wID);
+	};
 };
 
 #endif

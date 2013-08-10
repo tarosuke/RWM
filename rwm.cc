@@ -13,7 +13,7 @@
 
 
 int main(int argc, char *argv[]){
-	static WINDOW::ROOT root;
+	WINDOW::Init();
 	static WORLD world(0);
 
 	static HUMANOID::PROFILE profile(1.66);
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 		*new HUMANOID(world, profile, user));
 // 	static HUMANOID::PROFILE buddyProfile(1.2, 1.1, 0.8);
 // 	static HUMANOID buddy(testRoom, buddyProfile, *new GHOST);
-	root.Run(user);
+	WINDOW::Run(user);
 
 	return 0;
 }

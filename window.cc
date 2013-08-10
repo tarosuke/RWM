@@ -16,7 +16,18 @@
 #include <toolbox/cyclic/cyclic.h>
 
 
-TOOLBOX::QUEUE<WINDOW> WINDOW::windowList; //窓リスト
+Display* WINDOW::xDisplay;
+unsigned WINDOW::rootWindowID;
+GLXContext WINDOW::glxContext;
+int WINDOW::rootWidth(1280);
+int WINDOW::rootHeight(800);
+
+//窓の標準散開角(単位はOpenGLに合わせて°)
+float WINDOW::horizAngle(120.0);
+float WINDOW::vertAngle(80.0);
+
+//窓リスト
+TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 
 
 static int glxAttrs[] = {
@@ -38,25 +49,22 @@ static int glxAttrs[] = {
 };
 
 
-WINDOW::ROOT::ROOT() :
-	xDisplay(XOpenDisplay("")),
+void WINDOW::Init(){
+	xDisplay = XOpenDisplay(""),
 #ifdef TEST
-	rootWindowID(XCreateSimpleWindow(
+	rootWindowID = XCreateSimpleWindow(
 		xDisplay,
 		RootWindow(xDisplay, 0),
 		0,
 		0,
-		width,
-		height,
+		rootWidth,
+		rootHeight,
 		0,
 		BlackPixel(xDisplay, 0),
-		BlackPixel(xDisplay, 0)))
-#else
-	rootWindowID(RootWindow(xDisplay, 0))
-#endif
-	{
-#ifdef TEST
+		BlackPixel(xDisplay, 0));
 	XMapWindow( xDisplay, rootWindowID );
+#else
+	rootWindowID = RootWindow(xDisplay, 0);
 #endif
 	//rootのサブウインドウをキャプチャ
 	XCompositeRedirectSubwindows(
@@ -89,7 +97,7 @@ WINDOW::ROOT::ROOT() :
 	glClearStencil(VIEW::roomFollowDepth);
 }
 
-WINDOW::ROOT::~ROOT(){
+void WINDOW::Quit(){
 	glXMakeCurrent(xDisplay, 0, NULL);
 	glXDestroyContext(xDisplay, glxContext);
 
@@ -106,7 +114,7 @@ for(;; sleep(1000));
 }
 
 
-void WINDOW::ROOT::Draw(){
+void WINDOW::DrawAll(){
 	//バッファのクリア
 	glClear(GL_COLOR_BUFFER_BIT |
 		GL_DEPTH_BUFFER_BIT |
@@ -120,7 +128,12 @@ void WINDOW::ROOT::Draw(){
 
 	//窓描画(窓は陰影などなしでそのまま表示)
 	glDisable(GL_LIGHTING);
-	WINDOW::DrawAll(); //窓を描画
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		WINDOW& w(*i.Owner());
+		if(w.mapped){
+			w.Draw();
+		}
+	}
 	glEnable(GL_LIGHTING);
 
 	//基本ライト(場所は自分、明るさはAMBIENTへ)
@@ -144,7 +157,7 @@ void WINDOW::ROOT::Draw(){
 	glXSwapBuffers(xDisplay, rootWindowID);
 }
 
-void WINDOW::ROOT::Run(GHOST& user){
+void WINDOW::Run(GHOST& user){
 	DURATION duration;
 	for(;;){
 		while(XPending(xDisplay)){
@@ -185,7 +198,7 @@ void WINDOW::ROOT::Run(GHOST& user){
 			}
 		}
 		VIEW::UpdateAll(duration.GetDuration());
-		Draw();
+		DrawAll();
 	}
 }
 
@@ -200,14 +213,6 @@ WINDOW* WINDOW::FindWindowByID(unsigned wID){
 	return 0;
 }
 
-void WINDOW::DrawAll(){
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
-		WINDOW& w(*i.Owner());
-		if(w.mapped){
-			w.Draw();
-		}
-	}
-}
 
 void WINDOW::Draw(){
 
@@ -221,42 +226,41 @@ WINDOW::~WINDOW(){
 
 
 
-void WINDOW::ROOT::AtCreate(XCreateWindowEvent& e){
+void WINDOW::AtCreate(XCreateWindowEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(!w){
 		//外部生成窓なので追随して生成
 		WINDOW& nw = *new WINDOW(e.window);
-		nw.horiz = ((float)(e.x)/(width - e.width)) - 0.5;
-		nw.vert = ((float)(e.y)/(height - e.height)) - 0.5;
+		nw.horiz = ((float)(e.x)/(rootWidth - e.width)) - 0.5;
+		nw.vert = ((float)(e.y)/(rootHeight - e.height)) - 0.5;
 		nw.width = e.width;
 		nw.height = e.height;
 	}
 }
 
-void WINDOW::ROOT::AtMap(XMapEvent& e){
+void WINDOW::AtMap(XMapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
-	assert(w);
-	//map状態を変更(trueなので以後Drawする)
-	(*w).mapped = true;
+	if(w){
+		//map状態をXの窓に追随(trueなので以後Drawする)
+		(*w).mapped = true;
+	}
 }
-void WINDOW::ROOT::AtDestroy(XDestroyWindowEvent& e){
+void WINDOW::AtDestroy(XDestroyWindowEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
-	assert(w);
-	//ウインドウを消去
-	delete w;
+	if(w){
+		//外部でDestroyされたウインドウに同期する
+		delete w;
+	}
 }
-void WINDOW::ROOT::AtUnmap(XUnmapEvent& e){
+void WINDOW::AtUnmap(XUnmapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
-	assert(w);
-	//map状態を変更(falseなので以後Drawしなくなる)
-	(*w).mapped = false;
+	if(w){
+		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
+		(*w).mapped = false;
+	}
 }
 
 
-
-//窓の標準散開角(単位はOpenGLに合わせて°)
-float WINDOW::horizAngle(120.0);
-float WINDOW::vertAngle(90.0);
 
 
 

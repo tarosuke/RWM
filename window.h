@@ -20,37 +20,37 @@
 
 class WINDOW{
 public:
-	class ROOT{ //TESTの時は窓を開いて、でなければrootを取得
-		friend class WINDOW;
-	public:
-		ROOT();
-		~ROOT();
-		void Run(class GHOST&);
-	private:
-		Display* const xDisplay;
-		const unsigned rootWindowID;
-		GLXContext glxContext;
-		static const int width = 1280;
-		static const int height = 800;
-		bool Todo(const Display*, int wID);
-		void Draw();
-		void AtCreate(XCreateWindowEvent&);
-		void AtMap(XMapEvent&);
-		void AtDestroy(XDestroyWindowEvent&);
-		void AtUnmap(XUnmapEvent&);
-		void AtMapping(XMappingEvent&){};
-	};
-	static void DrawAll();
+	static void Init();
+	static void Run(class GHOST&);
 protected:
+	WINDOW(); //自分でXCreateWindowする
 	virtual ~WINDOW(); //自身をwindowListから削除して消滅
 	virtual void Draw();
+	static Display* xDisplay;
+	static unsigned rootWindowID;
+	static GLXContext glxContext;
+	static int rootWidth;
+	static int rootHeight;
+
 	unsigned wID; //窓ID
 private:
+	//根窓関連
+	static void Quit();
+	static void AtCreate(XCreateWindowEvent&);
+	static void AtMap(XMapEvent&);
+	static void AtDestroy(XDestroyWindowEvent&);
+	static void AtUnmap(XUnmapEvent&);
+	static void AtMapping(XMappingEvent&){};
+	static void DrawAll();
+
+	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(unsigned wID);
+
+	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;
 	bool mapped; //tureならDrawされた時に反応して物体を生成する
-	int tID; //テクスチャID
+	int tID; //窓の内容を転送するテクスチャID
 
 	//窓の広がり(horizやvertを掛けて角度を決める。単位は°)
 	static float horizAngle;
@@ -69,7 +69,7 @@ private:
 class INTERNAL_WINDOW : public WINDOW{
 public:
 	~INTERNAL_WINDOW(){
-		//TODO:wIDにdestryリクエストを投げる
+		XDestroyWindow(xDisplay, wID);
 	};
 };
 

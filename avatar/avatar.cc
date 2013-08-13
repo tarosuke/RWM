@@ -22,6 +22,26 @@ AVATAR::~AVATAR(){}
 
 
 
+void AVATAR::Draw(const class TEXSET& texSet) const{
+	glLineWidth(5);
+	glPushMatrix();
+	GetModel();
+
+	//窓を描く
+	WINDOW::DrawWindows();
+
+	//体を描く
+	DrawBody(texSet);
+	glPopMatrix();
+
+	//頭を描く
+	glPushMatrix();
+	GetModel();
+	DrawHead(texSet);
+	glPopMatrix();
+}
+
+
 void AVATAR::Update(float dt){
 	//ghostのアップデート
 	ghost.Update(*this);

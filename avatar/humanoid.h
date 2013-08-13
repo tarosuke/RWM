@@ -76,7 +76,6 @@ public:
 
 	//システムハンドラ
 	void GetView() const;
-	void Draw(const class TEXSET&) const;
 	void Update(float dt);
 	float Height() const{ return profile.SightHeight(); };
 	//構築/破壊子
@@ -108,6 +107,8 @@ protected:
 	bool sitting;
 	void ArmVertexes(int) const;
 	void LegVertexes(int) const;
+	void DrawBody(const class TEXSET&) const;
+	void DrawHead(const class TEXSET&) const;
 };
 
 

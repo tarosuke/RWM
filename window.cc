@@ -166,16 +166,20 @@ void WINDOW::DrawWindows(){
 void WINDOW::Run(GHOST& user){
 	DURATION duration;
 
-XMapWindow( xDisplay, XCreateSimpleWindow(
-	xDisplay,
-	rootWindowID,
-	600,
-	0,
-	600,
-	800,
-	0,
-	WhitePixel(xDisplay, 0),
-	BlackPixel(xDisplay, 0)) );
+for(int h(0); h <= 1280; h += 200){
+	for(int v(0); v <= 800; v += 200){
+		XMapWindow( xDisplay, XCreateSimpleWindow(
+			xDisplay,
+			rootWindowID,
+			h,
+			v,
+			600,
+			800,
+			0,
+			WhitePixel(xDisplay, 0),
+			BlackPixel(xDisplay, 0)) );
+	}
+}
 
 	for(;;){
 		while(XPending(xDisplay)){

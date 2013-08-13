@@ -22,6 +22,7 @@ public:
 	//システムハンドラ
 	virtual void GetView() const;
 	//QBJECTハンドラ
+	void Draw(const class TEXSET&) const;
 	void Update(float deltaT);
 	//構築/破壊子
 	AVATAR(const class WORLD& initialWorld,
@@ -33,6 +34,8 @@ protected:
 	QON direction;
 	double rotVelocity;
 	void GetModel() const;
+	virtual void DrawBody(const class TEXSET&) const{};
+	virtual void DrawHead(const class TEXSET&) const{};
 private:
 };
 

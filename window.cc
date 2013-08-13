@@ -22,6 +22,9 @@ GLXContext WINDOW::glxContext;
 int WINDOW::rootWidth(1280);
 int WINDOW::rootHeight(800);
 
+
+//窓までの距離
+float WINDOW::distance(0.6);
 //窓の標準散開角(単位はOpenGLに合わせて°)
 float WINDOW::horizAngle(120.0);
 float WINDOW::vertAngle(80.0);
@@ -126,16 +129,6 @@ void WINDOW::DrawAll(){
 	glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 
-	//窓描画(窓は陰影などなしでそのまま表示)
-	glDisable(GL_LIGHTING);
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
-		WINDOW& w(*i.Owner());
-		if(w.mapped){
-			w.Draw();
-		}
-	}
-	glEnable(GL_LIGHTING);
-
 	//基本ライト(場所は自分、明るさはAMBIENTへ)
 	glEnable(GL_LIGHT0);
 	glLightf(GL_LIGHT0, GL_POSITION, 0);
@@ -157,13 +150,40 @@ void WINDOW::DrawAll(){
 	glXSwapBuffers(xDisplay, rootWindowID);
 }
 
+void WINDOW::DrawWindows(){
+	//窓描画(窓は陰影などなしでそのまま表示)
+	glDisable(GL_LIGHTING);
+	glDisable(GL_STENCIL_TEST);
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		WINDOW& w(*i.Owner());
+		if(w.mapped){
+			w.Draw();
+		}
+	}
+	glEnable(GL_LIGHTING);
+}
+
 void WINDOW::Run(GHOST& user){
 	DURATION duration;
+
+XMapWindow( xDisplay, XCreateSimpleWindow(
+	xDisplay,
+	rootWindowID,
+	600,
+	0,
+	600,
+	800,
+	0,
+	WhitePixel(xDisplay, 0),
+	BlackPixel(xDisplay, 0)) );
+
 	for(;;){
 		while(XPending(xDisplay)){
 			XEvent e;
 			XNextEvent(xDisplay, &e);
 			XAnyEvent& ev(*(XAnyEvent*)&e);
+// static unsigned eid(0);
+// printf("event:#%u(%d)%08lx.\n", eid++, ev.type, ev.window);
 			if(ev.display != xDisplay){
 				//別のdisplayなので処理不要
 				continue;
@@ -175,10 +195,6 @@ void WINDOW::Run(GHOST& user){
 				continue;
 			}
 
-			if(ev.window == rootWindowID){
-				//根窓は表示されないので無視
-				continue;
-			}
 			switch(ev.type){
 				case CreateNotify:
 					AtCreate(e.xcreatewindow);
@@ -200,6 +216,7 @@ void WINDOW::Run(GHOST& user){
 		VIEW::UpdateAll(duration.GetDuration());
 		DrawAll();
 	}
+	Quit();
 }
 
 
@@ -215,7 +232,20 @@ WINDOW* WINDOW::FindWindowByID(unsigned wID){
 
 
 void WINDOW::Draw(){
-
+	glPushMatrix();
+	glRotatef(-horizAngle * horiz, 0, 1, 0);
+	glRotatef(-vertAngle * vert, 1, 0, 0);
+	glBegin(GL_TRIANGLE_STRIP);
+	const float r(0.0002 * distance);
+	const float w(r * width);
+	const float h(r * height);
+	//TODO:テクスチャ座標も付ける
+	glVertex3f(-w, h, -distance);
+	glVertex3f(-w, -h, -distance);
+	glVertex3f(w, h, -distance);
+	glVertex3f(w, -h, -distance);
+	glEnd();
+	glPopMatrix();
 }
 
 WINDOW::~WINDOW(){
@@ -227,33 +257,50 @@ WINDOW::~WINDOW(){
 
 
 void WINDOW::AtCreate(XCreateWindowEvent& e){
+	if(e.window == rootWindowID){
+		return;
+	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+// printf("create:%p/%08lx,%08lx.\n", w, e.window, e.parent);
 	if(!w){
 		//外部生成窓なので追随して生成
 		WINDOW& nw = *new WINDOW(e.window);
-		nw.horiz = ((float)(e.x)/(rootWidth - e.width)) - 0.5;
-		nw.vert = ((float)(e.y)/(rootHeight - e.height)) - 0.5;
+		nw.horiz = ((float)e.x/rootWidth) - 0.5;
+		nw.vert = ((float)e.y/rootHeight) - 0.5;
 		nw.width = e.width;
 		nw.height = e.height;
+// printf("new create:%p(%d %d - %f %f).\n",&nw, e.x, e.y, nw.horiz, nw.vert);
 	}
 }
 
 void WINDOW::AtMap(XMapEvent& e){
+	if(e.event != rootWindowID){
+		return;
+	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(w){
+// printf("map:%p.\n", w);
 		//map状態をXの窓に追随(trueなので以後Drawする)
 		(*w).mapped = true;
 	}
 }
 void WINDOW::AtDestroy(XDestroyWindowEvent& e){
+	if(e.window == rootWindowID){
+		return;
+	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+// printf("destroy:%p.\n", w);
 	if(w){
 		//外部でDestroyされたウインドウに同期する
 		delete w;
 	}
 }
 void WINDOW::AtUnmap(XUnmapEvent& e){
+	if(e.window == rootWindowID){
+		return;
+	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+// printf("unmap:%p.\n", w);
 	if(w){
 		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
 		(*w).mapped = false;

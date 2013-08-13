@@ -9,6 +9,7 @@
 #include "humanoid.h"
 #include <toolbox/qon/glqon.h>
 #include <ghost/ghost.h>
+#include <window.h>
 
 
 HUMANOID::HUMANOID(
@@ -52,6 +53,11 @@ void HUMANOID::Draw(const class TEXSET&) const{
 	glPushMatrix();
 	GetModel();
 	glTranslatef(0, -profile.eyeHeight, 0);
+
+	//窓を描く(唐突に見えるが体の向きで描画できるのはここだけ)
+	//TODO:これではHUMANOIDしか窓が表示されないのでもっと汎用的な場所を考える
+	WINDOW::DrawWindows();
+
 	//torso
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);

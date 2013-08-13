@@ -32,13 +32,17 @@ void AVATAR::Update(float dt){
 			ghost.GetRotate() * rotAccelRatio;
 	QON::ROTATION r = { -rotVelocity * dt, 0, 1, 0 };
 	QON rot(r);
-	direction *= ghost.PickHeadHorizDir(0.01);
+	const float forwardStep(ghost.GetForwardStep());
+	if(0.0 != forwardStep){
+		//前後移動している時のみ体の方向を補正する
+		direction *= ghost.PickHeadHorizDir(0.01);
+	}
 	direction *= rot;
 	rotVelocity *= 0.9;
 
 	//位置更新
 	const double accelRatio(1.0 / (10.0 + velocity.Length()));
-	VQON accel(ghost.GetSideStep(), 0.0, -ghost.GetForwardStep());
+	VQON accel(ghost.GetSideStep(), 0.0, -forwardStep);
 	accel *= accelRatio;
 	const double acc(accel.Length());
 	if(0.001 < fabsl(acc)){

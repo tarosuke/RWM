@@ -9,6 +9,7 @@
 #include <world/room.h>
 #include <ghost/ghost.h>
 #include <toolbox/qon/glqon.h>
+#include <window.h>
 
 
 AVATAR::AVATAR(const WORLD& world, GHOST& g, float y) :

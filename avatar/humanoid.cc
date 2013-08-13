@@ -47,16 +47,10 @@ void HUMANOID::Update(float dt){
 	AVATAR::Update(dt);
 }
 
-void HUMANOID::Draw(const class TEXSET&) const{
+void HUMANOID::DrawBody(const class TEXSET&) const{
 	//体
 	glLineWidth(5);
-	glPushMatrix();
-	GetModel();
 	glTranslatef(0, -profile.eyeHeight, 0);
-
-	//窓を描く(唐突に見えるが体の向きで描画できるのはここだけ)
-	//TODO:これではHUMANOIDしか窓が表示されないのでもっと汎用的な場所を考える
-	WINDOW::DrawWindows();
 
 	//torso
 	glBegin(GL_LINES);
@@ -71,10 +65,10 @@ void HUMANOID::Draw(const class TEXSET&) const{
 	glTranslatef(0, -profile.torso.length, 0);
 	LegVertexes(GL_LINE_STRIP);
 	LegVertexes(GL_POINTS);
-	glPopMatrix();
+}
+
+void HUMANOID::DrawHead(const class TEXSET&) const{
 	//頭
-	glPushMatrix();
-	GetModel();
 	glTranslatef(0, -profile.eyeHeight, 0);
 	const GLQON headDir(ghost.GetHead());
 	headDir.GetModel();
@@ -88,7 +82,6 @@ void HUMANOID::Draw(const class TEXSET&) const{
 	glVertex3f(-profile.eyeSideOffset, profile.eyeHeight, 0);
 	glVertex3f(profile.eyeSideOffset, profile.eyeHeight, 0);
 	glEnd();
-	glPopMatrix();
 }
 void HUMANOID::ArmVertexes(int type) const{
 	glBegin(type);

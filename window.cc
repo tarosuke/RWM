@@ -26,7 +26,7 @@ int WINDOW::rootHeight(800);
 //窓までの距離
 float WINDOW::distance(0.6);
 //窓の標準散開角(単位はOpenGLに合わせて°)
-float WINDOW::horizAngle(120.0);
+float WINDOW::horizAngle(160.0);
 float WINDOW::vertAngle(80.0);
 
 //窓リスト
@@ -166,28 +166,12 @@ void WINDOW::DrawWindows(){
 void WINDOW::Run(GHOST& user){
 	DURATION duration;
 
-for(int h(0); h <= 1280; h += 200){
-	for(int v(0); v <= 800; v += 200){
-		XMapWindow( xDisplay, XCreateSimpleWindow(
-			xDisplay,
-			rootWindowID,
-			h,
-			v,
-			600,
-			800,
-			0,
-			WhitePixel(xDisplay, 0),
-			BlackPixel(xDisplay, 0)) );
-	}
-}
-
 	for(;;){
 		while(XPending(xDisplay)){
 			XEvent e;
 			XNextEvent(xDisplay, &e);
 			XAnyEvent& ev(*(XAnyEvent*)&e);
-// static unsigned eid(0);
-// printf("event:#%u(%d)%08lx.\n", eid++, ev.type, ev.window);
+
 			if(ev.display != xDisplay){
 				//別のdisplayなので処理不要
 				continue;
@@ -211,6 +195,27 @@ for(int h(0); h <= 1280; h += 200){
 					break;
 				case UnmapNotify:
 					AtUnmap(e.xunmap);
+					break;
+				case KeyPress :
+					static int window(-1);
+
+					if(window < 0){
+						window = XCreateSimpleWindow(
+							xDisplay,
+							rootWindowID,
+							400,
+							550,
+							600,
+							800,
+							0,
+							WhitePixel(xDisplay, 0),
+							BlackPixel(xDisplay, 0));
+						XMapWindow( xDisplay, window);
+					}else{
+						XUnmapWindow(xDisplay, window);
+						XDestroyWindow(xDisplay, window);
+						window = -1;
+					}
 					break;
 				default:
 					//TODO:keyDown/Upの時などの処理を考える
@@ -265,7 +270,6 @@ void WINDOW::AtCreate(XCreateWindowEvent& e){
 		return;
 	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
-// printf("create:%p/%08lx,%08lx.\n", w, e.window, e.parent);
 	if(!w){
 		//外部生成窓なので追随して生成
 		WINDOW& nw = *new WINDOW(e.window);
@@ -273,7 +277,6 @@ void WINDOW::AtCreate(XCreateWindowEvent& e){
 		nw.vert = ((float)e.y/rootHeight) - 0.5;
 		nw.width = e.width;
 		nw.height = e.height;
-// printf("new create:%p(%d %d - %f %f).\n",&nw, e.x, e.y, nw.horiz, nw.vert);
 	}
 }
 
@@ -283,7 +286,6 @@ void WINDOW::AtMap(XMapEvent& e){
 	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(w){
-// printf("map:%p.\n", w);
 		//map状態をXの窓に追随(trueなので以後Drawする)
 		(*w).mapped = true;
 	}
@@ -293,7 +295,6 @@ void WINDOW::AtDestroy(XDestroyWindowEvent& e){
 		return;
 	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
-// printf("destroy:%p.\n", w);
 	if(w){
 		//外部でDestroyされたウインドウに同期する
 		delete w;
@@ -304,7 +305,6 @@ void WINDOW::AtUnmap(XUnmapEvent& e){
 		return;
 	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
-// printf("unmap:%p.\n", w);
 	if(w){
 		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
 		(*w).mapped = false;

@@ -163,6 +163,56 @@ void WINDOW::DrawWindows(){
 	glEnable(GL_LIGHTING);
 }
 
+
+void WINDOW::HandleXEvent(XEvent& e){
+	XAnyEvent& ev(*(XAnyEvent*)&e);
+
+	if(ev.type == MappingNotify){
+		//MappingNotifyはev.windowが無効なので別処理
+		AtMapping(e.xmapping);
+		return;
+	}
+
+	switch(ev.type){
+		case CreateNotify:
+			AtCreate(e.xcreatewindow);
+			break;
+		case MapNotify:
+			AtMap(e.xmap);
+			break;
+		case DestroyNotify:
+			AtDestroy(e.xdestroywindow);
+			break;
+		case UnmapNotify:
+			AtUnmap(e.xunmap);
+			break;
+		case KeyPress :
+			static int window(-1);
+
+			if(window < 0){
+				window = XCreateSimpleWindow(
+					xDisplay,
+					rootWindowID,
+					400,
+					550,
+					600,
+					800,
+					0,
+					WhitePixel(xDisplay, 0),
+					BlackPixel(xDisplay, 0));
+				XMapWindow( xDisplay, window);
+			}else{
+				XUnmapWindow(xDisplay, window);
+				XDestroyWindow(xDisplay, window);
+				window = -1;
+			}
+			break;
+		default:
+			//TODO:keyDown/Upの時などの処理を考える
+			break;
+	}
+}
+
 void WINDOW::Run(GHOST& user){
 	DURATION duration;
 
@@ -170,57 +220,7 @@ void WINDOW::Run(GHOST& user){
 		while(XPending(xDisplay)){
 			XEvent e;
 			XNextEvent(xDisplay, &e);
-			XAnyEvent& ev(*(XAnyEvent*)&e);
-
-			if(ev.display != xDisplay){
-				//別のdisplayなので処理不要
-				continue;
-			}
-
-			if(ev.type == MappingNotify){
-				//MappingNotifyはev.windowが無効なので別処理
-				AtMapping(e.xmapping);
-				continue;
-			}
-
-			switch(ev.type){
-				case CreateNotify:
-					AtCreate(e.xcreatewindow);
-					break;
-				case MapNotify:
-					AtMap(e.xmap);
-					break;
-				case DestroyNotify:
-					AtDestroy(e.xdestroywindow);
-					break;
-				case UnmapNotify:
-					AtUnmap(e.xunmap);
-					break;
-				case KeyPress :
-					static int window(-1);
-
-					if(window < 0){
-						window = XCreateSimpleWindow(
-							xDisplay,
-							rootWindowID,
-							400,
-							550,
-							600,
-							800,
-							0,
-							WhitePixel(xDisplay, 0),
-							BlackPixel(xDisplay, 0));
-						XMapWindow( xDisplay, window);
-					}else{
-						XUnmapWindow(xDisplay, window);
-						XDestroyWindow(xDisplay, window);
-						window = -1;
-					}
-					break;
-				default:
-					//TODO:keyDown/Upの時などの処理を考える
-					break;
-			}
+			HandleXEvent(e);
 		}
 		VIEW::UpdateAll(duration.GetDuration());
 		DrawAll();
@@ -249,9 +249,13 @@ void WINDOW::Draw(){
 	const float w(r * width);
 	const float h(r * height);
 	//TODO:テクスチャ座標も付ける
+	glTexCoord2f(0, 0);
 	glVertex3f(-w, h, -distance);
+	glTexCoord2f(0, 1);
 	glVertex3f(-w, -h, -distance);
+	glTexCoord2f(1, 0);
 	glVertex3f(w, h, -distance);
+	glTexCoord2f(1, 1);
 	glVertex3f(w, -h, -distance);
 	glEnd();
 	glPopMatrix();
@@ -259,7 +263,12 @@ void WINDOW::Draw(){
 
 WINDOW::~WINDOW(){
 	node.Detach();
-	//TODO:テクスチャの解放とか
+	if(tID){
+		glDeleteTextures(1, &tID);
+	}
+	if(wImage){
+		XDestroyImage(wImage);
+	}
 }
 
 
@@ -277,6 +286,11 @@ void WINDOW::AtCreate(XCreateWindowEvent& e){
 		nw.vert = ((float)e.y/rootHeight) - 0.5;
 		nw.width = e.width;
 		nw.height = e.height;
+
+		//拡張イベントを設定
+		XSelectInput (xDisplay, nw.wID, PropertyChangeMask);
+		nw.dID = XDamageCreate(
+			xDisplay, nw.wID, XDamageReportBoundingBox);
 	}
 }
 
@@ -286,6 +300,8 @@ void WINDOW::AtMap(XMapEvent& e){
 	}
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(w){
+		//テクスチャ割り当て、初期画像設定
+		(*w).AssignTexture();
 		//map状態をXの窓に追随(trueなので以後Drawする)
 		(*w).mapped = true;
 	}
@@ -313,9 +329,27 @@ void WINDOW::AtUnmap(XUnmapEvent& e){
 
 
 
+void WINDOW::AssignTexture(){
+	//窓画像の取得
+	if(wImage){
+		XDestroyImage(wImage);
+	}
+	wImage = XGetImage(
+		xDisplay, wID, 0, 0, width, height, AllPlanes, ZPixmap);
 
+	//テクスチャの生成
+	if(!tID){
+		glGenTextures(1, &tID);
+	}
+	glBindTexture(GL_TEXTURE_2D, tID);
+	glPixelStorei(GL_PACK_ALIGNMENT, 4);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, (*wImage).data);
+}
 
-WINDOW::WINDOW(int wID) : wID(wID), node(*this), mapped(false){
+WINDOW::WINDOW(int wID) :
+	wID(wID), node(*this), mapped(false), tID(0), wImage(0){
 	windowList.Add(node);
 }
 

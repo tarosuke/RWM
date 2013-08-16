@@ -10,6 +10,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xdamage.h>
 
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -26,7 +27,7 @@ public:
 protected:
 	WINDOW(); //自分でXCreateWindowする
 	virtual ~WINDOW(); //自身をwindowListから削除して消滅
-	virtual void Draw();
+	void Draw();
 	static Display* xDisplay;
 	static unsigned rootWindowID;
 	static GLXContext glxContext;
@@ -34,6 +35,7 @@ protected:
 	static int rootHeight;
 
 	unsigned wID; //窓ID
+	Damage dID;
 private:
 	//根窓関連
 	static void Quit();
@@ -43,6 +45,7 @@ private:
 	static void AtUnmap(XUnmapEvent&);
 	static void AtMapping(XMappingEvent&){};
 	static void DrawAll();
+	static void HandleXEvent(XEvent&);
 
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
@@ -51,7 +54,8 @@ private:
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;
 	bool mapped; //tureならDrawされた時に反応して物体を生成する
-	int tID; //窓の内容を転送するテクスチャID
+	unsigned tID; //窓の内容を転送するテクスチャID
+	XImage* wImage; //窓イメージ
 
 	//窓までの距離
 	static float distance;
@@ -66,6 +70,7 @@ private:
 	unsigned height;
 
 	WINDOW(int wID); //wIDを持つWINDOWを生成、windowListへ追加
+	void AssignTexture();
 };
 
 //RWM側で生成した窓

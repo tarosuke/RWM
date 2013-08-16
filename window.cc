@@ -6,10 +6,13 @@
  */
 #include <X11/extensions/Xcomposite.h>
 #include <X11/extensions/Xdamage.h>
+#include <X11/Xlib.h>
 
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <window.h>
 #include <view/view.h>
@@ -199,7 +202,7 @@ void WINDOW::HandleXEvent(XEvent& e){
 					800,
 					0,
 					WhitePixel(xDisplay, 0),
-					BlackPixel(xDisplay, 0));
+					0x3C4048);
 				XMapWindow( xDisplay, window);
 			}else{
 				XUnmapWindow(xDisplay, window);
@@ -241,6 +244,7 @@ WINDOW* WINDOW::FindWindowByID(unsigned wID){
 
 
 void WINDOW::Draw(){
+	glBindTexture(GL_TEXTURE_2D, tID);
 	glPushMatrix();
 	glRotatef(-horizAngle * horiz, 0, 1, 0);
 	glRotatef(-vertAngle * vert, 1, 0, 0);
@@ -259,6 +263,7 @@ void WINDOW::Draw(){
 	glVertex3f(w, -h, -distance);
 	glEnd();
 	glPopMatrix();
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 WINDOW::~WINDOW(){
@@ -330,22 +335,75 @@ void WINDOW::AtUnmap(XUnmapEvent& e){
 
 
 void WINDOW::AssignTexture(){
+fprintf(stderr, "assign...");
+	//描画テスト
+	GC gc(XCreateGC(xDisplay, wID, 0, 0));
+	XSetForeground(xDisplay, gc, 0x00ff0000);
+	XFillRectangle(xDisplay, wID, gc, 100, 10, 200, 400 );
+	XSetForeground(xDisplay, gc, 0x000000ff);
+	XFillArc(xDisplay, wID, gc, 300, 400, 400, 400, 0, 360 * 64);
+	XSetForeground(xDisplay, gc, 0xD2DEF0);
+	XSetFont(xDisplay, gc,
+		 XLoadFont(xDisplay, "-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
+	const char* const str("First light!");
+	XDrawString(xDisplay, wID, gc, 200, 600, str, strlen(str));
+
+	XFreeGC(xDisplay, gc);
+
 	//窓画像の取得
 	if(wImage){
 		XDestroyImage(wImage);
 	}
+fprintf(stderr, "createImage...");
+#if 0
+	const int w(1024);
+	const int h(1024);
+	wImage = XCreateImage(
+		xDisplay,
+		DefaultVisual(xDisplay,0),
+		DefaultDepth(xDisplay,0),
+		ZPixmap,0,0,w,h,32,0);
+	(*wImage).data = (char*)malloc(w * h * 4);
+	assert(wImage);
+#if 0
+	memset((*wImage).data, 0x40, w * h * 4);
+#else
+fprintf(stderr, "getImage...");
+	XGetSubImage(
+		xDisplay,
+		wID,
+		0, 0,
+		width, height,
+		AllPlanes,
+		ZPixmap,
+		wImage,
+		0, 0);
+#endif
+#else
+fprintf(stderr, "getImage...");
+	const int w(width);
+	const int h(height);
 	wImage = XGetImage(
 		xDisplay, wID, 0, 0, width, height, AllPlanes, ZPixmap);
+#endif
 
 	//テクスチャの生成
 	if(!tID){
 		glGenTextures(1, &tID);
 	}
+fprintf(stderr, "image2Texture(%u)...", tID);
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
 	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
-		GL_RGB, GL_UNSIGNED_BYTE, (*wImage).data);
+		GL_TEXTURE_2D, 0, GL_RGB, w, h, 0,
+		GL_BGRA, GL_UNSIGNED_BYTE, (*wImage).data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+fprintf(stderr, "OK.\n");
 }
 
 WINDOW::WINDOW(int wID) :

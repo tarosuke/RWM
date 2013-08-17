@@ -335,7 +335,6 @@ void WINDOW::AtUnmap(XUnmapEvent& e){
 
 
 void WINDOW::AssignTexture(){
-fprintf(stderr, "assign...");
 	//描画テスト
 	GC gc(XCreateGC(xDisplay, wID, 0, 0));
 	XSetForeground(xDisplay, gc, 0x00ff0000);
@@ -354,7 +353,6 @@ fprintf(stderr, "assign...");
 	if(wImage){
 		XDestroyImage(wImage);
 	}
-fprintf(stderr, "createImage...");
 #if 0
 	const int w(1024);
 	const int h(1024);
@@ -365,10 +363,6 @@ fprintf(stderr, "createImage...");
 		ZPixmap,0,0,w,h,32,0);
 	(*wImage).data = (char*)malloc(w * h * 4);
 	assert(wImage);
-#if 0
-	memset((*wImage).data, 0x40, w * h * 4);
-#else
-fprintf(stderr, "getImage...");
 	XGetSubImage(
 		xDisplay,
 		wID,
@@ -378,9 +372,7 @@ fprintf(stderr, "getImage...");
 		ZPixmap,
 		wImage,
 		0, 0);
-#endif
 #else
-fprintf(stderr, "getImage...");
 	const int w(width);
 	const int h(height);
 	wImage = XGetImage(
@@ -391,7 +383,6 @@ fprintf(stderr, "getImage...");
 	if(!tID){
 		glGenTextures(1, &tID);
 	}
-fprintf(stderr, "image2Texture(%u)...", tID);
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
 	glTexImage2D(
@@ -403,7 +394,6 @@ fprintf(stderr, "image2Texture(%u)...", tID);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, 0);
-fprintf(stderr, "OK.\n");
 }
 
 WINDOW::WINDOW(int wID) :

@@ -18,13 +18,14 @@
 const char* RIFTVIEW::vertexShaderSource =
 "void main(void){"
 	"gl_Position = ftransform();"
+	"gl_TexCoord[0] = gl_MultiTexCoord0;"
 "}";
 
 const char* RIFTVIEW::fragmentShaderSource =
 "uniform sampler2D buffer;"
 // "uniform sampler2D de_distor;"
 "void main(void){"
-	"vec4 dc = gl_FragCoord;"
+	"vec4 dc = gl_TexCoord[0];"
 // 	"dc += texture2DProj(de_distor, dc); dc[3] = 1.0;"
 	"gl_FragColor = texture2DProj(buffer, dc);"
 "}";
@@ -143,22 +144,22 @@ void RIFTVIEW::Draw() const{
 	glLoadIdentity();
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
-	glDisable(GL_LIGHTING);
 	if(glewValid){
 		//フラグメントシェーダによる歪み除去
-// 		glUseProgram(deDistorShaderProgram);
+		glUseProgram(deDistorShaderProgram);
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
 		glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
 		glTexCoord2f(1, 0); glVertex3f(1, -1, 0.5);
 		glTexCoord2f(1, 1); glVertex3f(1, 1, 0.5);
 		glEnd();
-// 		glUseProgram(0);
+		glUseProgram(0);
 		assert(glGetError() == GL_NO_ERROR);
 	}else{
 		//ポリゴンタイルによる歪み除去
+		glDisable(GL_LIGHTING);
+		glEnable(GL_LIGHTING);
 	}
-	glEnable(GL_LIGHTING);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 

@@ -22,6 +22,7 @@ private:
 		float v;
 	};
 	static P2 GetTrueCoord(P2);
+	unsigned framebufferTexture;
 };
 
 #endif

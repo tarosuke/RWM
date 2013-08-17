@@ -24,7 +24,7 @@ const char* RIFTVIEW::fragmentShaderSource =
 "uniform sampler2D buffer;"
 // "uniform sampler2D de_distor;"
 "void main(void){"
-	"vec4 dc = gl_FragCoord; dc[3] = 1.0;"
+	"vec4 dc = gl_FragCoord;"
 // 	"dc += texture2DProj(de_distor, dc); dc[3] = 1.0;"
 	"gl_FragColor = texture2DProj(buffer, dc);"
 "}";
@@ -66,8 +66,14 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 			return;
 		}
 
-//		glUseProgram(deDistorShaderProgram);
 		glUseProgram(0);
+
+		//フレームバッファ用テクスチャを確保
+		glGenTextures(1, &framebufferTexture);
+		glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+// 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		assert(glGetError() == GL_NO_ERROR);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//歪み情報テクスチャを作る
 	}
@@ -118,12 +124,42 @@ void RIFTVIEW::Draw() const{
 	avatar.GetView();
 	glCallList(displayList);
 
-	//TODO:歪み除去
+	//Riftの歪み除去
+	glGetError();
+	glViewport(0, 0, width, height);
+	assert(glGetError() == GL_NO_ERROR);
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	assert(glGetError() == GL_NO_ERROR);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
+	assert(glGetError() == GL_NO_ERROR);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_LIGHTING);
 	if(glewValid){
 		//フラグメントシェーダによる歪み除去
+// 		glUseProgram(deDistorShaderProgram);
+		glBegin(GL_TRIANGLE_STRIP);
+		glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
+		glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
+		glTexCoord2f(1, 0); glVertex3f(1, -1, 0.5);
+		glTexCoord2f(1, 1); glVertex3f(1, 1, 0.5);
+		glEnd();
+// 		glUseProgram(0);
+		assert(glGetError() == GL_NO_ERROR);
 	}else{
 		//ポリゴンタイルによる歪み除去
 	}
+	glEnable(GL_LIGHTING);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(P2 c){

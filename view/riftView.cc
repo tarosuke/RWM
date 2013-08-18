@@ -6,7 +6,9 @@
 #include <GL/glx.h>
 
 #include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "riftView.h"
 #include <world/room.h>
@@ -23,11 +25,13 @@ const char* RIFTVIEW::vertexShaderSource =
 
 const char* RIFTVIEW::fragmentShaderSource =
 "uniform sampler2D buffer;"
-// "uniform sampler2D de_distor;"
+"uniform sampler2D de_distor;"
 "void main(void){"
-	"vec4 dc = gl_TexCoord[0];"
-// 	"dc += texture2DProj(de_distor, dc); dc[3] = 1.0;"
-	"gl_FragColor = texture2DProj(buffer, dc);"
+	"vec4 dc = gl_TexCoord[0]; dc[3] = 1.0;"
+	"vec4 dd = texture2DProj(de_distor, gl_TexCoord[0]); dd[3] = 0.0;"
+	"dd[0] = (dd[0] * 256.0 - 128.5) / 1280.0;"
+	"dd[1] = (dd[1] * 256.0 - 128.5) / 800.0;"
+	"gl_FragColor = texture2DProj(buffer,dc + dd);"
 "}";
 
 int RIFTVIEW::deDistorShaderProgram;
@@ -72,11 +76,56 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 		//フレームバッファ用テクスチャを確保
 		glGenTextures(1, &framebufferTexture);
 		glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// 		glTexParameteri(
+// 			GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+// 		glTexParameteri(
+// 			GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 // 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		assert(glGetError() == GL_NO_ERROR);
-		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//歪み情報テクスチャを作る
+		struct DISTORE_ELEMENT{
+			unsigned char u;
+			unsigned char v;
+		}__attribute__((packed)) *body((DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
+		assert(body);
+		for(int v(0); v < height; v++){
+			for(int u(0); u < width / 2; u++){
+				DISTORE_ELEMENT& b(body[v*width + u]);
+				DISTORE_ELEMENT& d(body[v*width + width - u - 1]);
+#if 1
+				P2 tc(GetTrueCoord(u, v));
+				const float uu(tc.u - u);
+				const float vv(tc.v - v);
+				b.u = uu + 128;
+				d.u = -uu + 128;
+				b.v =
+				d.v = vv + 128;
+#else
+				b.u = b.v = d.u = d.v = 128;
+#endif
+			}
+		}
+
+		glGenTextures(1, &deDistorTexture);
+		glBindTexture(GL_TEXTURE_2D, deDistorTexture);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		assert(glGetError() == GL_NO_ERROR);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RG,
+			width, height, 0, GL_RG, GL_UNSIGNED_BYTE, body);
+		free(body);
+		assert(glGetError() == GL_NO_ERROR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
@@ -130,11 +179,6 @@ void RIFTVIEW::Draw() const{
 	glViewport(0, 0, width, height);
 	assert(glGetError() == GL_NO_ERROR);
 	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	assert(glGetError() == GL_NO_ERROR);
 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
 	assert(glGetError() == GL_NO_ERROR);
@@ -146,7 +190,13 @@ void RIFTVIEW::Draw() const{
 	glDisable(GL_STENCIL_TEST);
 	if(glewValid){
 		//フラグメントシェーダによる歪み除去
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, deDistorTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, framebufferTexture);
 		glUseProgram(deDistorShaderProgram);
+		glUniform1i(glGetUniformLocation(deDistorShaderProgram, "buffer"), 0);
+		glUniform1i(glGetUniformLocation(deDistorShaderProgram, "de_distor"), 1);
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
 		glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
@@ -157,13 +207,31 @@ void RIFTVIEW::Draw() const{
 		assert(glGetError() == GL_NO_ERROR);
 	}else{
 		//ポリゴンタイルによる歪み除去
-		glDisable(GL_LIGHTING);
-		glEnable(GL_LIGHTING);
+// 		glDisable(GL_LIGHTING);
+// 		glEnable(GL_LIGHTING);
 	}
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(P2 c){
-	return c; //TODO:正しい座標を計算する
+float RIFTVIEW::D(P2 o, float l){
+	return expf((o.u*o.u + o.v*o.v) / (l*l*4));
+// 	return 1.0 + (o.u*o.u + o.v*o.v)/(l*l*8);
+}
+
+RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){
+	const P2 lens = { (float)1.1453 * width/4, (float)height / 2 };
+
+	//レンズ位置からの相対座標へ変換
+	const P2 l = { u - lens.u, v - lens.v };
+
+	//中心からの距離
+	const float d(D(l, lens.u));
+	const P2 left = { -lens.u, 0 };
+	const float ll(D(left, lens.u));
+
+	const P2 tc = { lens.u + l.u * d / ll, lens.v + l.v * d / ll };
+
+	return tc;
 }
 

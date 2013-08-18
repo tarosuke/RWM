@@ -21,7 +21,6 @@ const char* RIFTVIEW::vertexShaderSource =
 "void main(void){"
 	"gl_Position = ftransform();"
 	"gl_TexCoord[0] = gl_MultiTexCoord0;"
-	"gl_TexCoord[1] = gl_MultiTexCoord1;"
 "}";
 
 const char* RIFTVIEW::fragmentShaderSource =
@@ -29,7 +28,7 @@ const char* RIFTVIEW::fragmentShaderSource =
 "uniform sampler2D de_distor;"
 "void main(void){"
 	"vec4 dc = gl_TexCoord[0]; dc[3] = 1.0;"
-	"vec4 dd = texture2DProj(de_distor, gl_TexCoord[1]); dd[3] = 0.0;"
+	"vec4 dd = texture2DProj(de_distor, gl_TexCoord[0]); dd[3] = 0.0;"
 	"dd[0] = (dd[0] * 256.0 - 128.5) / 1280.0;"
 	"dd[1] = (dd[1] * 256.0 - 128.5) / 800.0;"
 	"gl_FragColor = texture2DProj(buffer,dc + dd);"
@@ -98,12 +97,14 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 			for(int u(0); u < width / 2; u++){
 				DISTORE_ELEMENT& b(body[v*width + u]);
 				DISTORE_ELEMENT& d(body[v*width + width - u - 1]);
-#if 0
-				P2 oc = { (float)u, (float)v };
-				P2 tc(GetTrueCoord(oc));
-				b.u = u - tc.u + 128;
-				b.v = v - tc.v + 128;
-				d.u = d.v = 128;
+#if 1
+				P2 tc(GetTrueCoord(u, v));
+				const float uu(tc.u - u);
+				const float vv(tc.v - v);
+				b.u = uu + 128;
+				d.u = -uu + 128;
+				b.v =
+				d.v = vv + 128;
 #else
 				b.u = b.v = d.u = d.v = 128;
 #endif
@@ -213,16 +214,23 @@ void RIFTVIEW::Draw() const{
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(P2 c){
+float RIFTVIEW::D(P2 o, float l){
+	return expf((o.u*o.u + o.v*o.v) / (l*l*4));
+// 	return 1.0 + (o.u*o.u + o.v*o.v)/(l*l*8);
+}
+
+RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){
 	const P2 lens = { (float)1.1453 * width/4, (float)height / 2 };
 
 	//レンズ位置からの相対座標へ変換
-	const P2 l = { c.u - lens.u, c.v - lens.v };
+	const P2 l = { u - lens.u, v - lens.v };
 
-	//中心からの距離の自乗
-// 	const float d2((l.u*l.u + l.v*l.v));
+	//中心からの距離
+	const float d(D(l, lens.u));
+	const P2 left = { -lens.u, 0 };
+	const float ll(D(left, lens.u));
 
-	const P2 tc = { lens.u + l.u*l.u, lens.v + l.v*l.v };
+	const P2 tc = { lens.u + l.u * d / ll, lens.v + l.v * d / ll };
 
 	return tc;
 }

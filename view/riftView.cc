@@ -6,6 +6,7 @@
 #include <GL/glx.h>
 
 #include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "riftView.h"
@@ -19,14 +20,15 @@ const char* RIFTVIEW::vertexShaderSource =
 "void main(void){"
 	"gl_Position = ftransform();"
 	"gl_TexCoord[0] = gl_MultiTexCoord0;"
+	"gl_TexCoord[1] = gl_MultiTexCoord1;"
 "}";
 
 const char* RIFTVIEW::fragmentShaderSource =
 "uniform sampler2D buffer;"
-// "uniform sampler2D de_distor;"
+"uniform sampler2D de_distor;"
 "void main(void){"
-	"vec4 dc = gl_TexCoord[0];"
-// 	"dc += texture2DProj(de_distor, dc); dc[3] = 1.0;"
+	"vec4 dc = gl_TexCoord[0]; dc[3] = 1.0;"
+	"dc += texture2DProj(de_distor, gl_TexCoord[0]); dc[3] = 1.0;"
 	"gl_FragColor = texture2DProj(buffer, dc);"
 "}";
 
@@ -72,11 +74,42 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 		//フレームバッファ用テクスチャを確保
 		glGenTextures(1, &framebufferTexture);
 		glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 // 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		assert(glGetError() == GL_NO_ERROR);
-		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//歪み情報テクスチャを作る
+		struct DISTORE_ELEMENT{
+			unsigned char u;
+			unsigned char v;
+		}__attribute__((packed)) *body((DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
+		assert(body);
+		DISTORE_ELEMENT* b(body);
+		for(int v(0); v < height; v++){
+			for(int u(0); u < width; u++, b++){
+				(*b).u = v;
+				(*b).v = 0;
+			}
+		}
+
+		glGenTextures(1, &deDistorTexture);
+		glBindTexture(GL_TEXTURE_2D, deDistorTexture);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		assert(glGetError() == GL_NO_ERROR);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RG,
+			width, height, 0, GL_RG, GL_UNSIGNED_BYTE, body);
+		free(body);
+		assert(glGetError() == GL_NO_ERROR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
@@ -130,11 +163,6 @@ void RIFTVIEW::Draw() const{
 	glViewport(0, 0, width, height);
 	assert(glGetError() == GL_NO_ERROR);
 	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	assert(glGetError() == GL_NO_ERROR);
 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
 	assert(glGetError() == GL_NO_ERROR);
@@ -146,7 +174,13 @@ void RIFTVIEW::Draw() const{
 	glDisable(GL_STENCIL_TEST);
 	if(glewValid){
 		//フラグメントシェーダによる歪み除去
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, deDistorTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, framebufferTexture);
 		glUseProgram(deDistorShaderProgram);
+		glUniform1i(glGetUniformLocation(deDistorShaderProgram, "buffer"), 0);
+		glUniform1i(glGetUniformLocation(deDistorShaderProgram, "de_distor"), 1);
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
 		glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
@@ -160,6 +194,7 @@ void RIFTVIEW::Draw() const{
 		glDisable(GL_LIGHTING);
 		glEnable(GL_LIGHTING);
 	}
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 

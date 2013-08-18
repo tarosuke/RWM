@@ -23,6 +23,7 @@ private:
 	};
 	static P2 GetTrueCoord(P2);
 	unsigned framebufferTexture;
+	unsigned deDistorTexture;
 };
 
 #endif

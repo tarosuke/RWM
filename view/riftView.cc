@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "riftView.h"
 #include <world/room.h>
@@ -28,8 +29,10 @@ const char* RIFTVIEW::fragmentShaderSource =
 "uniform sampler2D de_distor;"
 "void main(void){"
 	"vec4 dc = gl_TexCoord[0]; dc[3] = 1.0;"
-	"dc += texture2DProj(de_distor, gl_TexCoord[0]); dc[3] = 1.0;"
-	"gl_FragColor = texture2DProj(buffer, dc);"
+	"vec4 dd = texture2DProj(de_distor, gl_TexCoord[1]); dd[3] = 0.0;"
+	"dd[0] = (dd[0] * 256.0 - 128.5) / 1280.0;"
+	"dd[1] = (dd[1] * 256.0 - 128.5) / 800.0;"
+	"gl_FragColor = texture2DProj(buffer,dc + dd);"
 "}";
 
 int RIFTVIEW::deDistorShaderProgram;
@@ -78,6 +81,10 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(
 			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// 		glTexParameteri(
+// 			GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+// 		glTexParameteri(
+// 			GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 // 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		assert(glGetError() == GL_NO_ERROR);
 
@@ -87,11 +94,19 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 			unsigned char v;
 		}__attribute__((packed)) *body((DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
 		assert(body);
-		DISTORE_ELEMENT* b(body);
 		for(int v(0); v < height; v++){
-			for(int u(0); u < width; u++, b++){
-				(*b).u = v;
-				(*b).v = 0;
+			for(int u(0); u < width / 2; u++){
+				DISTORE_ELEMENT& b(body[v*width + u]);
+				DISTORE_ELEMENT& d(body[v*width + width - u - 1]);
+#if 0
+				P2 oc = { (float)u, (float)v };
+				P2 tc(GetTrueCoord(oc));
+				b.u = u - tc.u + 128;
+				b.v = v - tc.v + 128;
+				d.u = d.v = 128;
+#else
+				b.u = b.v = d.u = d.v = 128;
+#endif
 			}
 		}
 
@@ -191,14 +206,24 @@ void RIFTVIEW::Draw() const{
 		assert(glGetError() == GL_NO_ERROR);
 	}else{
 		//ポリゴンタイルによる歪み除去
-		glDisable(GL_LIGHTING);
-		glEnable(GL_LIGHTING);
+// 		glDisable(GL_LIGHTING);
+// 		glEnable(GL_LIGHTING);
 	}
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(P2 c){
-	return c; //TODO:正しい座標を計算する
+	const P2 lens = { (float)1.1453 * width/4, (float)height / 2 };
+
+	//レンズ位置からの相対座標へ変換
+	const P2 l = { c.u - lens.u, c.v - lens.v };
+
+	//中心からの距離の自乗
+// 	const float d2((l.u*l.u + l.v*l.v));
+
+	const P2 tc = { lens.u + l.u*l.u, lens.v + l.v*l.v };
+
+	return tc;
 }
 

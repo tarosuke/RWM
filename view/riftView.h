@@ -21,7 +21,7 @@ private:
 		float u;
 		float v;
 	};
-	static P2 GetTrueCoord(P2);
+	P2 GetTrueCoord(P2);
 	unsigned framebufferTexture;
 	unsigned deDistorTexture;
 };

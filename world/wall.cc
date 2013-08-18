@@ -31,7 +31,7 @@ void WALL::Draw(const TEXSET& texSet){
 	const float baseColor[4] = { 0.5, 0.5, 0.5, 1 };
 	glMaterialfv(GL_FRONT_AND_BACK,
 		GL_AMBIENT_AND_DIFFUSE, baseColor);
-	glNormal3f(dnz, 0, -dnx);
+	glNormal3f(-dnz, 0, dnx);
 	glFrontFace(GL_CW);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2f(txu0, txv0);

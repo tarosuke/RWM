@@ -1,8 +1,13 @@
 /***************************************************** view with rift:riftView
  *
  */
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
+
+#include <assert.h>
+#include <stdio.h>
+
 #include "riftView.h"
 #include <world/room.h>
 #include <rift/rift.h>
@@ -10,8 +15,69 @@
 #include <toolbox/qon/glqon.h>
 
 
+const char* RIFTVIEW::vertexShaderSource =
+"void main(void){"
+	"gl_Position = ftransform();"
+	"gl_TexCoord[0] = gl_MultiTexCoord0;"
+"}";
+
+const char* RIFTVIEW::fragmentShaderSource =
+"uniform sampler2D buffer;"
+// "uniform sampler2D de_distor;"
+"void main(void){"
+	"vec4 dc = gl_TexCoord[0];"
+// 	"dc += texture2DProj(de_distor, dc); dc[3] = 1.0;"
+	"gl_FragColor = texture2DProj(buffer, dc);"
+"}";
+
+int RIFTVIEW::deDistorShaderProgram;
+bool RIFTVIEW::glewValid(false);
+
+
 RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 	VIEW(1280, 800, avatar){
+
+	glewValid = (GLEW_OK == glewInit());
+	if(glewValid){
+		//プログラマブルシェーダの設定
+		GLuint vShader(glCreateShader(GL_VERTEX_SHADER));
+		GLuint fShader(glCreateShader(GL_FRAGMENT_SHADER));
+
+		if(!vShader || !fShader){
+			glewValid = false;
+			return;
+		}
+
+		glShaderSource(vShader, 1, &vertexShaderSource, NULL);
+		glCompileShader(vShader);
+
+		glShaderSource(fShader, 1, &fragmentShaderSource, NULL);
+		glCompileShader(fShader);
+
+		deDistorShaderProgram = glCreateProgram();
+		glAttachShader(deDistorShaderProgram, vShader);
+		glAttachShader(deDistorShaderProgram, fShader);
+
+		GLint linked;
+		glLinkProgram(deDistorShaderProgram);
+		glGetProgramiv(deDistorShaderProgram, GL_LINK_STATUS, &linked);
+		if(GL_FALSE == linked){
+			glewValid = false;
+			assert(false);
+			return;
+		}
+
+		glUseProgram(0);
+
+		//フレームバッファ用テクスチャを確保
+		glGenTextures(1, &framebufferTexture);
+		glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+// 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		assert(glGetError() == GL_NO_ERROR);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		//歪み情報テクスチャを作る
+	}
 }
 
 RIFTVIEW::~RIFTVIEW(){}
@@ -59,7 +125,45 @@ void RIFTVIEW::Draw() const{
 	avatar.GetView();
 	glCallList(displayList);
 
-	//TODO:ここで描画バッファをテクスチャにして歪み付きで描画
+	//Riftの歪み除去
+	glGetError();
+	glViewport(0, 0, width, height);
+	assert(glGetError() == GL_NO_ERROR);
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	assert(glGetError() == GL_NO_ERROR);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
+	assert(glGetError() == GL_NO_ERROR);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+	if(glewValid){
+		//フラグメントシェーダによる歪み除去
+		glUseProgram(deDistorShaderProgram);
+		glBegin(GL_TRIANGLE_STRIP);
+		glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
+		glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
+		glTexCoord2f(1, 0); glVertex3f(1, -1, 0.5);
+		glTexCoord2f(1, 1); glVertex3f(1, 1, 0.5);
+		glEnd();
+		glUseProgram(0);
+		assert(glGetError() == GL_NO_ERROR);
+	}else{
+		//ポリゴンタイルによる歪み除去
+		glDisable(GL_LIGHTING);
+		glEnable(GL_LIGHTING);
+	}
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(P2 c){
+	return c; //TODO:正しい座標を計算する
+}
 

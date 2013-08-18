@@ -13,6 +13,16 @@ public:
 	~RIFTVIEW();
 	void Draw() const;
 private:
+	static bool glewValid;
+	static int deDistorShaderProgram;
+	static const char* vertexShaderSource;
+	static const char* fragmentShaderSource;
+	struct P2{
+		float u;
+		float v;
+	};
+	static P2 GetTrueCoord(P2);
+	unsigned framebufferTexture;
 };
 
 #endif

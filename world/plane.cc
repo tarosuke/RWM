@@ -12,7 +12,7 @@
 PLANE::PLANE(ROOM& room, const PROFILE& profile_) :
 	PANEL(room),
 	profile(profile_),
-	normaly(profile_.floor ? 1 : -1),
+	normaly(profile_.floor ? -1 : 1),
 	face(profile_.floor ? GL_CW : GL_CCW){}
 
 PLANE::~PLANE(){}

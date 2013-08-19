@@ -22,7 +22,7 @@ private:
 		float v;
 	};
 	P2 GetTrueCoord(float u, float v);
-	static float D(P2 o, float l);
+	static float D(float l);
 	unsigned framebufferTexture;
 	unsigned deDistorTexture;
 };

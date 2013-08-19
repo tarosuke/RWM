@@ -17,6 +17,10 @@
 #include <toolbox/qon/glqon.h>
 
 
+#define DISTORFIX 0
+
+
+
 const char* RIFTVIEW::vertexShaderSource =
 "void main(void){"
 	"gl_Position = ftransform();"
@@ -29,9 +33,13 @@ const char* RIFTVIEW::fragmentShaderSource =
 "void main(void){"
 	"vec4 dc = gl_TexCoord[0]; dc[3] = 1.0;"
 	"vec4 dd = texture2DProj(de_distor, gl_TexCoord[0]); dd[3] = 0.0;"
-	"dd[0] = (dd[0] * 256.0 - 128.5) / 1280.0;"
-	"dd[1] = (dd[1] * 256.0 - 128.5) / 800.0;"
-	"gl_FragColor = texture2DProj(buffer,dc + dd);"
+	"if(0.0 < dd[0]){"
+		"dd[0] = (dd[0] * 256.0 - 128.5) / 1280.0;"
+		"dd[1] = (dd[1] * 256.0 - 128.5) / 800.0;"
+		"gl_FragColor = texture2DProj(buffer,dc + dd);"
+	"}else{"
+		"gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);"
+	"}"
 "}";
 
 int RIFTVIEW::deDistorShaderProgram;
@@ -80,11 +88,31 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(
 			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-// 		glTexParameteri(
-// 			GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-// 		glTexParameteri(
-// 			GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 // 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+#if DISTORFIX
+		//歪みチェック用テクスチャ生成
+		struct DISTORE_CHECKER{
+			unsigned char r;
+			unsigned char g;
+			unsigned char b;
+		}__attribute__((packed)) *checker((DISTORE_CHECKER*)malloc(width * height * sizeof(DISTORE_CHECKER)));
+		for(int v(0); v < height; v++){
+			for(int u(0); u < width; u++){
+				DISTORE_CHECKER& b(checker[v*width + u]);
+				b.r = b.g = b.b = !(u%10) || !(v%10) ? 255 : 0;
+			}
+		}
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RGB,
+			width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, checker);
+
+#endif
+
 		assert(glGetError() == GL_NO_ERROR);
 
 		//歪み情報テクスチャを作る
@@ -97,16 +125,29 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 			for(int u(0); u < width / 2; u++){
 				DISTORE_ELEMENT& b(body[v*width + u]);
 				DISTORE_ELEMENT& d(body[v*width + width - u - 1]);
-#if 1
-				P2 tc(GetTrueCoord(u, v));
-				const float uu(tc.u - u);
-				const float vv(tc.v - v);
-				b.u = uu + 128;
-				d.u = -uu + 128;
-				b.v =
-				d.v = vv + 128;
-#else
-				b.u = b.v = d.u = d.v = 128;
+#if DISTORFIX
+				if((320 <= u && u < 325) ||
+				   (400 <= v && v < 405)){
+					//目盛
+					b.u = d.u = b.v = d.v = 128;
+				}else{
+#endif
+					P2 tc(GetTrueCoord(u, v));
+					const float uu(tc.u - u);
+					const float vv(tc.v - v);
+					if(tc.u < 0.0 || width / 2 <= tc.u ||
+					   tc.v < 0.0 || height <= tc.v ||
+					   uu < -127 || 127 < uu ||
+					   vv < -127 || 127 < vv){
+						b.u = d.u = b.v = d.v = 0;
+					}else{
+						b.u = uu + 128;
+						d.u = -uu + 128;
+						b.v =
+						d.v = vv + 128;
+					}
+#if DISTORFIX
+				}
 #endif
 			}
 		}
@@ -129,7 +170,10 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 	}
 }
 
-RIFTVIEW::~RIFTVIEW(){}
+RIFTVIEW::~RIFTVIEW(){
+	glDeleteTextures(1, &framebufferTexture);
+	glDeleteTextures(1, &deDistorTexture);
+}
 
 
 void RIFTVIEW::Draw() const{
@@ -180,7 +224,9 @@ void RIFTVIEW::Draw() const{
 	assert(glGetError() == GL_NO_ERROR);
 	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
 	assert(glGetError() == GL_NO_ERROR);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
+#if !DISTORFIX
+ 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
+#endif
 	assert(glGetError() == GL_NO_ERROR);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -214,9 +260,9 @@ void RIFTVIEW::Draw() const{
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-float RIFTVIEW::D(P2 o, float l){
-	return expf((o.u*o.u + o.v*o.v) / (l*l*4));
-// 	return 1.0 + (o.u*o.u + o.v*o.v)/(l*l*8);
+float RIFTVIEW::D(float dd){
+	const float E(1.25);
+	return (1.0 + E * dd / 4.0);
 }
 
 RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){
@@ -225,12 +271,14 @@ RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){
 	//レンズ位置からの相対座標へ変換
 	const P2 l = { u - lens.u, v - lens.v };
 
-	//中心からの距離
-	const float d(D(l, lens.u));
-	const P2 left = { -lens.u, 0 };
-	const float ll(D(left, lens.u));
+	//正規化された距離の自乗
+	const float dd((l.u*l.u + l.v*l.v)/(lens.u*lens.u));
 
-	const P2 tc = { lens.u + l.u * d / ll, lens.v + l.v * d / ll };
+	//変換された距離
+	const float ddd(D(dd)/* / D(1)*/);
+
+	//結果格納
+	const P2 tc = { lens.u + l.u * ddd, lens.v + l.v * ddd };
 
 	return tc;
 }

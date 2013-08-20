@@ -180,7 +180,7 @@ void RIFTVIEW::Draw() const{
 	const float sr(nearDistance / (realDistance * 2));
 	const int hw(width / 2);
 	const int rhw(realWidth / 2);
-	const double inset(0.17);
+	const double inset(0.1453);
 
 	//左目
 	glViewport(0, 0, hw, height);

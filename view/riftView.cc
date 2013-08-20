@@ -261,7 +261,7 @@ void RIFTVIEW::Draw() const{
 }
 
 float RIFTVIEW::D(float dd){
-	const float E(1.25);
+	const float E(1.75);
 	return (1.0 + E * dd / 4.0);
 }
 

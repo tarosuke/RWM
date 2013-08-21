@@ -35,6 +35,10 @@ float WINDOW::vertAngle(80.0);
 //窓リスト
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 
+//XDamageイベントのベース値
+int WINDOW::damageBase;
+int WINDOW::damage_err;
+
 
 static int glxAttrs[] = {
 	GLX_USE_GL,
@@ -69,12 +73,16 @@ void WINDOW::Init(){
 		BlackPixel(xDisplay, 0),
 		BlackPixel(xDisplay, 0));
 	XMapWindow( xDisplay, rootWindowID );
+	printf("rootWindowID:%d.\n", rootWindowID);
 #else
 	rootWindowID = RootWindow(xDisplay, 0);
 #endif
 	//rootのサブウインドウをキャプチャ
 	XCompositeRedirectSubwindows(
 		xDisplay, rootWindowID, CompositeRedirectManual);
+
+	//エラーハンドラを設定
+	XSetErrorHandler(XErrorHandler);
 
 	//イベント選択
 	XSelectInput(xDisplay, rootWindowID,
@@ -101,6 +109,9 @@ void WINDOW::Init(){
 
 	//部屋をたどる数をステンシルバッファの初期値に設定
 	glClearStencil(VIEW::roomFollowDepth);
+
+	//XDamageの設定
+	XDamageQueryExtension(xDisplay, &damageBase, &damage_err);
 }
 
 void WINDOW::Quit(){
@@ -204,6 +215,19 @@ void WINDOW::HandleXEvent(XEvent& e){
 					WhitePixel(xDisplay, 0),
 					0x3C4048);
 				XMapWindow( xDisplay, window);
+				//描画テスト
+				GC gc(XCreateGC(xDisplay, window, 0, 0));
+				XSetForeground(xDisplay, gc, 0x00ff0000);
+				XFillRectangle(xDisplay, window, gc, 100, 10, 200, 400 );
+				XSetForeground(xDisplay, gc, 0x000000ff);
+				XFillArc(xDisplay, window, gc, 300, 400, 400, 400, 0, 360 * 64);
+				XSetForeground(xDisplay, gc, 0xD2DEF0);
+				XSetFont(xDisplay, gc,
+					 XLoadFont(xDisplay, "-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
+				const char* const str("First light!");
+				XDrawString(xDisplay, window, gc, 200, 600, str, strlen(str));
+
+				XFreeGC(xDisplay, gc);
 			}else{
 				XUnmapWindow(xDisplay, window);
 				XDestroyWindow(xDisplay, window);
@@ -211,6 +235,10 @@ void WINDOW::HandleXEvent(XEvent& e){
 			}
 			break;
 		default:
+			//XDamageのイベント
+			if(ev.type == damageBase + XDamageNotify){
+				AtDamage(*(XDamageNotifyEvent*)&e);
+			}
 			//TODO:keyDown/Upの時などの処理を考える
 			break;
 	}
@@ -249,10 +277,9 @@ void WINDOW::Draw(){
 	glRotatef(-horizAngle * horiz, 0, 1, 0);
 	glRotatef(-vertAngle * vert, 1, 0, 0);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float r(0.0002 * distance);
+	const float r(0.0002 * distance * 3);
 	const float w(r * width);
 	const float h(r * height);
-	//TODO:テクスチャ座標も付ける
 	glTexCoord2f(0, 0);
 	glVertex3f(-w, h, -distance);
 	glTexCoord2f(0, 1);
@@ -271,9 +298,6 @@ WINDOW::~WINDOW(){
 	if(tID){
 		glDeleteTextures(1, &tID);
 	}
-	if(wImage){
-		XDestroyImage(wImage);
-	}
 }
 
 
@@ -283,19 +307,20 @@ void WINDOW::AtCreate(XCreateWindowEvent& e){
 	if(e.window == rootWindowID){
 		return;
 	}
+printf("create(%lu).\n", e.window);
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(!w){
 		//外部生成窓なので追随して生成
 		WINDOW& nw = *new WINDOW(e.window);
-		nw.horiz = ((float)e.x/rootWidth) - 0.5;
-		nw.vert = ((float)e.y/rootHeight) - 0.5;
+		nw.horiz = ((float)e.x/rootWidth);
+		nw.vert = ((float)e.y/rootHeight);
 		nw.width = e.width;
 		nw.height = e.height;
 
 		//拡張イベントを設定
 		XSelectInput (xDisplay, nw.wID, PropertyChangeMask);
 		nw.dID = XDamageCreate(
-			xDisplay, nw.wID, XDamageReportBoundingBox);
+			xDisplay, nw.wID, XDamageReportNonEmpty);
 	}
 }
 
@@ -303,6 +328,7 @@ void WINDOW::AtMap(XMapEvent& e){
 	if(e.event != rootWindowID){
 		return;
 	}
+printf("map(%lu).\n", e.event);
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(w){
 		//テクスチャ割り当て、初期画像設定
@@ -315,6 +341,7 @@ void WINDOW::AtDestroy(XDestroyWindowEvent& e){
 	if(e.window == rootWindowID){
 		return;
 	}
+printf("destroy(%lu).\n", e.window);
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(w){
 		//外部でDestroyされたウインドウに同期する
@@ -325,59 +352,72 @@ void WINDOW::AtUnmap(XUnmapEvent& e){
 	if(e.window == rootWindowID){
 		return;
 	}
+printf("unmap(%lu).\n", e.window);
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(w){
 		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
 		(*w).mapped = false;
 	}
 }
-
-
-
-void WINDOW::AssignTexture(){
-	//描画テスト
-	GC gc(XCreateGC(xDisplay, wID, 0, 0));
-	XSetForeground(xDisplay, gc, 0x00ff0000);
-	XFillRectangle(xDisplay, wID, gc, 100, 10, 200, 400 );
-	XSetForeground(xDisplay, gc, 0x000000ff);
-	XFillArc(xDisplay, wID, gc, 300, 400, 400, 400, 0, 360 * 64);
-	XSetForeground(xDisplay, gc, 0xD2DEF0);
-	XSetFont(xDisplay, gc,
-		 XLoadFont(xDisplay, "-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
-	const char* const str("First light!");
-	XDrawString(xDisplay, wID, gc, 200, 600, str, strlen(str));
-
-	XFreeGC(xDisplay, gc);
-
-	//窓画像の取得
-	if(wImage){
-		XDestroyImage(wImage);
+void WINDOW::AtDamage(XDamageNotifyEvent& e){
+	if(e.drawable == rootWindowID){
+		return;
 	}
-#if 0
-	const int w(1024);
-	const int h(1024);
-	wImage = XCreateImage(
-		xDisplay,
-		DefaultVisual(xDisplay,0),
-		DefaultDepth(xDisplay,0),
-		ZPixmap,0,0,w,h,32,0);
-	(*wImage).data = (char*)malloc(w * h * 4);
-	assert(wImage);
-	XGetSubImage(
+printf("damaged(%lu).\n", e.drawable);
+	//変化分を取得したと通知
+	XDamageSubtract(xDisplay, e.damage, None, None);
+
+	//窓情報取得
+	XWindowAttributes attr;
+	XGetWindowAttributes(xDisplay, e.drawable, &attr);
+
+	//知っている窓なら変化分を反映
+	WINDOW* const w(WINDOW::FindWindowByID(e.drawable));
+	if(w){
+		(*w).OnDamage(e);
+	}
+}
+
+void WINDOW::OnDamage(XDamageNotifyEvent& e){
+	if(!mapped){
+		//非map状態では窓のキャプチャはできない
+		return;
+	}
+printf("area:%d %d %d %d.\n", e.area.x, e.area.y, e.area.width, e.area.height);
+
+	//変化分を取得してwImageを更新
+	XImage* wImage(XGetImage(
 		xDisplay,
 		wID,
-		0, 0,
-		width, height,
+		e.area.x,
+		e.area.y,
+		e.area.width,
+		e.area.height,
 		AllPlanes,
-		ZPixmap,
-		wImage,
-		0, 0);
-#else
+		ZPixmap));
+
+	//変化分をテクスチャに反映
+	glBindTexture(GL_TEXTURE_2D, tID);
+	glTexSubImage2D(
+		GL_TEXTURE_2D, 0,
+		e.area.x,
+		e.area.y,
+		e.area.width,
+		e.area.height,
+		GL_BGRA,
+		GL_UNSIGNED_BYTE,
+		(*wImage).data);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	XDestroyImage(wImage);
+}
+
+void WINDOW::AssignTexture(){
+	//窓画像の取得
 	const int w(width);
 	const int h(height);
-	wImage = XGetImage(
-		xDisplay, wID, 0, 0, width, height, AllPlanes, ZPixmap);
-#endif
+
+	XImage* wImage(XGetImage(
+		xDisplay, wID, 0, 0, width, height, AllPlanes, ZPixmap));
 
 	//テクスチャの生成
 	if(!tID){
@@ -394,10 +434,20 @@ void WINDOW::AssignTexture(){
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	XDestroyImage(wImage);
+}
+
+int WINDOW::XErrorHandler(Display* d, XErrorEvent* e){
+	printf("(%u)\nserial:%lu\nreqCode:%u\nminCode:%u\n",
+		(*e).error_code,
+		(*e).serial,
+		(*e).request_code,
+		(*e).minor_code);
+	return 0;
 }
 
 WINDOW::WINDOW(int wID) :
-	wID(wID), node(*this), mapped(false), tID(0), wImage(0){
+	wID(wID), node(*this), mapped(false), tID(0){
 	windowList.Add(node);
 }
 

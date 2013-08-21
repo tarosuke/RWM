@@ -36,6 +36,8 @@ protected:
 
 	unsigned wID; //窓ID
 	Damage dID;
+	static int damageBase;
+	static int damage_err;
 private:
 	//根窓関連
 	static void Quit();
@@ -44,18 +46,20 @@ private:
 	static void AtDestroy(XDestroyWindowEvent&);
 	static void AtUnmap(XUnmapEvent&);
 	static void AtMapping(XMappingEvent&){};
+	static void AtDamage(XDamageNotifyEvent&);
+
 	static void DrawAll();
 	static void HandleXEvent(XEvent&);
 
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(unsigned wID);
+	static int XErrorHandler(Display*, XErrorEvent*);
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;
 	bool mapped; //tureならDrawされた時に反応して物体を生成する
 	unsigned tID; //窓の内容を転送するテクスチャID
-	XImage* wImage; //窓イメージ
 
 	//窓までの距離
 	static float distance;
@@ -71,6 +75,9 @@ private:
 
 	WINDOW(int wID); //wIDを持つWINDOWを生成、windowListへ追加
 	void AssignTexture();
+
+	//窓固有のハンドラ
+	void OnDamage(XDamageNotifyEvent&);
 };
 
 //RWM側で生成した窓

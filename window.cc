@@ -207,8 +207,8 @@ void WINDOW::HandleXEvent(XEvent& e){
 				window = XCreateSimpleWindow(
 					xDisplay,
 					rootWindowID,
-					400,
-					550,
+					-200,
+					100,
 					600,
 					800,
 					0,

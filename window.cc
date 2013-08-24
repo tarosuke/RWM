@@ -27,7 +27,7 @@ int WINDOW::rootHeight(800);
 
 
 //窓までの距離
-float WINDOW::distance(0.6);
+float WINDOW::baseDistance(0.8);
 //窓の標準散開角(単位はOpenGLに合わせて°)
 float WINDOW::horizAngle(160.0);
 float WINDOW::vertAngle(80.0);
@@ -168,10 +168,11 @@ void WINDOW::DrawWindows(){
 	//窓描画(窓は陰影などなしでそのまま表示)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_STENCIL_TEST);
+	unsigned nff(0);
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		WINDOW& w(*i.Owner());
 		if(w.mapped){
-			w.Draw();
+			w.Draw(nff++);
 		}
 	}
 	glEnable(GL_LIGHTING);
@@ -271,7 +272,8 @@ WINDOW* WINDOW::FindWindowByID(unsigned wID){
 }
 
 
-void WINDOW::Draw(){
+void WINDOW::Draw(unsigned nff){
+	const float distance(baseDistance + 0.03 * nff);
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPushMatrix();
 	glRotatef(-horizAngle * horiz, 0, 1, 0);
@@ -448,6 +450,6 @@ int WINDOW::XErrorHandler(Display* d, XErrorEvent* e){
 
 WINDOW::WINDOW(int wID) :
 	wID(wID), node(*this), mapped(false), tID(0){
-	windowList.Add(node);
+	windowList.Insert(node);
 }
 

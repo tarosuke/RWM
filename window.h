@@ -27,7 +27,7 @@ public:
 protected:
 	WINDOW(); //自分でXCreateWindowする
 	virtual ~WINDOW(); //自身をwindowListから削除して消滅
-	void Draw();
+	void Draw(unsigned numFormFront);
 	static Display* xDisplay;
 	static unsigned rootWindowID;
 	static GLXContext glxContext;
@@ -62,7 +62,7 @@ private:
 	unsigned tID; //窓の内容を転送するテクスチャID
 
 	//窓までの距離
-	static float distance;
+	static float baseDistance;
 	//窓の広がり(horizやvertを掛けて角度を決める。単位は°)
 	static float horizAngle;
 	static float vertAngle;

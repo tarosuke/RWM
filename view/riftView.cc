@@ -261,8 +261,10 @@ void RIFTVIEW::Draw() const{
 }
 
 float RIFTVIEW::D(float dd){
-	const float E(1.75);
-	return (1.0 + E * dd / 4.0);
+	return 1.0 +
+		0.35 * dd +
+		0.125 * dd*dd +
+		0.075 * dd*dd*dd;
 }
 
 RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){

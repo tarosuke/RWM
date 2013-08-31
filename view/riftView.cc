@@ -19,28 +19,14 @@
 
 #define DISTORFIX 0
 
-
-
-const char* RIFTVIEW::vertexShaderSource =
-"void main(void){"
-	"gl_Position = ftransform();"
-	"gl_TexCoord[0] = gl_MultiTexCoord0;"
-"}";
-
-const char* RIFTVIEW::fragmentShaderSource =
-"uniform sampler2D buffer;"
-"uniform sampler2D de_distor;"
-"void main(void){"
-	"vec4 dc = gl_TexCoord[0]; dc[3] = 1.0;"
-	"vec4 dd = texture2DProj(de_distor, gl_TexCoord[0]); dd[3] = 0.0;"
-	"if(0.0 < dd[0]){"
-		"dd[0] = (dd[0] * 256.0 - 128.5) / 1280.0;"
-		"dd[1] = (dd[1] * 256.0 - 128.5) / 800.0;"
-		"gl_FragColor = texture2DProj(buffer,dc + dd);"
-	"}else{"
-		"gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);"
-	"}"
-"}";
+extern "C"{
+extern char _binary_vertex_pss_start[];
+extern char _binary_fragment_pss_start[];
+extern char _binary_vertex_pss_end[];
+extern char _binary_fragment_pss_end[];
+};
+const char* RIFTVIEW::vertexShaderSource(_binary_vertex_pss_start);
+const char* RIFTVIEW::fragmentShaderSource(_binary_fragment_pss_start);
 
 int RIFTVIEW::deDistorShaderProgram;
 bool RIFTVIEW::glewValid(false);
@@ -51,6 +37,10 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 
 	glewValid = (GLEW_OK == glewInit());
 	if(glewValid){
+		//シェーダーコードの整形
+		_binary_fragment_pss_end[-1] =
+		_binary_vertex_pss_end[-1] = 0;
+
 		//プログラマブルシェーダの設定
 		GLuint vShader(glCreateShader(GL_VERTEX_SHADER));
 		GLuint fShader(glCreateShader(GL_FRAGMENT_SHADER));
@@ -63,12 +53,18 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 		glShaderSource(vShader, 1, &vertexShaderSource, NULL);
 		glCompileShader(vShader);
 
+		assert(glGetError() == GL_NO_ERROR);
+
 		glShaderSource(fShader, 1, &fragmentShaderSource, NULL);
 		glCompileShader(fShader);
+
+		assert(glGetError() == GL_NO_ERROR);
 
 		deDistorShaderProgram = glCreateProgram();
 		glAttachShader(deDistorShaderProgram, vShader);
 		glAttachShader(deDistorShaderProgram, fShader);
+
+		assert(glGetError() == GL_NO_ERROR);
 
 		GLint linked;
 		glLinkProgram(deDistorShaderProgram);
@@ -78,6 +74,7 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 			assert(false);
 			return;
 		}
+		assert(glGetError() == GL_NO_ERROR);
 
 		glUseProgram(0);
 

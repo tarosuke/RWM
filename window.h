@@ -16,6 +16,7 @@
 #include <GL/glx.h>
 
 #include <toolbox/queue/queue.h>
+#include <toolbox/qon/qon.h>
 
 
 
@@ -24,10 +25,9 @@ public:
 	static void Init();
 	static void Run(class GHOST&);
 	static void DrawWindows();
-protected:
-	WINDOW(); //自分でXCreateWindowする
-	virtual ~WINDOW(); //自身をwindowListから削除して消滅
-	void Draw();
+private:
+	~WINDOW(); //自身をwindowListから削除して消滅
+	void Draw(unsigned numFormFront);
 	static Display* xDisplay;
 	static unsigned rootWindowID;
 	static GLXContext glxContext;
@@ -38,7 +38,7 @@ protected:
 	Damage dID;
 	static int damageBase;
 	static int damage_err;
-private:
+
 	//根窓関連
 	static void Quit();
 	static void AtCreate(XCreateWindowEvent&);
@@ -55,37 +55,40 @@ private:
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(unsigned wID);
 	static int XErrorHandler(Display*, XErrorEvent*);
+	static Atom wInstanceAtom;
+	//窓までの距離
+	static float baseDistance;
+	//窓配置の広がりレシオ(配置＆大きさ0.0〜1.0の角度。単位は°)
+	static float spread;
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;
 	bool mapped; //tureならDrawされた時に反応して物体を生成する
 	unsigned tID; //窓の内容を転送するテクスチャID
 
-	//窓までの距離
-	static float distance;
-	//窓の広がり(horizやvertを掛けて角度を決める。単位は°)
-	static float horizAngle;
-	static float vertAngle;
-	//位置というか角度(普通は-0.5〜0.5に正規化されている)
+	//中心の位置というか角度(0.0〜1.0がspreadに対応)
 	float horiz;
 	float vert;
+	//角度表記の大きさ(0.0〜1.0がspreadに対応)
+	float hSpread;
+	float vSpread;
 	//ピクセルサイズ
 	unsigned width;
 	unsigned height;
 
-	WINDOW(int wID); //wIDを持つWINDOWを生成、windowListへ追加
+	//窓生成、登録
+	WINDOW(XCreateWindowEvent& e);
 	void AssignTexture();
+	static WINDOW* FindWindowByDir(const QON&);
+	struct P2{
+		float x;
+		float y;
+	};
+	P2 GetLocalPosition(const QON&);
 
 	//窓固有のハンドラ
 	void OnDamage(XDamageNotifyEvent&);
 };
 
-//RWM側で生成した窓
-class INTERNAL_WINDOW : public WINDOW{
-public:
-	~INTERNAL_WINDOW(){
-		XDestroyWindow(xDisplay, wID);
-	};
-};
 
 #endif

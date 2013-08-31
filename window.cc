@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <window.h>
 #include <view/view.h>
@@ -24,13 +25,12 @@ unsigned WINDOW::rootWindowID;
 GLXContext WINDOW::glxContext;
 int WINDOW::rootWidth(1280);
 int WINDOW::rootHeight(800);
-
+Atom WINDOW::wInstanceAtom;
 
 //窓までの距離
-float WINDOW::distance(0.6);
+float WINDOW::baseDistance(0.8);
 //窓の標準散開角(単位はOpenGLに合わせて°)
-float WINDOW::horizAngle(160.0);
-float WINDOW::vertAngle(80.0);
+float WINDOW::spread(80.0);
 
 //窓リスト
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
@@ -112,6 +112,9 @@ void WINDOW::Init(){
 
 	//XDamageの設定
 	XDamageQueryExtension(xDisplay, &damageBase, &damage_err);
+
+	//WINDOWインスタンスへのポインタ格納のための設定
+	wInstanceAtom = XInternAtom(xDisplay, "RWM_wInstance", false);
 }
 
 void WINDOW::Quit(){
@@ -168,10 +171,11 @@ void WINDOW::DrawWindows(){
 	//窓描画(窓は陰影などなしでそのまま表示)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_STENCIL_TEST);
+	unsigned nff(0);
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		WINDOW& w(*i.Owner());
 		if(w.mapped){
-			w.Draw();
+			w.Draw(nff++);
 		}
 	}
 	glEnable(GL_LIGHTING);
@@ -207,8 +211,8 @@ void WINDOW::HandleXEvent(XEvent& e){
 				window = XCreateSimpleWindow(
 					xDisplay,
 					rootWindowID,
-					-200,
-					100,
+					0,
+					0,
 					600,
 					800,
 					0,
@@ -271,11 +275,12 @@ WINDOW* WINDOW::FindWindowByID(unsigned wID){
 }
 
 
-void WINDOW::Draw(){
+void WINDOW::Draw(unsigned nff){
+	const float distance(baseDistance + 0.03 * nff);
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPushMatrix();
-	glRotatef(-horizAngle * horiz, 0, 1, 0);
-	glRotatef(-vertAngle * vert, 1, 0, 0);
+	glRotatef(-horiz * spread, 0, 1, 0);
+	glRotatef(-vert * spread, 1, 0, 0);
 	glBegin(GL_TRIANGLE_STRIP);
 	const float r(0.0002 * distance * 3);
 	const float w(r * width);
@@ -311,16 +316,7 @@ printf("create(%lu).\n", e.window);
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(!w){
 		//外部生成窓なので追随して生成
-		WINDOW& nw = *new WINDOW(e.window);
-		nw.horiz = ((float)e.x/rootWidth);
-		nw.vert = ((float)e.y/rootHeight);
-		nw.width = e.width;
-		nw.height = e.height;
-
-		//拡張イベントを設定
-		XSelectInput (xDisplay, nw.wID, PropertyChangeMask);
-		nw.dID = XDamageCreate(
-			xDisplay, nw.wID, XDamageReportNonEmpty);
+		new WINDOW(e);
 	}
 }
 
@@ -366,10 +362,6 @@ void WINDOW::AtDamage(XDamageNotifyEvent& e){
 printf("damaged(%lu).\n", e.drawable);
 	//変化分を取得したと通知
 	XDamageSubtract(xDisplay, e.damage, None, None);
-
-	//窓情報取得
-	XWindowAttributes attr;
-	XGetWindowAttributes(xDisplay, e.drawable, &attr);
 
 	//知っている窓なら変化分を反映
 	WINDOW* const w(WINDOW::FindWindowByID(e.drawable));
@@ -418,6 +410,7 @@ void WINDOW::AssignTexture(){
 
 	XImage* wImage(XGetImage(
 		xDisplay, wID, 0, 0, width, height, AllPlanes, ZPixmap));
+	assert(wImage && (*wImage).data);
 
 	//テクスチャの生成
 	if(!tID){
@@ -446,8 +439,67 @@ int WINDOW::XErrorHandler(Display* d, XErrorEvent* e){
 	return 0;
 }
 
-WINDOW::WINDOW(int wID) :
-	wID(wID), node(*this), mapped(false), tID(0){
-	windowList.Add(node);
+WINDOW::WINDOW(XCreateWindowEvent& e) :
+	wID(e.window),
+	node(*this),
+	mapped(false),
+	tID(0),
+	width(e.width),
+	height(e.height){
+	windowList.Insert(node);
+
+#if 0
+	if(!e.x && !e.y){
+		//空きを探索
+		for(float l(0.0);; l += 1.0/(19 + l)){
+			const float a(M_PI*2*l);
+			const float h(0.1 * l * cos(a));
+			const float v(0.1 * l * sin(a));
+			const double d[3] = { v, h, 0.0 };
+			const QON dir(d);
+			WINDOW* w(FindWindowByDir(dir));
+			if(!w){
+				//重なってないので決定
+				horiz = h;
+				vert = v;
+				break;
+			}
+		}
+	}else{
+#else
+	{
+#endif
+		//位置指定があるのでそれに合わせる
+		horiz = ((float)e.x/rootWidth) - 1.0;
+		vert = ((float)e.y/rootHeight) - 1.0;
+printf("%f %f.\n", horiz, vert);
+	}
+
+	//Xの管理上は見えない位置に移動
+	XMoveWindow(xDisplay, e.window, 0, rootHeight);
+
+	//拡張イベントを設定
+	XSelectInput (xDisplay, wID, PropertyChangeMask);
+	dID = XDamageCreate(
+		xDisplay, wID, XDamageReportNonEmpty);
+}
+
+WINDOW* WINDOW::FindWindowByDir(const QON& dir){
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		WINDOW& w(*i.Owner());
+		//その方向にある窓を返す。窓は近い順なので最初に発見されたものを返す
+		const P2 p(w.GetLocalPosition(dir));
+		if(0.0 <= p.x && p.x < w.width &&
+		   0.0 <= p.y && p.y < w.height){
+			//dirが窓の中を指している
+			return &w;
+		}
+	}
+	return 0;
+}
+
+WINDOW::P2 WINDOW::GetLocalPosition(const QON&){
+	P2 r;
+	return r;
 }
 

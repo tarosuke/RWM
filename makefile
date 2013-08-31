@@ -19,7 +19,7 @@ rwm: makefile $(objs) extralibs
 
 rwm.test: COPTS+=-DTEST
 rwm.test: makefile $(objs) extralibs
-	gcc -o $@ $(objs) $(libs)
+	gcc -Xlinker "-Map=rwm.map" -o $@ $(objs) $(libs)
 
 
 extralibs:

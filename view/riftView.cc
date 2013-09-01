@@ -181,7 +181,7 @@ void RIFTVIEW::Draw() const{
 	const float sr(nearDistance / (realDistance * 2));
 	const int hw(width / 2);
 	const int rhw(realWidth / 2);
-	const double inset(0.0);
+	const double inset(0.1453);
 
 	//左目
 	glViewport(0, 0, hw, height);
@@ -263,13 +263,13 @@ void RIFTVIEW::Draw() const{
 
 float RIFTVIEW::D(float dd){
 	return 1.0 +
-		0.35 * dd +
-		0.125 * dd*dd +
-		0.075 * dd*dd*dd;
+		0.25 * dd +
+		0.25 * dd*dd +
+		0.125 * dd*dd*dd;
 }
 
 RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){
-	const P2 lens = { (float)width/2, (float)height / 2 };
+	const P2 lens = { (float)1.1453 * width/4, (float)height / 2 };
 
 	//レンズ位置からの相対座標へ変換
 	const P2 l = { u - lens.u, v - lens.v };

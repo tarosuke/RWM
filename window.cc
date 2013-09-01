@@ -448,8 +448,8 @@ WINDOW::WINDOW(XCreateWindowEvent& e) :
 	height(e.height){
 	windowList.Insert(node);
 
-	if(!e.x && !e.y){
 #if 0
+	if(!e.x && !e.y){
 		//空きを探索
 		for(float l(0.0);; l += 1.0/(19 + l)){
 			const float a(M_PI*2*l);
@@ -465,10 +465,10 @@ WINDOW::WINDOW(XCreateWindowEvent& e) :
 				break;
 			}
 		}
-#else
-		horiz = vert = 0.0;
-#endif
 	}else{
+#else
+	{
+#endif
 		//位置指定があるのでそれに合わせる
 		horiz = ((float)e.x/rootWidth) - 1.0;
 		vert = ((float)e.y/rootHeight) - 1.0;

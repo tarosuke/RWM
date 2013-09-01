@@ -25,8 +25,6 @@ private:
 	static float D(float l);
 	unsigned framebufferTexture;
 	unsigned deDistorTexture;
-	static const float inset;
-	static const float drawingInset;
 };
 
 #endif

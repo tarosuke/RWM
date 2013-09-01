@@ -28,6 +28,9 @@ extern char _binary_fragment_pss_end[];
 const char* RIFTVIEW::vertexShaderSource(_binary_vertex_pss_start);
 const char* RIFTVIEW::fragmentShaderSource(_binary_fragment_pss_start);
 
+const float RIFTVIEW::inset(0.1453);
+const float RIFTVIEW::drawingInset(inset * 0.5);
+
 int RIFTVIEW::deDistorShaderProgram;
 bool RIFTVIEW::glewValid(false);
 
@@ -132,7 +135,8 @@ RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
 					P2 tc(GetTrueCoord(u, v));
 					const float uu(tc.u - u);
 					const float vv(tc.v - v);
-					if(tc.u < 0.0 || width / 2 <= tc.u ||
+					if(tc.u < 0.0 ||
+					   width / 2 <= tc.u ||
 					   tc.v < 0.0 || height <= tc.v ||
 					   uu < -127 || 127 < uu ||
 					   vv < -127 || 127 < vv){
@@ -259,9 +263,9 @@ void RIFTVIEW::Draw() const{
 
 float RIFTVIEW::D(float dd){
 	return 1.0 +
-		0.35 * dd +
-		0.125 * dd*dd +
-		0.075 * dd*dd*dd;
+		0.25 * dd +
+		0.25 * dd*dd +
+		0.125 * dd*dd*dd;
 }
 
 RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){

@@ -29,8 +29,9 @@ Atom WINDOW::wInstanceAtom;
 
 //窓までの距離
 float WINDOW::baseDistance(0.8);
-//窓の標準散開角(単位はOpenGLに合わせて°)
-float WINDOW::spread(80.0);
+//窓の標準散開角(1.0の位置。大きさはその弧の長さ。単位はOpenGLに合わせて°)
+float WINDOW::spread(15.0);
+float WINDOW::radSpread(spread * M_PI / 180); //そのラディアン(=長さ)
 
 //窓リスト
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
@@ -282,9 +283,8 @@ void WINDOW::Draw(unsigned nff){
 	glRotatef(-horiz * spread, 0, 1, 0);
 	glRotatef(-vert * spread, 1, 0, 0);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float r(0.0002 * distance * 3);
-	const float w(r * width);
-	const float h(r * height);
+	const float w(distance * hSpread);
+	const float h(distance * vSpread);
 	glTexCoord2f(0, 0);
 	glVertex3f(-w, h, -distance);
 	glTexCoord2f(0, 1);
@@ -315,7 +315,7 @@ void WINDOW::AtCreate(XCreateWindowEvent& e){
 printf("create(%lu).\n", e.window);
 	WINDOW* const w(WINDOW::FindWindowByID(e.window));
 	if(!w){
-		//外部生成窓なので追随して生成
+		//追随して生成
 		new WINDOW(e);
 	}
 }
@@ -445,11 +445,13 @@ WINDOW::WINDOW(XCreateWindowEvent& e) :
 	mapped(false),
 	tID(0),
 	width(e.width),
-	height(e.height){
+	height(e.height),
+	hSpread(radSpread * width / rootWidth),
+	vSpread(radSpread * height / rootWidth){
 	windowList.Insert(node);
 
-#if 0
 	if(!e.x && !e.y){
+#if 0
 		//空きを探索
 		for(float l(0.0);; l += 1.0/(19 + l)){
 			const float a(M_PI*2*l);
@@ -465,10 +467,14 @@ WINDOW::WINDOW(XCreateWindowEvent& e) :
 				break;
 			}
 		}
-	}else{
 #else
-	{
+		horiz = vert = 0.0;
 #endif
+	}else{
+		if(windowReplaceOffset <= e.y){
+			//既に移動した窓に合わせて生成された窓なので位置を戻す
+			e.y -= windowReplaceOffset;
+		}
 		//位置指定があるのでそれに合わせる
 		horiz = ((float)e.x/rootWidth) - 1.0;
 		vert = ((float)e.y/rootHeight) - 1.0;
@@ -476,7 +482,7 @@ printf("%f %f.\n", horiz, vert);
 	}
 
 	//Xの管理上は見えない位置に移動
-	XMoveWindow(xDisplay, e.window, 0, rootHeight);
+	XMoveWindow(xDisplay, e.window, 0, windowReplaceOffset);
 
 	//拡張イベントを設定
 	XSelectInput (xDisplay, wID, PropertyChangeMask);

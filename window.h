@@ -56,10 +56,12 @@ private:
 	static WINDOW* FindWindowByID(unsigned wID);
 	static int XErrorHandler(Display*, XErrorEvent*);
 	static Atom wInstanceAtom;
+	static const int windowReplaceOffset = 10000;
 	//窓までの距離
 	static float baseDistance;
 	//窓配置の広がりレシオ(配置＆大きさ0.0〜1.0の角度。単位は°)
 	static float spread;
+	static float radSpread;
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;
@@ -69,12 +71,12 @@ private:
 	//中心の位置というか角度(0.0〜1.0がspreadに対応)
 	float horiz;
 	float vert;
-	//角度表記の大きさ(0.0〜1.0がspreadに対応)
-	float hSpread;
-	float vSpread;
 	//ピクセルサイズ
 	unsigned width;
 	unsigned height;
+	//空間内サイズ
+	float hSpread;
+	float vSpread;
 
 	//窓生成、登録
 	WINDOW(XCreateWindowEvent& e);

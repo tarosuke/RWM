@@ -11,9 +11,7 @@
 #include <math.h>
 
 #include "riftView.h"
-#include <world/room.h>
 #include <rift/rift.h>
-#include <avatar/avatar.h>
 #include <toolbox/qon/glqon.h>
 
 

@@ -38,6 +38,15 @@ private:
 		unsigned char pad[3];
 	}__attribute__((packed));
 
+	struct FBUR{
+		unsigned char type;
+		unsigned char whole;
+		unsigned short x;
+		unsigned short y;
+		unsigned short width;
+		unsigned short height;
+	}__attribute__((packed)) fbur;
+
 	static const char* const versionString;
 	static const char* const remoteName;
 	static const PIXFORMAT formats[];
@@ -50,6 +59,7 @@ private:
 	UPDATERECEIVER::FORMAT easyFormat;
 	const PIXFORMAT* pixFormat;
 	void* buffer;
+	unsigned Bpp; //bytePerPixel
 
 	//接続関連
 	const int sock;
@@ -65,6 +75,13 @@ private:
 	void RFBProtocolVersion();
 	void RFBSecurity();
 	void RFBServerInit();
+	void RFBRun();
+
+	//メッセージハンドラ
+	void OnFramebufferUpdate();
+	void OnSetColorMapEntries();
+	void OnBell();
+	void OnServerCutText();
 };
 
 

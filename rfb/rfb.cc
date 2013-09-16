@@ -207,15 +207,116 @@ void RFB::RFBServerInit(){
 		//ピクセルフォーマットを記録
 		pixFormat = &f;
 	}
+	Bpp = ((*pixFormat).bpp + 7) / 8; //ピクセルのバイトサイズを取得
 
-	//TODO:エンコード要求
+	//エンコード要求
+	struct{
+		unsigned char type;
+		unsigned char pad;
+		unsigned short numOfEncodes;
+		unsigned encode;
+	}__attribute__((packed)) setEncodings = { 1, 0, 1, 0 };
+	Write((void*)&setEncodings, sizeof(setEncodings));
 
-	//TODO:初期バッファ確保
+	//初期バッファ確保
+	buffer = malloc(Bpp * width * height);
+	if(!buffer){
+		throw;
+	}
 
-	//TODO:フレームバッファ全体を要求
+	//フレームバッファ全体を要求
+	fbur.type = 3;
+	fbur.whole = 1;
+	fbur.x = fbur.y = 0;
+	fbur.width = width;
+	fbur.height = height;
+	Write((void*)&fbur, sizeof(fbur));
+	fbur.whole = 0; //全体要求から増分のみへ変更
 
 	//次のシーケンスへ
-// 	sequencer = RFBUpdateRequest;
+	sequencer = &RFB::RFBRun;
 }
+
+void RFB::RFBRun(){
+	unsigned char type;
+	Read((void*)&type, 1);
+	switch(type){
+	case 0:
+		OnFramebufferUpdate();
+		break;
+	case 1:
+		OnSetColorMapEntries();
+		break;
+	case 2:
+		OnBell();
+		break;
+	case 3:
+		OnServerCutText();
+		break;
+	default:
+		throw;
+	}
+}
+
+///// メッセージハンドラ
+
+void RFB::OnFramebufferUpdate(){
+	struct{
+		char pad;
+		unsigned short rects;
+	}__attribute__((packed)) fbr;
+	Read((void*)&fbr, sizeof(fbr));
+
+	for(int i(0); i < fbr.rects; i++){
+		//更新情報を取得
+		struct{
+			unsigned short x;
+			unsigned short y;
+			unsigned short width;
+			unsigned short height;
+			unsigned encode;
+		}__attribute__((packed)) rectInfo;
+		Read((void*)&rectInfo, sizeof(rectInfo));
+
+		//更新内容を取得
+		Read(buffer, Bpp * rectInfo.width * rectInfo.height);
+
+		//更新を知らせてアップデートさせる
+		receiver.Update(
+			rectInfo.x,
+			rectInfo.y,
+			rectInfo.width,
+			rectInfo.height,
+			buffer);
+	}
+}
+
+void RFB::OnSetColorMapEntries(){
+	struct{
+		char pad;
+		unsigned short firstColor;
+		unsigned short colors;
+	}__attribute__((packed)) scme;
+	Read((void*)&scme, sizeof(scme));
+	for(int i(0); i < scme.colors; i++){
+		unsigned char color[6];
+		Read((void*)color, 6); //マップカラーは使わないので読み捨てる
+	}
+}
+
+void RFB::OnBell(){
+	//特に何もしない。ベルを鳴らしたければ鳴らす処理を書く
+}
+
+void RFB::OnServerCutText(){
+	struct{
+		char pad[3];
+		unsigned length;
+	}__attribute__((packed)) scme;
+	Read((void*)&scme, sizeof(scme));
+	void* d(Read(scme.length));
+	free(d); //手前側にデスクトップは存在せず、使わないので読み捨て
+}
+
 
 

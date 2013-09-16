@@ -9,7 +9,7 @@
 
 class RIFTVIEW : public VIEW{
 public:
-	RIFTVIEW(class AVATAR&);
+	RIFTVIEW();
 	~RIFTVIEW();
 	void Draw() const;
 private:

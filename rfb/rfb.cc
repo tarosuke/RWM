@@ -289,6 +289,9 @@ void RFB::OnFramebufferUpdate(){
 			rectInfo.height,
 			buffer);
 	}
+
+	//次の更新要求
+	Write((void*)&fbur, sizeof(fbur));
 }
 
 void RFB::OnSetColorMapEntries(){

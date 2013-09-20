@@ -1,7 +1,7 @@
 CCOPTS +=
 COPTS += -O2 -Wall -Werror -I..
 
-srcs = $(wildcard *.c) $(wildcard *.cc) $(wildcard *.pss)
+srcs = $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl)
 objs = $(addsuffix .o, $(basename $(srcs)))
 
 $(target) : makefile $(objs)
@@ -14,7 +14,7 @@ $(target) : makefile $(objs)
 %.o : %.c makefile $(wildcard *.h)
 	${CC} $(COPTS) -c ${INCLUDES} -o $@ $<
 
-%.o : %.pss makefile
+%.o : %.glsl makefile
 	objcopy -I binary -O elf64-x86-64 -B i386 $< $@
 
 

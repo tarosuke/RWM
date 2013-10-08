@@ -5,7 +5,7 @@ COPTS += -IX11 -I.
 include make.in
 
 
-libs= avatar/avatar.a view/view.a ghost/ghost.a rift/rift.a world/world.a image/image.a toolbox/qon/qon.a toolbox/input/input.a toolbox/cyclic/cyclic.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
+libs= view/view.a headtracker/headtracker.a toolbox/qon/qon.a toolbox/input/input.a toolbox/cyclic/cyclic.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
 
 
 test: rwm.test

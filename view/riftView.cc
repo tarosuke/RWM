@@ -1,6 +1,7 @@
 /***************************************************** view with rift:riftView
  *
  */
+
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -11,35 +12,30 @@
 #include <math.h>
 
 #include "riftView.h"
-#include <world/room.h>
-#include <rift/rift.h>
-#include <avatar/avatar.h>
-#include <toolbox/qon/glqon.h>
 
 
 #define DISTORFIX 0
 
 extern "C"{
-extern char _binary_vertex_pss_start[];
-extern char _binary_fragment_pss_start[];
-extern char _binary_vertex_pss_end[];
-extern char _binary_fragment_pss_end[];
+extern char _binary_vertex_glsl_start[];
+extern char _binary_fragment_glsl_start[];
+extern char _binary_vertex_glsl_end[];
+extern char _binary_fragment_glsl_end[];
 };
-const char* RIFTVIEW::vertexShaderSource(_binary_vertex_pss_start);
-const char* RIFTVIEW::fragmentShaderSource(_binary_fragment_pss_start);
+const char* RIFTVIEW::vertexShaderSource(_binary_vertex_glsl_start);
+const char* RIFTVIEW::fragmentShaderSource(_binary_fragment_glsl_start);
 
 int RIFTVIEW::deDistorShaderProgram;
 bool RIFTVIEW::glewValid(false);
 
 
-RIFTVIEW::RIFTVIEW(AVATAR& avatar) :
-	VIEW(1280, 800, avatar){
+RIFTVIEW::RIFTVIEW() : VIEW(rift){
 
 	glewValid = (GLEW_OK == glewInit());
 	if(glewValid){
 		//シェーダーコードの整形
-		_binary_fragment_pss_end[-1] =
-		_binary_vertex_pss_end[-1] = 0;
+		_binary_fragment_glsl_end[-1] =
+		_binary_vertex_glsl_end[-1] = 0;
 
 		//プログラマブルシェーダの設定
 		GLuint vShader(glCreateShader(GL_VERTEX_SHADER));
@@ -173,7 +169,7 @@ RIFTVIEW::~RIFTVIEW(){
 }
 
 
-void RIFTVIEW::Draw() const{
+void RIFTVIEW::PreDraw(){
 	const float sr(nearDistance / (realDistance * 2));
 	const int hw(width / 2);
 	const int rhw(realWidth / 2);
@@ -184,35 +180,32 @@ void RIFTVIEW::Draw() const{
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glFrustum((-rhw - inset) * sr, (rhw - inset) * sr,
-			-realHeight * sr, realHeight * sr,
-	nearDistance, farDistance);
+		-realHeight * sr, realHeight * sr,
+		nearDistance, farDistance);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glTranslatef(0.03, 0, 0);
-	avatar.GetView();
-	static bool drawn(false);
-	if(!drawn){
-		glNewList(displayList, GL_COMPILE_AND_EXECUTE);
-		DrawForEye();
-		glEndList();
-		// 			drawn = true;
-	}else{
-		glCallList(displayList);
-	}
+	//記録と描画
+	glNewList(displayList, GL_COMPILE_AND_EXECUTE);
+}
+
+void RIFTVIEW::PostDraw(){
+	const float sr(nearDistance / (realDistance * 2));
+	const int hw(width / 2);
+	const int rhw(realWidth / 2);
+	const double inset(0.1453);
+
+	glEndList(); //記録完了
 
 	//右目
 	glViewport(hw, 0, hw, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glFrustum((-rhw + inset) * sr, (rhw + inset) * sr,
-			-realHeight * sr, realHeight * sr,
-	nearDistance, farDistance);
+		-realHeight * sr, realHeight * sr,
+		nearDistance, farDistance);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glTranslatef(-0.03, 0, 0);
-	avatar.GetView();
 	glCallList(displayList);
 
 	//Riftの歪み除去
@@ -222,7 +215,7 @@ void RIFTVIEW::Draw() const{
 	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
 	assert(glGetError() == GL_NO_ERROR);
 #if !DISTORFIX
- 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
 #endif
 	assert(glGetError() == GL_NO_ERROR);
 	glMatrixMode(GL_PROJECTION);
@@ -250,12 +243,18 @@ void RIFTVIEW::Draw() const{
 		assert(glGetError() == GL_NO_ERROR);
 	}else{
 		//ポリゴンタイルによる歪み除去
-// 		glDisable(GL_LIGHTING);
-// 		glEnable(GL_LIGHTING);
+		// 		glDisable(GL_LIGHTING);
+		// 		glEnable(GL_LIGHTING);
 	}
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//VSYNCを待って表示
+	Update();
 }
+
+
+
 
 float RIFTVIEW::D(float dd){
 	return 1.0 +
@@ -281,4 +280,3 @@ RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){
 
 	return tc;
 }
-

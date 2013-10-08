@@ -20,255 +20,26 @@
 #include <toolbox/cyclic/cyclic.h>
 
 
-Display* WINDOW::xDisplay;
-unsigned WINDOW::rootWindowID;
-GLXContext WINDOW::glxContext;
-int WINDOW::rootWidth(1280);
-int WINDOW::rootHeight(800);
-Atom WINDOW::wInstanceAtom;
 
 //窓までの距離
 float WINDOW::baseDistance(0.8);
-//窓の標準散開角(1.0の位置。大きさはその弧の長さ。単位はOpenGLに合わせて°)
-float WINDOW::spread(15.0);
-float WINDOW::radSpread(spread * M_PI / 180); //そのラディアン(=長さ)
 
 //窓リスト
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 
-//XDamageイベントのベース値
-int WINDOW::damageBase;
-int WINDOW::damage_err;
 
 
-static int glxAttrs[] = {
-	GLX_USE_GL,
-	GLX_LEVEL, 0,
-	GLX_RGBA,
-	GLX_DOUBLEBUFFER,
-	GLX_RED_SIZE, 8,
-	GLX_GREEN_SIZE, 8,
-	GLX_BLUE_SIZE, 8,
-	GLX_ALPHA_SIZE, 8,
-	GLX_DEPTH_SIZE, 24,
-	GLX_STENCIL_SIZE, 8,
-	GLX_ACCUM_RED_SIZE, 0,
-	GLX_ACCUM_GREEN_SIZE, 0,
-	GLX_ACCUM_BLUE_SIZE, 0,
-	GLX_ACCUM_ALPHA_SIZE, 0,
-	None
-};
 
 
-void WINDOW::Init(){
-	xDisplay = XOpenDisplay(""),
-#ifdef TEST
-	rootWindowID = XCreateSimpleWindow(
-		xDisplay,
-		RootWindow(xDisplay, 0),
-		0,
-		0,
-		rootWidth,
-		rootHeight,
-		0,
-		BlackPixel(xDisplay, 0),
-		BlackPixel(xDisplay, 0));
-	XMapWindow( xDisplay, rootWindowID );
-	printf("rootWindowID:%d.\n", rootWindowID);
-#else
-	rootWindowID = RootWindow(xDisplay, 0);
-#endif
-	//rootのサブウインドウをキャプチャ
-	XCompositeRedirectSubwindows(
-		xDisplay, rootWindowID, CompositeRedirectManual);
-
-	//エラーハンドラを設定
-	XSetErrorHandler(XErrorHandler);
-
-	//イベント選択
-	XSelectInput(xDisplay, rootWindowID,
-		SubstructureNotifyMask |
-		StructureNotifyMask |
-		PropertyChangeMask |
-		ExposureMask |
-		ButtonPressMask |
-		ButtonReleaseMask |
-		ButtonMotionMask |
-		KeyPressMask |
-		KeyReleaseMask);
-	XFlush( xDisplay );
-	XSync(xDisplay, false);
-
-	//OpenGLに諸条件を設定
-	XVisualInfo *visual =
-		glXChooseVisual(xDisplay, DefaultScreen(xDisplay), glxAttrs);
-	glxContext = glXCreateContext(xDisplay, visual, NULL, True);
-	XFree(visual);
-
-	//設定した描画条件をカレントにする
-	glXMakeCurrent(xDisplay, rootWindowID, glxContext);
-
-	//部屋をたどる数をステンシルバッファの初期値に設定
-	glClearStencil(VIEW::roomFollowDepth);
-
-	//XDamageの設定
-	XDamageQueryExtension(xDisplay, &damageBase, &damage_err);
-
-	//WINDOWインスタンスへのポインタ格納のための設定
-	wInstanceAtom = XInternAtom(xDisplay, "RWM_wInstance", false);
-}
-
-void WINDOW::Quit(){
-	glXMakeCurrent(xDisplay, 0, NULL);
-	glXDestroyContext(xDisplay, glxContext);
-
-	XCompositeUnredirectSubwindows(
-		xDisplay, rootWindowID, CompositeRedirectManual);
-
-#ifdef TEST
-	XUnmapWindow(xDisplay, rootWindowID);
-	XDestroyWindow(xDisplay, rootWindowID);
-#endif
-	XSync(xDisplay, true);
-for(;; sleep(1000));
-	XCloseDisplay(xDisplay);
-}
 
 
-void WINDOW::DrawAll(){
-	//バッファのクリア
-	glClear(GL_COLOR_BUFFER_BIT |
-		GL_DEPTH_BUFFER_BIT |
-		GL_STENCIL_BUFFER_BIT);
 
-	//基本設定
-	glEnable(GL_POLYGON_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_DEPTH_TEST);
 
-	//基本ライト(場所は自分、明るさはAMBIENTへ)
-	glEnable(GL_LIGHT0);
-	glLightf(GL_LIGHT0, GL_POSITION, 0);
-	const GLfloat myLight[] = { 0.3, 0.3, 0.3, 1 };
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, myLight);
-	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0);
-	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0);
 
-	//フォグ
-// 	glFogi(GL_FOG_MODE, GL_LINEAR);
-// 	glFogi(GL_FOG_START, 10);
-// 	glFogi(GL_FOG_END, 5000);
-// 	const GLfloat fogColor[] = { 0.6, 0.6, 0.6, 0.6 };
-// 	glFogfv(GL_FOG_COLOR, fogColor);
-// 	glHint(GL_FOG_HINT, GL_DONT_CARE);
-// 	glEnable(GL_FOG);
-
-	VIEW::DrawAll();
-	glXSwapBuffers(xDisplay, rootWindowID);
-}
-
-void WINDOW::DrawWindows(){
-	//窓描画(窓は陰影などなしでそのまま表示)
-	glDisable(GL_LIGHTING);
-	glDisable(GL_STENCIL_TEST);
-	unsigned nff(0);
+WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		WINDOW& w(*i.Owner());
-		if(w.mapped){
-			w.Draw(nff++);
-		}
-	}
-	glEnable(GL_LIGHTING);
-}
-
-
-void WINDOW::HandleXEvent(XEvent& e){
-	XAnyEvent& ev(*(XAnyEvent*)&e);
-
-	if(ev.type == MappingNotify){
-		//MappingNotifyはev.windowが無効なので別処理
-		AtMapping(e.xmapping);
-		return;
-	}
-
-	switch(ev.type){
-		case CreateNotify:
-			AtCreate(e.xcreatewindow);
-			break;
-		case MapNotify:
-			AtMap(e.xmap);
-			break;
-		case DestroyNotify:
-			AtDestroy(e.xdestroywindow);
-			break;
-		case UnmapNotify:
-			AtUnmap(e.xunmap);
-			break;
-		case KeyPress :
-			static int window(-1);
-
-			if(window < 0){
-				window = XCreateSimpleWindow(
-					xDisplay,
-					rootWindowID,
-					0,
-					0,
-					600,
-					800,
-					0,
-					WhitePixel(xDisplay, 0),
-					0x3C4048);
-				XMapWindow( xDisplay, window);
-				//描画テスト
-				GC gc(XCreateGC(xDisplay, window, 0, 0));
-				XSetForeground(xDisplay, gc, 0x00ff0000);
-				XFillRectangle(xDisplay, window, gc, 100, 10, 200, 400 );
-				XSetForeground(xDisplay, gc, 0x000000ff);
-				XFillArc(xDisplay, window, gc, 300, 400, 400, 400, 0, 360 * 64);
-				XSetForeground(xDisplay, gc, 0xD2DEF0);
-				XSetFont(xDisplay, gc,
-					 XLoadFont(xDisplay, "-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
-				const char* const str("First light!");
-				XDrawString(xDisplay, window, gc, 200, 600, str, strlen(str));
-
-				XFreeGC(xDisplay, gc);
-			}else{
-				XUnmapWindow(xDisplay, window);
-				XDestroyWindow(xDisplay, window);
-				window = -1;
-			}
-			break;
-		default:
-			//XDamageのイベント
-			if(ev.type == damageBase + XDamageNotify){
-				AtDamage(*(XDamageNotifyEvent*)&e);
-			}
-			//TODO:keyDown/Upの時などの処理を考える
-			break;
-	}
-}
-
-void WINDOW::Run(GHOST& user){
-	DURATION duration;
-
-	for(;;){
-		while(XPending(xDisplay)){
-			XEvent e;
-			XNextEvent(xDisplay, &e);
-			HandleXEvent(e);
-		}
-		VIEW::UpdateAll(duration.GetDuration());
-		DrawAll();
-	}
-	Quit();
-}
-
-
-WINDOW* WINDOW::FindWindowByID(unsigned wID){
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
-		WINDOW& w(*i.Owner());
-		if(wID == w.wID){
+		if(display == w.xDisplay && wID == w.wID){
 			return &w;
 		}
 	}
@@ -276,15 +47,28 @@ WINDOW* WINDOW::FindWindowByID(unsigned wID){
 }
 
 
+
+void WINDOW::DrawAll(){
+	unsigned n(0);
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		if((*i).mapped){
+			(*i).Draw(n++);
+		}
+	}
+}
+
 void WINDOW::Draw(unsigned nff){
-	const float distance(baseDistance + 0.03 * nff);
+	//窓までの距離
+	distance = baseDistance + 0.03 * nff;
+
+	//窓描画
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPushMatrix();
-	glRotatef(-horiz * spread, 0, 1, 0);
-	glRotatef(-vert * spread, 1, 0, 0);
+	glRotatef(-horiz, 0, 1, 0);
+	glRotatef(-vert, 1, 0, 0);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float w(distance * hSpread);
-	const float h(distance * vSpread);
+	const float w(scale * width);
+	const float h(scale * height);
 	glTexCoord2f(0, 0);
 	glVertex3f(-w, h, -distance);
 	glTexCoord2f(0, 1);
@@ -308,25 +92,19 @@ WINDOW::~WINDOW(){
 
 
 
-void WINDOW::AtCreate(XCreateWindowEvent& e){
-	if(e.window == rootWindowID){
-		return;
-	}
+void WINDOW::AtCreate(XCreateWindowEvent& e, unsigned rw, unsigned rh){
 printf("create(%lu).\n", e.window);
-	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(!w){
 		//追随して生成
-		new WINDOW(e);
+		new WINDOW(e, rw, rh);
 	}
 }
 
 void WINDOW::AtMap(XMapEvent& e){
-	if(e.event != rootWindowID){
-		return;
-	}
-printf("map(%lu).\n", e.event);
-	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
+printf("map(%lu).\n", e.event);
 		//テクスチャ割り当て、初期画像設定
 		(*w).AssignTexture();
 		//map状態をXの窓に追随(trueなので以後Drawする)
@@ -334,38 +112,26 @@ printf("map(%lu).\n", e.event);
 	}
 }
 void WINDOW::AtDestroy(XDestroyWindowEvent& e){
-	if(e.window == rootWindowID){
-		return;
-	}
-printf("destroy(%lu).\n", e.window);
-	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
+printf("destroy(%lu).\n", e.window);
 		//外部でDestroyされたウインドウに同期する
 		delete w;
 	}
 }
 void WINDOW::AtUnmap(XUnmapEvent& e){
-	if(e.window == rootWindowID){
-		return;
-	}
-printf("unmap(%lu).\n", e.window);
-	WINDOW* const w(WINDOW::FindWindowByID(e.window));
+	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
+printf("unmap(%lu).\n", e.window);
 		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
 		(*w).mapped = false;
 	}
 }
 void WINDOW::AtDamage(XDamageNotifyEvent& e){
-	if(e.drawable == rootWindowID){
-		return;
-	}
-printf("damaged(%lu).\n", e.drawable);
-	//変化分を取得したと通知
-	XDamageSubtract(xDisplay, e.damage, None, None);
-
 	//知っている窓なら変化分を反映
-	WINDOW* const w(WINDOW::FindWindowByID(e.drawable));
+	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.drawable));
 	if(w){
+printf("damaged(%lu).\n", e.drawable);
 		(*w).OnDamage(e);
 	}
 }
@@ -376,6 +142,9 @@ void WINDOW::OnDamage(XDamageNotifyEvent& e){
 		return;
 	}
 printf("area:%d %d %d %d.\n", e.area.x, e.area.y, e.area.width, e.area.height);
+
+	//変化分を取得したと通知
+	XDamageSubtract(xDisplay, e.damage, None, None);
 
 	//変化分を取得してwImageを更新
 	XImage* wImage(XGetImage(
@@ -430,25 +199,35 @@ void WINDOW::AssignTexture(){
 	XDestroyImage(wImage);
 }
 
-int WINDOW::XErrorHandler(Display* d, XErrorEvent* e){
-	printf("(%u)\nserial:%lu\nreqCode:%u\nminCode:%u\n",
-		(*e).error_code,
-		(*e).serial,
-		(*e).request_code,
-		(*e).minor_code);
-	return 0;
-}
 
-WINDOW::WINDOW(XCreateWindowEvent& e) :
+WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
+	xDisplay(e.display),
 	wID(e.window),
 	node(*this),
 	mapped(false),
 	tID(0),
 	width(e.width),
-	height(e.height),
-	hSpread(radSpread * width / rootWidth),
-	vSpread(radSpread * height / rootWidth){
-	windowList.Insert(node);
+	height(e.height){
+
+	//幅と高さ(rw=π=180°とした時の半径baseDistance上の弧の長さ)
+	//位置の時は弧の長さ、大きさの時は(弦の長さではなくただの)長さとして使う
+	//ピクセルサイズを乗じると空間中の長さになる値
+	scale = baseDistance * M_PI / (3 < (rw / rh) ? rw : rh);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	if(!e.x && !e.y){
 #if 0
@@ -471,21 +250,14 @@ WINDOW::WINDOW(XCreateWindowEvent& e) :
 		horiz = vert = 0.0;
 #endif
 	}else{
-		if(windowReplaceOffset <= e.y){
-			//既に移動した窓に合わせて生成された窓なので位置を戻す
-			e.y -= windowReplaceOffset;
-		}
 		//位置指定があるのでそれに合わせる
-		horiz = ((float)e.x/rootWidth) - 1.0;
-		vert = ((float)e.y/rootHeight) - 1.0;
+		horiz = (e.x - (float)rw/2.0) * scale;
+		vert = (e.y - (float)rh/2.0) * scale;
 printf("%f %f.\n", horiz, vert);
 	}
 
-	//Xの管理上は見えない位置に移動
-	XMoveWindow(xDisplay, e.window, 0, windowReplaceOffset);
-
 	//拡張イベントを設定
-	XSelectInput (xDisplay, wID, PropertyChangeMask);
+	XSelectInput(xDisplay, wID, PropertyChangeMask);
 	dID = XDamageCreate(
 		xDisplay, wID, XDamageReportNonEmpty);
 }

@@ -5,14 +5,16 @@
 #define _RIFTVIEW_
 
 #include "view.h"
-#include <rift/rift.h>
+#include <headtracker/rift.h>
 
 class RIFTVIEW : public VIEW{
 public:
-	RIFTVIEW(class AVATAR&);
+	RIFTVIEW();
 	~RIFTVIEW();
-	void Draw() const;
+	void PreDraw();
+	void PostDraw();
 private:
+	//歪み計算
 	static bool glewValid;
 	static int deDistorShaderProgram;
 	static const char* vertexShaderSource;
@@ -25,6 +27,12 @@ private:
 	static float D(float l);
 	unsigned framebufferTexture;
 	unsigned deDistorTexture;
-};
+	RIFT rift;
 
+	//再描画用ハンドル
+	int displayList;
+
+	//大きさなど
+	static const double inset = 0.1453;
+};
 #endif

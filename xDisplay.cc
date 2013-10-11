@@ -71,6 +71,9 @@ XDISPLAY::XDISPLAY() :
 	//エラーハンドラを設定
 	XSetErrorHandler(XErrorHandler);
 
+	//XDamageハンドラのための設定
+       XDamageQueryExtension(xDisplay, &damageBase, &damage_err);
+
 	//イベント選択
 	XSelectInput(xDisplay, rootWindowID,
 		SubstructureNotifyMask |
@@ -180,6 +183,7 @@ void XDISPLAY::EventHandler(){
 			//TODO:MouseDown/Upは座標を作った上で裏画面へ回送
 			default:
 				if(e.type == damageBase + XDamageNotify){
+puts("xdamage.");
 					//XDamageのイベント
 					WINDOW::AtDamage(*(XDamageNotifyEvent*)&e);
 				}else{

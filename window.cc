@@ -62,13 +62,14 @@ void WINDOW::Draw(unsigned nff){
 	distance = baseDistance + 0.03 * nff;
 
 	//窓描画
-	glBindTexture(GL_TEXTURE_2D, tID);
 	glPushMatrix();
 	glRotatef(-horiz, 0, 1, 0);
 	glRotatef(-vert, 1, 0, 0);
+
+	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float w(scale * width);
-	const float h(scale * height);
+	const float w(scale * width * 0.5);
+	const float h(scale * height * 0.5);
 	glTexCoord2f(0, 0);
 	glVertex3f(-w, h, -distance);
 	glTexCoord2f(0, 1);
@@ -85,6 +86,7 @@ void WINDOW::Draw(unsigned nff){
 WINDOW::~WINDOW(){
 	node.Detach();
 	if(tID){
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glDeleteTextures(1, &tID);
 	}
 }
@@ -104,7 +106,7 @@ printf("create(%lu).\n", e.window);
 void WINDOW::AtMap(XMapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
-printf("map(%lu).\n", e.event);
+printf("map(%lu).\n", e.window);
 		//テクスチャ割り当て、初期画像設定
 		(*w).AssignTexture();
 		//map状態をXの窓に追随(trueなので以後Drawする)
@@ -194,7 +196,7 @@ void WINDOW::AssignTexture(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	XDestroyImage(wImage);
 }
@@ -215,25 +217,12 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	//幅と高さ(rw=π=180°とした時の半径baseDistance上の弧の長さ)
 	//位置の時は弧の長さ、大きさの時は(弦の長さではなくただの)長さとして使う
 	//ピクセルサイズを乗じると空間中の長さになる値
-	scale = baseDistance * M_PI / (3 < (rw / rh) ? rw : rh);
+	scale = baseDistance * M_PI / rw;
 
 	if(!e.x && !e.y){
 #if 0
 		//空きを探索
-		for(float l(0.0);; l += 1.0/(19 + l)){
-			const float a(M_PI*2*l);
-			const float h(0.1 * l * cos(a));
-			const float v(0.1 * l * sin(a));
-			const double d[3] = { v, h, 0.0 };
-			const QON dir(d);
-			WINDOW* w(FindWindowByDir(dir));
-			if(!w){
-				//重なってないので決定
-				horiz = h;
-				vert = v;
-				break;
-			}
-		}
+		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
 #else
 		horiz = vert = 0.0;
 #endif

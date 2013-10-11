@@ -42,6 +42,7 @@ void VIEW::Run(){
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_TEXTURE_2D);
 
 		//基本ライト(場所は自分、明るさはAMBIENTへ)
 		glEnable(GL_LIGHT0);
@@ -68,25 +69,16 @@ void VIEW::Run(){
 		glLoadIdentity();
 
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
+		glColor3f(1, 1, 1);
 
 		//各段階描画
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
 		GLQON headDir(head.GetDirection());
 		headDir.GetView(); //視野を取得
 		WINDOW::DrawAll(); //窓を描画
-// 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
+
+		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		DrawObjects(externals); //externalを描画
-
-		//動作確認用
-		glBegin(GL_POINTS);
-		for(float x(-1.0); x < 1.0; x += 0.1){
-			for(float y(-1.0); y < 1.0; y += 0.1){
-				glVertex3f(x, y, -0.5);
-			}
-		}
-		glEnd();
-
-
 
 		//描画後処理
 		PostDraw();

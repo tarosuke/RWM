@@ -72,7 +72,7 @@ XDISPLAY::XDISPLAY() :
 	XSetErrorHandler(XErrorHandler);
 
 	//XDamageハンドラのための設定
-       XDamageQueryExtension(xDisplay, &damageBase, &damage_err);
+	XDamageQueryExtension(xDisplay, &damageBase, &damage_err);
 
 	//イベント選択
 	XSelectInput(xDisplay, rootWindowID,
@@ -150,7 +150,6 @@ void XDISPLAY::EventHandler(){
 			case KeyPress:
 				static int window(-1);
 				if(window < 0){
-					puts("create.");
 					window = XCreateSimpleWindow(
 						xDisplay,
 						rootWindowID,
@@ -174,7 +173,6 @@ void XDISPLAY::EventHandler(){
 					XDrawString(xDisplay, window, gc, 200, 600, str, strlen(str));
 					XFreeGC(xDisplay, gc);
 				}else{
-					puts("destroy.");
 					XUnmapWindow(xDisplay, window);
 					XDestroyWindow(xDisplay, window);
 					window = -1;
@@ -183,7 +181,6 @@ void XDISPLAY::EventHandler(){
 			//TODO:MouseDown/Upは座標を作った上で裏画面へ回送
 			default:
 				if(e.type == damageBase + XDamageNotify){
-puts("xdamage.");
 					//XDamageのイベント
 					WINDOW::AtDamage(*(XDamageNotifyEvent*)&e);
 				}else{

@@ -127,8 +127,6 @@ void XDISPLAY::EventHandler(){
 	XEvent e;
 	while(XPending(xDisplay)){
 		XNextEvent(xDisplay, &e);
-		puts("EventLoop.");
-
 		switch(e.type){
 			case CreateNotify:
 				if(e.xcreatewindow.window != rootWindowID){
@@ -160,7 +158,7 @@ void XDISPLAY::EventHandler(){
 						0,
 						WhitePixel(xDisplay, 0),
 						0x3C4048);
-					XMapWindow( xDisplay, window);
+					XMapWindow(xDisplay, window);
 					//描画テスト
 					GC gc(XCreateGC(xDisplay, window, 0, 0));
 					XSetForeground(xDisplay, gc, 0x00ff0000);

@@ -209,6 +209,9 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	width(e.width),
 	height(e.height){
 
+	//窓リストへ登録
+	windowList.Insert(node);
+
 	//幅と高さ(rw=π=180°とした時の半径baseDistance上の弧の長さ)
 	//位置の時は弧の長さ、大きさの時は(弦の長さではなくただの)長さとして使う
 	//ピクセルサイズを乗じると空間中の長さになる値

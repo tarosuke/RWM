@@ -81,7 +81,7 @@ void VIEW::Run(){
 		glBegin(GL_POINTS);
 		for(float x(-1.0); x < 1.0; x += 0.1){
 			for(float y(-1.0); y < 1.0; y += 0.1){
-				glVertex3f(x, y, -1.0);
+				glVertex3f(x, y, -0.5);
 			}
 		}
 		glEnd();

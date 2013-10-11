@@ -3,14 +3,13 @@
 
 #include <pthread.h>
 
-#include <toolbox/qon/qon.h>
+#include "headtracker.h"
 
 
-class RIFT{
+class RIFT : public HEADTRACKER{
 public:
 	RIFT();
 	~RIFT();
-	const QON& GetDirection() const{ return direction; };
 	QON PickHorizonal(double ratio);
 	bool IsEnable() const { return 0 <= fd; };
 private:
@@ -24,7 +23,7 @@ private:
 	// SENSOR
 	static const double G = 9.80665;
 	pthread_t sensorThread;
-	QON direction; //方向の四元数(回転オペレータ)
+// 	QON direction; //方向の四元数(回転オペレータ)(HEADTRACKERにある)
 
 	VQON accel; //加速度
 	VQON velocity; //移動速度

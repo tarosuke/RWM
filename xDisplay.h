@@ -22,6 +22,7 @@ public:
 	void Update(){
 		glXSwapBuffers(xDisplay, rootWindowID);
 	};
+	void EventHandler();
 	int Width(){ return width; };
 	int Height(){ return height; };
 protected:
@@ -46,11 +47,6 @@ protected:
 	static int damage_err;
 
 	//内部イベントハンドラ
-	static void* EventLoopEntry(void* thing){
-		(*(XDISPLAY*)thing).EventLoop();
-		return 0;
-	};
-	void EventLoop();
 	void AtDamage(XDamageNotifyEvent&);
 };
 

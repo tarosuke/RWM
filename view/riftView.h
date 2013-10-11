@@ -30,7 +30,7 @@ private:
 	RIFT rift;
 
 	//再描画用ハンドル
-	int displayList;
+	const int displayList;
 
 	//大きさなど
 	static const double inset = 0.1453;

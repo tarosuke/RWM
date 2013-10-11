@@ -3,6 +3,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "xDisplay.h"
 #include "window.h"
@@ -53,9 +54,15 @@ XDISPLAY::XDISPLAY() :
 #endif
 
 	//根窓の大きさ取得
-	width = DisplayWidth(xDisplay, 0);
-	height = DisplayHeight(xDisplay, 0);
-
+	Window dw;
+	int di;
+	unsigned du;
+	XGetGeometry(
+		xDisplay,
+		rootWindowID,
+		&dw, &di, &di,
+		&width, &height,
+		&du, &du);
 
 	//rootのサブウインドウをキャプチャ
 	XCompositeRedirectSubwindows(
@@ -66,15 +73,15 @@ XDISPLAY::XDISPLAY() :
 
 	//イベント選択
 	XSelectInput(xDisplay, rootWindowID,
-		     SubstructureNotifyMask |
-		     StructureNotifyMask |
-		     PropertyChangeMask |
-		     ExposureMask |
-		     ButtonPressMask |
-		     ButtonReleaseMask |
-		     ButtonMotionMask |
-		     KeyPressMask |
-		     KeyReleaseMask);
+		SubstructureNotifyMask |
+		StructureNotifyMask |
+		PropertyChangeMask |
+		ExposureMask |
+		ButtonPressMask |
+		ButtonReleaseMask |
+		ButtonMotionMask |
+		KeyPressMask |
+		KeyReleaseMask);
 	XFlush( xDisplay );
 	XSync(xDisplay, false);
 
@@ -87,9 +94,6 @@ XDISPLAY::XDISPLAY() :
 
 	//この根窓の描画条件をカレントにする
 	Activate();
-
-	//スレッド軌道
-	pthread_create(&evThread, NULL, XDISPLAY::EventLoopEntry, (void*)this);
 }
 
 
@@ -119,11 +123,11 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 
 
-void XDISPLAY::EventLoop(){
+void XDISPLAY::EventHandler(){
 	XEvent e;
-
-	for(;;){
+	while(XPending(xDisplay)){
 		XNextEvent(xDisplay, &e);
+		puts("EventLoop.");
 
 		switch(e.type){
 			case CreateNotify:
@@ -141,6 +145,39 @@ void XDISPLAY::EventLoop(){
 				break;
 			case UnmapNotify:
 				WINDOW::AtUnmap(e.xunmap);
+				break;
+			case KeyPress:
+				static int window(-1);
+				if(window < 0){
+					puts("create.");
+					window = XCreateSimpleWindow(
+						xDisplay,
+						rootWindowID,
+						0,
+						0,
+						600,
+						800,
+						0,
+						WhitePixel(xDisplay, 0),
+						0x3C4048);
+					XMapWindow( xDisplay, window);
+					//描画テスト
+					GC gc(XCreateGC(xDisplay, window, 0, 0));
+					XSetForeground(xDisplay, gc, 0x00ff0000);
+					XFillRectangle(xDisplay, window, gc, 100, 10, 200, 400);
+					XSetForeground(xDisplay, gc, 0x000000ff);
+					XFillArc(xDisplay, window, gc, 300, 400, 400, 400, 0, 360 * 64);
+					XSetForeground(xDisplay, gc, 0xD2DEF0);
+					XSetFont(xDisplay, gc, XLoadFont(xDisplay, "-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
+					const char* const str("First light!");
+					XDrawString(xDisplay, window, gc, 200, 600, str, strlen(str));
+					XFreeGC(xDisplay, gc);
+				}else{
+					puts("destroy.");
+					XUnmapWindow(xDisplay, window);
+					XDestroyWindow(xDisplay, window);
+					window = -1;
+				}
 				break;
 			//TODO:MouseDown/Upは座標を作った上で裏画面へ回送
 			default:

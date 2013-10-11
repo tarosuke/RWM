@@ -29,7 +29,7 @@ int RIFTVIEW::deDistorShaderProgram;
 bool RIFTVIEW::glewValid(false);
 
 
-RIFTVIEW::RIFTVIEW() : VIEW(rift){
+RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 
 	glewValid = (GLEW_OK == glewInit());
 	if(glewValid){

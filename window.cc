@@ -214,21 +214,6 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	//ピクセルサイズを乗じると空間中の長さになる値
 	scale = baseDistance * M_PI / (3 < (rw / rh) ? rw : rh);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	if(!e.x && !e.y){
 #if 0
 		//空きを探索

@@ -2,6 +2,8 @@
  *
  */
 
+#include <stdio.h>
+
 #include "view.h"
 #include <window.h>
 #include <toolbox/qon/glqon.h>
@@ -27,10 +29,13 @@ VIEW::~VIEW(){
 
 void VIEW::Run(){
 	for(;;){
+		//Xのイベント処理
+		x.EventHandler();
+
 		//バッファのクリア
 		glClear(GL_COLOR_BUFFER_BIT |
-		GL_DEPTH_BUFFER_BIT |
-		GL_STENCIL_BUFFER_BIT);
+			GL_DEPTH_BUFFER_BIT |
+			GL_STENCIL_BUFFER_BIT);
 
 		//基本設定
 		glEnable(GL_POLYGON_SMOOTH);
@@ -69,8 +74,19 @@ void VIEW::Run(){
 		GLQON headDir(head.GetDirection());
 		headDir.GetView(); //視野を取得
 		WINDOW::DrawAll(); //窓を描画
-		glEnable(GL_LIGHTING); //無効にした照明を有効にする
+// 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		DrawObjects(externals); //externalを描画
+
+		//動作確認用
+		glBegin(GL_POINTS);
+		for(float x(-1.0); x < 1.0; x += 0.1){
+			for(float y(-1.0); y < 1.0; y += 0.1){
+				glVertex3f(x, y, -1.0);
+			}
+		}
+		glEnd();
+
+
 
 		//描画後処理
 		PostDraw();

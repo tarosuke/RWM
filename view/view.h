@@ -56,6 +56,7 @@ protected:
 
 	//描画ハンドラ
 	XDISPLAY x;
+	XVFB xvfb;
 	void DrawObjects(TOOLBOX::QUEUE<DRAWER>&);
 	virtual void PreDraw();
 	virtual void PostDraw();

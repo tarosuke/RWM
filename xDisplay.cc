@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <assert.h>
 
 #include "xDisplay.h"
 #include "window.h"
@@ -52,7 +54,24 @@ XDISPLAY::XDISPLAY() :
 #else
 	rootWindowID = RootWindow(xDisplay, 0);
 #endif
+	Setup();
+	SetupGL();
+}
 
+XDISPLAY::XDISPLAY(Display* d) : xDisplay(d){
+	if(!xDisplay){
+		//画面無効
+		return;
+	}
+	rootWindowID = RootWindow(d, 0);
+	Setup();
+}
+
+void XDISPLAY::Setup(){
+	if(!xDisplay){
+		//画面無効
+		return;
+	}
 	//根窓の大きさ取得
 	Window dw;
 	int di;
@@ -87,8 +106,9 @@ XDISPLAY::XDISPLAY() :
 		KeyReleaseMask);
 	XFlush( xDisplay );
 	XSync(xDisplay, false);
+}
 
-
+void XDISPLAY::SetupGL(){
 	//OpenGLに諸条件を設定
 	XVisualInfo *visual =
 	glXChooseVisual(xDisplay, DefaultScreen(xDisplay), glxAttrs);
@@ -101,6 +121,10 @@ XDISPLAY::XDISPLAY() :
 
 
 XDISPLAY::~XDISPLAY(){
+	if(!xDisplay){
+		//画面無効
+		return;
+	}
 	glXMakeCurrent(xDisplay, 0, NULL);
 	glXDestroyContext(xDisplay, glxContext);
 	XCompositeUnredirectSubwindows(
@@ -121,12 +145,11 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 }
 
 
-
-
-
-
-
 void XDISPLAY::EventHandler(){
+	if(!xDisplay){
+		//画面無効
+		return;
+	}
 	XEvent e;
 	while(XPending(xDisplay)){
 		XNextEvent(xDisplay, &e);
@@ -190,4 +213,33 @@ void XDISPLAY::EventHandler(){
 		}
 	}
 }
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////// XVFB用
+
+XVFB::XVFB() : XDISPLAY(StartFB()){
+}
+
+Display* XVFB::StartFB(){
+	Display* d(XOpenDisplay(":15"));
+#if 0
+	if(!d){
+		switch(fork()){
+		case -1: //error
+			break;
+		case 0: //child
+			//TODO:exec(ほげふが);
+			break;
+		default: //正常終了
+			d = XOpenDisplay(":15");
+			break;
+		}
+	}
+#endif
+	return d;
+}
+
 

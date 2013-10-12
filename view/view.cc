@@ -31,6 +31,7 @@ void VIEW::Run(){
 	for(;;){
 		//Xのイベント処理
 		x.EventHandler();
+		xvfb.EventHandler();
 
 		//バッファのクリア
 		glClear(GL_COLOR_BUFFER_BIT |

@@ -27,6 +27,8 @@ public:
 	int Height(){ return height; };
 protected:
 	XDISPLAY(Display*);
+	void Setup();
+	void SetupGL();
 
 	//根窓 & GLX関連
 	Display* xDisplay;
@@ -54,6 +56,8 @@ protected:
 class XVFB : public XDISPLAY{
 public:
 	XVFB();
+private:
+	Display* StartFB(); //Xvfbを起動し、接続する
 };
 
 

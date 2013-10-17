@@ -63,8 +63,8 @@ void WINDOW::Draw(unsigned nff){
 
 	//窓描画
 	glPushMatrix();
-	glRotatef(-horiz, 0, 1, 0);
-	glRotatef(-vert, 1, 0, 0);
+	glRotatef(-horiz * 180 / M_PI, 0, 1, 0);
+	glRotatef(-vert * 180 / M_PI, 1, 0, 0);
 
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);
@@ -232,19 +232,22 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	//ピクセルサイズを乗じると空間中の長さになる値
 	scale = baseDistance * M_PI / rw;
 
+#if 0
 	if(!e.x && !e.y){
+		//未指定なので移動
 #if 0
 		//空きを探索
 		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
 #else
 		horiz = vert = 0.0;
 #endif
-	}else{
-		//位置指定があるのでそれに合わせる
-		horiz = (e.x - (float)rw/2.0) * scale;
-		vert = (e.y - (float)rh/2.0) * scale;
-printf("%f %f.\n", horiz, vert);
 	}
+#endif
+
+	//窓位置に合わせる
+	horiz = ((e.x + width*0.5) - (float)rw/2.0) * scale;
+	vert = ((e.y + height*0.5) - (float)rh/2.0) * scale;
+printf("%f %f.\n", horiz, vert);
 
 	//拡張イベントを設定
 	XSelectInput(xDisplay, wID, PropertyChangeMask);

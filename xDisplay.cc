@@ -35,7 +35,6 @@ int XDISPLAY::damageBase;
 int XDISPLAY::damage_err;
 
 
-
 XDISPLAY::XDISPLAY() :
 	xDisplay(XOpenDisplay("")){
 
@@ -54,6 +53,11 @@ XDISPLAY::XDISPLAY() :
 #else
 	rootWindowID = RootWindow(xDisplay, 0);
 #endif
+	//rootのサブウインドウをキャプチャ
+	XCompositeRedirectSubwindows(
+		xDisplay, rootWindowID, CompositeRedirectManual);
+
+	//その他セットアップ
 	Setup();
 	SetupGL();
 }
@@ -64,6 +68,16 @@ XDISPLAY::XDISPLAY(Display* d) : xDisplay(d){
 		return;
 	}
 	rootWindowID = RootWindow(d, 0);
+
+	//rootのサブウインドウをキャプチャ
+#ifdef TEST
+	XCompositeRedirectSubwindows(
+		xDisplay, rootWindowID, CompositeRedirectAutomatic);
+#else
+	XCompositeRedirectSubwindows(
+		xDisplay, rootWindowID, CompositeRedirectManual);
+#endif
+	//その他セットアップ
 	Setup();
 }
 
@@ -82,10 +96,6 @@ void XDISPLAY::Setup(){
 		&dw, &di, &di,
 		&width, &height,
 		&du, &du);
-
-	//rootのサブウインドウをキャプチャ
-	XCompositeRedirectSubwindows(
-		xDisplay, rootWindowID, CompositeRedirectManual);
 
 	//エラーハンドラを設定
 	XSetErrorHandler(XErrorHandler);
@@ -136,7 +146,10 @@ XDISPLAY::~XDISPLAY(){
 }
 
 int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
-	printf("(%u)\nserial:%lu\nreqCode:%u\nminCode:%u\n",
+	char description[256];
+	XGetErrorText(d, (*e).error_code, description, 256);
+	printf("%s(%u)\nserial:%lu\nreqCode:%u\nminCode:%u\n",
+	       description,
 	       (*e).error_code,
 	       (*e).serial,
 	       (*e).request_code,
@@ -192,7 +205,7 @@ void XDISPLAY::EventHandler(){
 					XFillArc(xDisplay, window, gc, 300, 400, 400, 400, 0, 360 * 64);
 					XSetForeground(xDisplay, gc, 0xD2DEF0);
 					XSetFont(xDisplay, gc, XLoadFont(xDisplay, "-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
-					const char* const str("First light!");
+					const char* const str("Testwindow appers!");
 					XDrawString(xDisplay, window, gc, 200, 600, str, strlen(str));
 					XFreeGC(xDisplay, gc);
 				}else{
@@ -225,8 +238,9 @@ XVFB::XVFB() : XDISPLAY(StartFB()){
 
 Display* XVFB::StartFB(){
 	Display* d(XOpenDisplay(":15"));
-#if 0
 	if(!d){
+		perror("failed to open Xvfb.");
+#if 0
 		switch(fork()){
 		case -1: //error
 			break;
@@ -237,8 +251,8 @@ Display* XVFB::StartFB(){
 			d = XOpenDisplay(":15");
 			break;
 		}
-	}
 #endif
+	}
 	return d;
 }
 

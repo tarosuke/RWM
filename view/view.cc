@@ -3,13 +3,16 @@
  */
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "view.h"
 #include <window.h>
 #include <toolbox/qon/glqon.h>
 
 
-
+bool VIEW::keep(true);
 
 
 VIEW::VIEW(HEADTRACKER& head_) : head(head_){
@@ -21,6 +24,11 @@ VIEW::VIEW(HEADTRACKER& head_) : head(head_){
 	realWidth = defaultDotPitch * width;
 	realHeight = defaultDotPitch * height;
 	realDistance = defaultDisplayDistance;
+
+
+	//TODO:シグナルハンドラを登録
+
+	//TODO:セッションマネージャを起動(Rift画面にセッションを作られても困るので)
 }
 
 VIEW::~VIEW(){
@@ -28,7 +36,7 @@ VIEW::~VIEW(){
 
 
 void VIEW::Run(){
-	for(;;){
+	while(keep){
 		//Xのイベント処理
 		x.EventHandler();
 		xvfb.EventHandler();
@@ -85,6 +93,20 @@ void VIEW::Run(){
 		PostDraw();
 	}
 }
+
+void VIEW::SIGCHLD_Handler(int sig){
+	pid_t child(0);
+
+	do{
+		int ret;
+		child = waitpid(-1, &ret, WNOHANG);
+	}while(0 < child);
+
+	//終了するよう設定
+	Quit();
+}
+
+
 
 void VIEW::DrawObjects(TOOLBOX::QUEUE<DRAWER>& q){
 	for(TOOLBOX::QUEUE<DRAWER>::ITOR i(q); i; (*i++).Draw());

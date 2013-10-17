@@ -148,7 +148,7 @@ printf("area:%d %d %d %d.\n", e.area.x, e.area.y, e.area.width, e.area.height);
 	//変化分を取得したと通知
 	XDamageSubtract(xDisplay, e.damage, None, None);
 
-	//変化分を取得してwImageを更新
+	//変化分をwImageへ取得
 	XImage* wImage(XGetImage(
 		xDisplay,
 		wID,
@@ -159,19 +159,23 @@ printf("area:%d %d %d %d.\n", e.area.x, e.area.y, e.area.width, e.area.height);
 		AllPlanes,
 		ZPixmap));
 
-	//変化分をテクスチャに反映
-	glBindTexture(GL_TEXTURE_2D, tID);
-	glTexSubImage2D(
-		GL_TEXTURE_2D, 0,
-		e.area.x,
-		e.area.y,
-		e.area.width,
-		e.area.height,
-		GL_BGRA,
-		GL_UNSIGNED_BYTE,
-		(*wImage).data);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	XDestroyImage(wImage);
+	if(wImage){
+		//変化分をテクスチャに反映
+		glBindTexture(GL_TEXTURE_2D, tID);
+		glTexSubImage2D(
+			GL_TEXTURE_2D, 0,
+			e.area.x,
+			e.area.y,
+			e.area.width,
+			e.area.height,
+			GL_BGRA,
+			GL_UNSIGNED_BYTE,
+			(*wImage).data);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		XDestroyImage(wImage);
+	}else{
+		puts("falied to capture image.");
+	}
 }
 
 void WINDOW::AssignTexture(){
@@ -181,7 +185,6 @@ void WINDOW::AssignTexture(){
 
 	XImage* wImage(XGetImage(
 		xDisplay, wID, 0, 0, width, height, AllPlanes, ZPixmap));
-	assert(wImage && (*wImage).data);
 
 	//テクスチャの生成
 	if(!tID){
@@ -189,16 +192,26 @@ void WINDOW::AssignTexture(){
 	}
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGB, w, h, 0,
-		GL_BGRA, GL_UNSIGNED_BYTE, (*wImage).data);
+	if(wImage && (*wImage).data){
+		//正常に取得
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RGB, w, h, 0,
+			GL_BGRA, GL_UNSIGNED_BYTE, (*wImage).data);
+		XDestroyImage(wImage);
+	}else{
+		//取得できなかったけど割り当てておく
+		void* dummyData(malloc(w * h * 4));
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RGB, w, h, 0,
+			GL_BGRA, GL_UNSIGNED_BYTE, dummyData);
+		free(dummyData);
+	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	XDestroyImage(wImage);
 }
 
 

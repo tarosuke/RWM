@@ -57,7 +57,7 @@ class XVFB : public XDISPLAY{
 public:
 	XVFB();
 private:
-	Display* StartFB(); //Xvfbを起動し、接続する
+	Display* StartFB(); //Xvfbに接続し、xsmを起動する
 };
 
 

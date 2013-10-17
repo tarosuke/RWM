@@ -34,6 +34,8 @@ public:
 	void RegisterExternal(DRAWER& d){ d.Add(externals); };
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
+	//終了設定
+	static void Quit(){ keep = false; };
 protected:
 	static const float defaultDotPitch = 0.003;
 	static const float defaultDisplayDistance = 0.7;
@@ -63,6 +65,9 @@ protected:
 	void Update(){
 		x.Update();
 	};
+private:
+	static bool keep;
+	static void SIGCHLD_Handler(int);
 };
 
 

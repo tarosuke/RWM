@@ -189,9 +189,9 @@ void XDISPLAY::EventHandler(){
 					window = XCreateSimpleWindow(
 						xDisplay,
 						rootWindowID,
+						320,
 						0,
-						0,
-						600,
+						640,
 						800,
 						0,
 						WhitePixel(xDisplay, 0),

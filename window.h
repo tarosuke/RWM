@@ -38,14 +38,8 @@ public:
 	static void AtMapping(XMappingEvent&){};
 	static void AtDamage(XDamageNotifyEvent&);
 
-
-
-
-
-
-
-
-
+	//窓関連
+	static WINDOW* FindWindowByDir(const QON&);
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
@@ -71,14 +65,18 @@ private:
 	float scale; //非ズーム時の大きさ(ズーム時はピクセル基準)
 	float distance; //最後に描画した時の距離
 	static float baseDistance;
+	QON center; //中心の向き
+
+	void Move(int x, int y);
 
 	//ピクセルサイズ(scaleを乗じたサイズで描画)
 	unsigned width;
 	unsigned height;
+	unsigned rootWidth;
+	unsigned rootHeight;
 
 	//窓生成、登録
 	void AssignTexture();
-	static WINDOW* FindWindowByDir(const QON&);
 	struct P2{
 		float x;
 		float y;

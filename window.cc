@@ -22,7 +22,7 @@
 
 
 //窓までの距離
-float WINDOW::baseDistance(0.8);
+float WINDOW::baseDistance(0.6);
 
 //窓リスト
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
@@ -222,7 +222,9 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	mapped(false),
 	tID(0),
 	width(e.width),
-	height(e.height){
+	height(e.height),
+	rootWidth(rw),
+	rootHeight(rh){
 
 	//窓リストへ登録
 	windowList.Insert(node);
@@ -245,9 +247,7 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 #endif
 
 	//窓位置に合わせる
-	horiz = ((e.x + width*0.5) - (float)rw/2.0) * scale;
-	vert = ((e.y + height*0.5) - (float)rh/2.0) * scale;
-printf("%f %f.\n", horiz, vert);
+	Move(e.x, e.y);
 
 	//拡張イベントを設定
 	XSelectInput(xDisplay, wID, PropertyChangeMask);
@@ -262,6 +262,7 @@ WINDOW* WINDOW::FindWindowByDir(const QON& dir){
 		const P2 p(w.GetLocalPosition(dir));
 		if(0.0 <= p.x && p.x < w.width &&
 		   0.0 <= p.y && p.y < w.height){
+printf("%f, %f.\n", p.x, p.y);
 			//dirが窓の中を指している
 			return &w;
 		}
@@ -269,8 +270,34 @@ WINDOW* WINDOW::FindWindowByDir(const QON& dir){
 	return 0;
 }
 
-WINDOW::P2 WINDOW::GetLocalPosition(const QON&){
-	P2 r;
+WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
+	QON dir(d);
+
+	//頭の向きをベクタにして窓の中心を基準に変換
+	VQON tgt(0, 0, 1);
+	tgt.ReverseRotate(center);
+	tgt.Rotate(dir);
+
+	//窓の上の位置に直す
+	const float s(distance / (scale * tgt.k));
+	P2 r = { (float)(tgt.i * s) + width * (float)0.5,
+		(float)(tgt.j * s) + height * (float)0.5 };
 	return r;
 }
+
+void WINDOW::Move(int x, int y){
+	horiz = ((x + width*0.5) - (float)rootWidth/2.0) * scale;
+	vert = ((y + height*0.5) - (float)rootHeight/2.0) * scale;
+	printf("%f %f.\n", horiz, vert);
+
+	//四元数表現
+	QON::ROTATION v = { vert, 1, 0, 0 };
+	QON::ROTATION h = { horiz, 0, 1, 0 };
+	QON hq(h);
+	QON vq(v);
+	hq *= vq;
+	center = hq;
+}
+
+
 

@@ -48,16 +48,30 @@ WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 
 
 
-void WINDOW::DrawAll(){
+void WINDOW::DrawAll(const QON& headDir){
 	unsigned n(0);
+	bool zoomable(true);
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		if((*i).mapped){
-			(*i).Draw(n++);
+			zoomable &= !(*i).Draw(n++, zoomable, headDir);
 		}
 	}
 }
 
-void WINDOW::Draw(unsigned nff){
+bool WINDOW::Draw(unsigned nff, bool zoomable, const QON& headDir){
+	//ズーム処理
+	bool zoom(false);
+	float s(1.0);
+	P2 offset = { 0, 0 };
+	if(zoomable){
+		const P2 center = GetLocalPosition(headDir);
+		if(0 <= center.x && center.x < width &&
+		   0 <= center.y && center.y < height){
+			zoom = true;
+			s = 2.0;
+		}
+	}
+
 	//窓までの距離
 	distance = baseDistance + 0.03 * nff;
 
@@ -68,19 +82,25 @@ void WINDOW::Draw(unsigned nff){
 
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float w(scale * width * 0.5);
-	const float h(scale * height * 0.5);
+	const float w(s * scale * width * 0.5);
+	const float h(s * scale * height * 0.5);
+	const float l(-w + offset.x);
+	const float r(w + offset.x);
+	const float t(-h + offset.y);
+	const float b(h + offset.y);
 	glTexCoord2f(0, 0);
-	glVertex3f(-w, h, -distance);
+	glVertex3f(l, b, -distance);
 	glTexCoord2f(0, 1);
-	glVertex3f(-w, -h, -distance);
+	glVertex3f(l, t, -distance);
 	glTexCoord2f(1, 0);
-	glVertex3f(w, h, -distance);
+	glVertex3f(r, b, -distance);
 	glTexCoord2f(1, 1);
-	glVertex3f(w, -h, -distance);
+	glVertex3f(r, t, -distance);
 	glEnd();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return zoom;
 }
 
 WINDOW::~WINDOW(){

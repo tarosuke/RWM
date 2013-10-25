@@ -82,9 +82,10 @@ void VIEW::Run(){
 
 		//各段階描画
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
-		GLQON headDir(head.GetDirection());
-		headDir.GetView(); //視野を取得
-		WINDOW::DrawAll(); //窓を描画
+		QON headDir(head.GetDirection());
+		GLQON glHeadDir(headDir);
+		glHeadDir.GetView(); //視野を取得
+		WINDOW::DrawAll(headDir); //窓を描画
 
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		DrawObjects(externals); //externalを描画

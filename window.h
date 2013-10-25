@@ -27,7 +27,7 @@ class WINDOW{
 public:
 	WINDOW(XCreateWindowEvent& e, unsigned rootWidth, unsigned rootHeight);
 
-	static void DrawAll();
+	static void DrawAll(const QON& headDir);
 
 
 	//根窓関連
@@ -43,7 +43,7 @@ public:
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
-	void Draw(unsigned numFormFront);
+	bool Draw(unsigned numFormFront, bool zoomable, const QON& headDir);
 
 	//X関連
 	Display* const xDisplay;

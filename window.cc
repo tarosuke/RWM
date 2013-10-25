@@ -47,27 +47,28 @@ WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 }
 
 
-
-void WINDOW::DrawAll(const QON& headDir){
+bool WINDOW::zoomable(false);
+const QON* WINDOW::headDir;
+void WINDOW::DrawAll(const QON& dir){
+	zoomable = true;
+	headDir = &dir;
 	unsigned n(0);
-	bool zoomable(true);
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		if((*i).mapped){
-			zoomable &= !(*i).Draw(n++, zoomable, headDir);
+			(*i).Draw(n++);
 		}
 	}
 }
 
-bool WINDOW::Draw(unsigned nff, bool zoomable, const QON& headDir){
+void WINDOW::Draw(unsigned nff){
 	//ズーム処理
-	bool zoom(false);
 	float s(1.0);
 	P2 offset = { 0, 0 };
 	if(zoomable){
-		const P2 center = GetLocalPosition(headDir);
+		const P2 center = GetLocalPosition(*headDir);
 		if(0 <= center.x && center.x < width &&
 		   0 <= center.y && center.y < height){
-			zoom = true;
+			zoomable = false;
 			s = 2.0;
 		}
 	}
@@ -99,8 +100,6 @@ bool WINDOW::Draw(unsigned nff, bool zoomable, const QON& headDir){
 	glEnd();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	return zoom;
 }
 
 WINDOW::~WINDOW(){

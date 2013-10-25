@@ -43,7 +43,7 @@ public:
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
-	bool Draw(unsigned numFormFront, bool zoomable, const QON& headDir);
+	void Draw(unsigned numFormFront);
 
 	//X関連
 	Display* const xDisplay;
@@ -53,6 +53,8 @@ private:
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(Display*, unsigned wID);
+	static bool zoomable;
+	static const QON* headDir;
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;

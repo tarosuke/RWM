@@ -44,7 +44,7 @@ private:
 
 	//X関連
 	Display* const xDisplay;
-	const unsigned wID; //窓ID
+	const Window wID; //窓ID
 	Damage dID; //xDamageID
 
 	//窓全体関連
@@ -82,6 +82,7 @@ private:
 		float y;
 	};
 	P2 GetLocalPosition(const QON&);
+	unsigned WindowPositionPoint(int x, int y, int gx, int gy);
 
 	//窓固有のハンドラ
 	void OnDamage(XDamageNotifyEvent&);

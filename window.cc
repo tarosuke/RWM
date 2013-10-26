@@ -122,7 +122,7 @@ WINDOW::~WINDOW(){
 
 //////イベント処理関連
 void WINDOW::AtCreate(XCreateWindowEvent& e, unsigned rw, unsigned rh){
-printf("create(%lu).\n", e.window);
+printf("create(%lu/%lu).\n", e.window, e.parent);
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(!w){
 		//追随して生成
@@ -261,25 +261,51 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	//ピクセルサイズを乗じると空間中の長さになる値
 	scale = baseDistance * M_PI / rw;
 
-#if 0
-	if(!e.x && !e.y){
-		//未指定なので移動
-#if 0
-		//空きを探索
+	if(!e.x && !e.y && width != rootWidth && height != rootHeight){
+		//未指定なので最適な場所を探索して移動
 		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
-#else
-		horiz = vert = 0.0;
-#endif
+		const int gx(rootWidth / 2);
+		const int gy(rootHeight / 2);
+		const unsigned xs(width < 256 ? 256 : width);
+		const unsigned ys(height < 256 ? 256 : height);
+printf("x y w h:%d %d %u %u.\n", e.x, e.y, width, height);
+		unsigned pt(~0U);
+		for(unsigned y(0); y < rootHeight - ys; y += ys){
+			for(unsigned x(0); x < rootWidth - xs; x += xs){
+				const unsigned p(
+					WindowPositionPoint(
+						(int)x, (int)y, gx, gy));
+				if(p < pt){
+					//最小ペナルティが出たので値を差し替える
+					pt = p;
+					e.x = x;
+					e.y = y;
+				}
+			}
+		}
 	}
-#endif
 
-	//窓位置に合わせる
+	//窓位置に合わせて仮想空間内の向きを決める
 	Move(e.x, e.y);
 
 	//拡張イベントを設定
 	XSelectInput(xDisplay, wID, PropertyChangeMask);
 	dID = XDamageCreate(
 		xDisplay, wID, XDamageReportNonEmpty);
+}
+
+unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
+	//重力ペナルティ
+	const int dx(gx - (x + width / 2));
+	const int dy(gy - (y + height / 2));
+	unsigned p(dx*dx + dy*dy);
+
+	//重なりペナルティ
+// 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+//
+// 	}
+printf("penalty:%u(%d %d %d %d.\n", p, x, y, gx, gy);
+	return p;
 }
 
 WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){

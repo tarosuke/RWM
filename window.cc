@@ -248,6 +248,8 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	node(*this),
 	mapped(false),
 	tID(0),
+	vx(e.x),
+	vy(e.y),
 	width(e.width),
 	height(e.height),
 	rootWidth(rw),
@@ -261,37 +263,48 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	//ピクセルサイズを乗じると空間中の長さになる値
 	scale = baseDistance * M_PI / rw;
 
-	if(!e.x && !e.y && width != rootWidth && height != rootHeight){
+	if(!vx && !vy && width != rootWidth && height != rootHeight){
 		//未指定なので最適な場所を探索して移動
 		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
 		const int gx(rootWidth / 2);
 		const int gy(rootHeight / 2);
-		const unsigned xs(width < 256 ? 256 : width);
-		const unsigned ys(height < 256 ? 256 : height);
-printf("x y w h:%d %d %u %u.\n", e.x, e.y, width, height);
-		unsigned pt(~0U);
-		for(unsigned y(0); y < rootHeight - ys; y += ys){
-			for(unsigned x(0); x < rootWidth - xs; x += xs){
-				const unsigned p(
-					WindowPositionPoint(
-						(int)x, (int)y, gx, gy));
-				if(p < pt){
-					//最小ペナルティが出たので値を差し替える
-					pt = p;
-					e.x = x;
-					e.y = y;
-				}
-			}
-		}
+
+		//場所の絞り込み
+		ChoosePosition(rootWidth, rootHeight, 256, 256, gx, gy);
+		ChoosePosition(vx + 256, vy + 256, 16, 16, gx, gy);
+		ChoosePosition(vx + 16, vy + 16, 1, 1, gx, gy);
 	}
 
 	//窓位置に合わせて仮想空間内の向きを決める
-	Move(e.x, e.y);
+	Move(vx, vy);
 
 	//拡張イベントを設定
 	XSelectInput(xDisplay, wID, PropertyChangeMask);
 	dID = XDamageCreate(
 		xDisplay, wID, XDamageReportNonEmpty);
+}
+
+void WINDOW::ChoosePosition(
+	unsigned hTo, unsigned vTo,
+	unsigned hStep, unsigned vStep,
+	int gx, int gy){
+	int tx(vx);
+	int ty(vy);
+	unsigned pt(~0U);
+	for(unsigned y(vy); y < vTo; y += vStep){
+		for(unsigned x(vx); x < hTo; x += hStep){
+			const unsigned p(
+				WindowPositionPoint((int)x, (int)y, gx, gy));
+			if(p < pt){
+				//最小ペナルティが出たので値を差し替える
+				pt = p;
+				tx = x;
+				ty = y;
+			}
+		}
+	}
+	vx = tx;
+	vy = ty;
 }
 
 unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
@@ -304,7 +317,7 @@ unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
 // 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 //
 // 	}
-printf("penalty:%u(%d %d %d %d.\n", p, x, y, gx, gy);
+// printf("penalty:%u(%d %d %d %d.\n", p, x, y, gx, gy);
 	return p;
 }
 

@@ -69,7 +69,9 @@ private:
 
 	void Move(int x, int y);
 
-	//ピクセルサイズ(scaleを乗じたサイズで描画)
+	//ピクセル位置、サイズ(scaleを乗じたサイズで描画)
+	int vx;
+	int vy;
 	unsigned width;
 	unsigned height;
 	unsigned rootWidth;
@@ -82,6 +84,10 @@ private:
 		float y;
 	};
 	P2 GetLocalPosition(const QON&);
+	void ChoosePosition(
+		unsigned hTo, unsigned vTo,
+		unsigned hStep, unsigned vStep,
+		int gx, int gy);
 	unsigned WindowPositionPoint(int x, int y, int gx, int gy);
 
 	//窓固有のハンドラ

@@ -29,13 +29,7 @@ TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 
 
 
-
-
-
-
-
-
-
+//窓IDからWINDOWのインスタンスを探す
 WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		WINDOW& w(*i.Owner());
@@ -47,6 +41,7 @@ WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 }
 
 
+/////窓描画関連
 bool WINDOW::zoomable(false);
 const QON* WINDOW::headDir;
 const float WINDOW::zoomedScale(0.001);
@@ -71,8 +66,17 @@ void WINDOW::Draw(unsigned nff){
 		   0 <= center.y && center.y < height){
 			zoomable = false;
 			if(scale < zoomedScale){
-printf("zoom:%f %f.\n", center.x, center.y);
+				//拡大率設定
 				s = zoomedScale;
+
+				//オフセット算出
+				const float zr(zoomedScale - scale);
+				const float hw(width * 0.5f);
+				const float hh(height * 0.5f);
+				const float dh(hw - center.x);
+				const float dv(center.y - hh);
+				offset.x = dh * zr;
+				offset.y = dv * zr;
 			}
 		}
 	}
@@ -116,7 +120,7 @@ WINDOW::~WINDOW(){
 
 
 
-
+//////イベント処理関連
 void WINDOW::AtCreate(XCreateWindowEvent& e, unsigned rw, unsigned rh){
 printf("create(%lu).\n", e.window);
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
@@ -278,21 +282,6 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 		xDisplay, wID, XDamageReportNonEmpty);
 }
 
-WINDOW* WINDOW::FindWindowByDir(const QON& dir){
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
-		WINDOW& w(*i.Owner());
-		//その方向にある窓を返す。窓は近い順なので最初に発見されたものを返す
-		const P2 p(w.GetLocalPosition(dir));
-		if(0.0 <= p.x && p.x < w.width &&
-		   0.0 <= p.y && p.y < w.height){
-printf("%f, %f.\n", p.x, p.y);
-			//dirが窓の中を指している
-			return &w;
-		}
-	}
-	return 0;
-}
-
 WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 	QON dir(d);
 
@@ -303,8 +292,8 @@ WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 
 	//窓の上の位置に直す
 	const float s(distance / (scale * tgt.k));
-	P2 r = { (float)(tgt.i * s) + width * (float)0.5,
-		(float)(-tgt.j * s) + height * (float)0.5 };
+	P2 r = { (float)(tgt.i * s) + width * 0.5f,
+		(float)(-tgt.j * s) + height * 0.5f };
 	return r;
 }
 

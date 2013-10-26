@@ -38,9 +38,6 @@ public:
 	static void AtMapping(XMappingEvent&){};
 	static void AtDamage(XDamageNotifyEvent&);
 
-	//窓関連
-	static WINDOW* FindWindowByDir(const QON&);
-
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
 	void Draw(unsigned numFormFront);

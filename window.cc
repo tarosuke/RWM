@@ -348,6 +348,9 @@ void WINDOW::Move(int x, int y){
 	QON vq(v);
 	hq *= vq;
 	center = hq;
+
+	//フレームバッファ上の窓も移動
+	XMoveWindow(xDisplay, wID, x, y);
 }
 
 

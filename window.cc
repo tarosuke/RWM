@@ -49,6 +49,7 @@ WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 
 bool WINDOW::zoomable(false);
 const QON* WINDOW::headDir;
+const float WINDOW::zoomedScale(0.001);
 void WINDOW::DrawAll(const QON& dir){
 	zoomable = true;
 	headDir = &dir;
@@ -62,14 +63,17 @@ void WINDOW::DrawAll(const QON& dir){
 
 void WINDOW::Draw(unsigned nff){
 	//ズーム処理
-	float s(1.0);
+	float s(scale);
 	P2 offset = { 0, 0 };
 	if(zoomable){
 		const P2 center = GetLocalPosition(*headDir);
 		if(0 <= center.x && center.x < width &&
 		   0 <= center.y && center.y < height){
 			zoomable = false;
-			s = 2.0;
+			if(scale < zoomedScale){
+printf("zoom:%f %f.\n", center.x, center.y);
+				s = zoomedScale;
+			}
 		}
 	}
 
@@ -83,8 +87,8 @@ void WINDOW::Draw(unsigned nff){
 
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float w(s * scale * width * 0.5);
-	const float h(s * scale * height * 0.5);
+	const float w(s * width * 0.5);
+	const float h(s * height * 0.5);
 	const float l(-w + offset.x);
 	const float r(w + offset.x);
 	const float t(-h + offset.y);
@@ -295,12 +299,12 @@ WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 	//頭の向きをベクタにして窓の中心を基準に変換
 	VQON tgt(0, 0, 1);
 	tgt.ReverseRotate(center);
-	tgt.Rotate(dir);
+	tgt.ReverseRotate(dir);
 
 	//窓の上の位置に直す
 	const float s(distance / (scale * tgt.k));
 	P2 r = { (float)(tgt.i * s) + width * (float)0.5,
-		(float)(tgt.j * s) + height * (float)0.5 };
+		(float)(-tgt.j * s) + height * (float)0.5 };
 	return r;
 }
 

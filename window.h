@@ -55,6 +55,7 @@ private:
 	static WINDOW* FindWindowByID(Display*, unsigned wID);
 	static bool zoomable;
 	static const QON* headDir;
+	static const float zoomedScale;
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;

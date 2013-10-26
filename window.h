@@ -27,7 +27,7 @@ class WINDOW{
 public:
 	WINDOW(XCreateWindowEvent& e, unsigned rootWidth, unsigned rootHeight);
 
-	static void DrawAll();
+	static void DrawAll(const QON& headDir);
 
 
 	//根窓関連
@@ -37,9 +37,6 @@ public:
 	static void AtUnmap(XUnmapEvent&);
 	static void AtMapping(XMappingEvent&){};
 	static void AtDamage(XDamageNotifyEvent&);
-
-	//窓関連
-	static WINDOW* FindWindowByDir(const QON&);
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
@@ -53,6 +50,9 @@ private:
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(Display*, unsigned wID);
+	static bool zoomable;
+	static const QON* headDir;
+	static const float zoomedScale;
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;

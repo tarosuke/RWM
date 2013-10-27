@@ -84,10 +84,11 @@ private:
 		float y;
 	};
 	P2 GetLocalPosition(const QON&);
-	void ChoosePosition(
+	void SeekPosition(
 		unsigned hTo, unsigned vTo,
 		unsigned hStep, unsigned vStep,
 		int gx, int gy);
+	unsigned OverLen(int s0, int l0, int s1, int l1);
 	unsigned WindowPositionPoint(int x, int y, int gx, int gy);
 
 	//窓固有のハンドラ

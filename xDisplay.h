@@ -32,7 +32,7 @@ protected:
 
 	//根窓 & GLX関連
 	Display* xDisplay;
-	unsigned rootWindowID;
+	Window rootWindowID;
 	unsigned width;
 	unsigned height;
 	static int XErrorHandler(Display*, XErrorEvent*);

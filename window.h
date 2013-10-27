@@ -44,7 +44,7 @@ private:
 
 	//X関連
 	Display* const xDisplay;
-	const unsigned wID; //窓ID
+	const Window wID; //窓ID
 	Damage dID; //xDamageID
 
 	//窓全体関連
@@ -69,7 +69,9 @@ private:
 
 	void Move(int x, int y);
 
-	//ピクセルサイズ(scaleを乗じたサイズで描画)
+	//ピクセル位置、サイズ(scaleを乗じたサイズで描画)
+	int vx;
+	int vy;
 	unsigned width;
 	unsigned height;
 	unsigned rootWidth;
@@ -82,6 +84,12 @@ private:
 		float y;
 	};
 	P2 GetLocalPosition(const QON&);
+	void SeekPosition(
+		unsigned hTo, unsigned vTo,
+		unsigned hStep, unsigned vStep,
+		int gx, int gy);
+	unsigned OverLen(int s0, int l0, int s1, int l1);
+	unsigned WindowPositionPoint(int x, int y, int gx, int gy);
 
 	//窓固有のハンドラ
 	void OnDamage(XDamageNotifyEvent&);

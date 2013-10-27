@@ -122,7 +122,7 @@ WINDOW::~WINDOW(){
 
 //////イベント処理関連
 void WINDOW::AtCreate(XCreateWindowEvent& e, unsigned rw, unsigned rh){
-printf("create(%lu).\n", e.window);
+printf("create(%lu/%lu).\n", e.window, e.parent);
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(!w){
 		//追随して生成
@@ -248,6 +248,8 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	node(*this),
 	mapped(false),
 	tID(0),
+	vx(e.x),
+	vy(e.y),
 	width(e.width),
 	height(e.height),
 	rootWidth(rw),
@@ -261,25 +263,85 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	//ピクセルサイズを乗じると空間中の長さになる値
 	scale = baseDistance * M_PI / rw;
 
-#if 0
-	if(!e.x && !e.y){
-		//未指定なので移動
-#if 0
-		//空きを探索
+	if(!vx && !vy && width != rootWidth && height != rootHeight){
+		//未指定なので最適な場所を探索して移動
 		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
-#else
-		horiz = vert = 0.0;
-#endif
-	}
-#endif
+		const int gx(rootWidth / 2);
+		const int gy(rootHeight / 2);
 
-	//窓位置に合わせる
-	Move(e.x, e.y);
+		//場所の絞り込み
+		SeekPosition(rootWidth, rootHeight, 256, 256, gx, gy);
+		SeekPosition(vx + 256, vy + 256, 16, 16, gx, gy);
+		SeekPosition(vx + 16, vy + 16, 1, 1, gx, gy);
+	}
+
+	//窓位置に合わせて仮想空間内の向きを決める
+	Move(vx, vy);
 
 	//拡張イベントを設定
 	XSelectInput(xDisplay, wID, PropertyChangeMask);
 	dID = XDamageCreate(
 		xDisplay, wID, XDamageReportNonEmpty);
+}
+
+void WINDOW::SeekPosition(
+	unsigned hTo, unsigned vTo,
+	unsigned hStep, unsigned vStep,
+	int gx, int gy){
+	int tx(vx);
+	int ty(vy);
+	unsigned pt(~0U);
+	for(unsigned y(vy); y < vTo; y += vStep){
+		for(unsigned x(vx); x < hTo; x += hStep){
+			const unsigned p(
+				WindowPositionPoint((int)x, (int)y, gx, gy));
+			if(p < pt){
+				//最小ペナルティが出たので値を差し替える
+				pt = p;
+				tx = x;
+				ty = y;
+			}
+		}
+	}
+	vx = tx;
+	vy = ty;
+}
+
+unsigned WINDOW::OverLen(int s0, int l0, int s1, int l1){
+	const int e0(s0 + l0);
+	const int e1(s1 + l1);
+	//重なりの長さを求める
+	if(s0 <= s1){
+		if(s1 < e0){
+			return e0 < e1 ? e0 - s1 : e1 - s1;
+		}
+	}else{
+		if(s0 < e1){
+			return e1 < s0 ? e1 - s0 : e0 - s0;
+		}
+	}
+	return 0;
+}
+
+unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
+	//重力ペナルティ
+	const int dx(gx - (x + width / 2));
+	const int dy(gy - (y + height / 2));
+	unsigned p(dx*dx + dy*dy);
+
+	//重なりペナルティ
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		const WINDOW& w(*i);
+		if(&w == this){
+			//自分自身は除外
+			continue;
+		}
+		const unsigned hl(OverLen(x, width, w.vx, w.width));
+		const unsigned vl(OverLen(y, height, w.vy, w.height));
+// printf("penalty:%u(%d %d %d %d.\n", hl * vl, x, y, gx, gy);
+		p += (hl * vl) * 10000;
+	}
+	return p;
 }
 
 WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
@@ -309,6 +371,11 @@ void WINDOW::Move(int x, int y){
 	QON vq(v);
 	hq *= vq;
 	center = hq;
+
+	//フレームバッファ上の窓も移動
+	XMoveWindow(xDisplay, wID, x, y);
+	vx = x;
+	vy = y;
 }
 
 

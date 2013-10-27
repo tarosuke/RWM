@@ -49,10 +49,11 @@ XDISPLAY::XDISPLAY() :
 			BlackPixel(xDisplay, 0),
 			BlackPixel(xDisplay, 0));
 	XMapWindow( xDisplay, rootWindowID );
-	printf("rootWindowID:%d.\n", rootWindowID);
 #else
 	rootWindowID = RootWindow(xDisplay, 0);
 #endif
+printf("rootWindowID:%lu.\n", rootWindowID);
+
 	//rootのサブウインドウをキャプチャ
 	XCompositeRedirectSubwindows(
 		xDisplay, rootWindowID, CompositeRedirectManual);
@@ -68,6 +69,7 @@ XDISPLAY::XDISPLAY(Display* d) : xDisplay(d){
 		return;
 	}
 	rootWindowID = RootWindow(d, 0);
+printf("fb:rootWindowID:%lu.\n", rootWindowID);
 
 	//rootのサブウインドウをキャプチャ
 #ifdef TEST
@@ -168,7 +170,8 @@ void XDISPLAY::EventHandler(){
 		XNextEvent(xDisplay, &e);
 		switch(e.type){
 			case CreateNotify:
-				if(e.xcreatewindow.window != rootWindowID){
+				if(e.xcreatewindow.window != rootWindowID &&
+				   e.xcreatewindow.parent == rootWindowID){
 					WINDOW::AtCreate(
 						e.xcreatewindow,
 						width, height);

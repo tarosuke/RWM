@@ -36,7 +36,7 @@ public:
 	static void AtDestroy(XDestroyWindowEvent&);
 	static void AtUnmap(XUnmapEvent&);
 	static void AtMapping(XMappingEvent&){};
-	static void AtDamage(XDamageNotifyEvent&);
+	static void AtDamage(XEvent&);
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
@@ -50,9 +50,9 @@ private:
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(Display*, unsigned wID);
-	static bool zoomable;
+	static bool zoomable; //ズーム処理する窓をひとつだけにするためのフラグ
 	static const QON* headDir;
-	static const float zoomedScale;
+	static const float zoomedScale; //ズームした時の大きさ[mm/px]
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;

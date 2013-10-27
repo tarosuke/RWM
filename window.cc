@@ -122,7 +122,6 @@ WINDOW::~WINDOW(){
 
 //////イベント処理関連
 void WINDOW::AtCreate(XCreateWindowEvent& e, unsigned rw, unsigned rh){
-printf("create(%lu/%lu).\n", e.window, e.parent);
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(!w){
 		//追随して生成
@@ -133,7 +132,6 @@ printf("create(%lu/%lu).\n", e.window, e.parent);
 void WINDOW::AtMap(XMapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
-printf("map(%lu).\n", e.window);
 		//テクスチャ割り当て、初期画像設定
 		(*w).AssignTexture();
 		//map状態をXの窓に追随(trueなので以後Drawする)
@@ -143,7 +141,6 @@ printf("map(%lu).\n", e.window);
 void WINDOW::AtDestroy(XDestroyWindowEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
-printf("destroy(%lu).\n", e.window);
 		//外部でDestroyされたウインドウに同期する
 		delete w;
 	}
@@ -151,16 +148,15 @@ printf("destroy(%lu).\n", e.window);
 void WINDOW::AtUnmap(XUnmapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
-printf("unmap(%lu).\n", e.window);
 		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
 		(*w).mapped = false;
 	}
 }
-void WINDOW::AtDamage(XDamageNotifyEvent& e){
+void WINDOW::AtDamage(XEvent& ev){
+	XDamageNotifyEvent& e(*(XDamageNotifyEvent*)&ev);
 	//知っている窓なら変化分を反映
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.drawable));
 	if(w){
-printf("damaged(%lu).\n", e.drawable);
 		(*w).OnDamage(e);
 	}
 }
@@ -170,7 +166,6 @@ void WINDOW::OnDamage(XDamageNotifyEvent& e){
 		//非map状態では窓のキャプチャはできない
 		return;
 	}
-printf("area:%d %d %d %d.\n", e.area.x, e.area.y, e.area.width, e.area.height);
 
 	//変化分を取得したと通知
 	XDamageSubtract(xDisplay, e.damage, None, None);
@@ -338,8 +333,7 @@ unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
 		}
 		const unsigned hl(OverLen(x, width, w.vx, w.width));
 		const unsigned vl(OverLen(y, height, w.vy, w.height));
-// printf("penalty:%u(%d %d %d %d.\n", hl * vl, x, y, gx, gy);
-		p += (hl * vl) * 10000;
+		p += (hl * vl) * 100;
 	}
 	return p;
 }
@@ -362,7 +356,6 @@ WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 void WINDOW::Move(int x, int y){
 	horiz = ((x + width*0.5) - (float)rootWidth/2.0) * scale;
 	vert = ((y + height*0.5) - (float)rootHeight/2.0) * scale;
-	printf("%f %f.\n", horiz, vert);
 
 	//四元数表現
 	QON::ROTATION v = { vert, 1, 0, 0 };

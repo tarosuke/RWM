@@ -29,7 +29,6 @@ public:
 
 	static void DrawAll(const QON& headDir);
 
-
 	//根窓関連
 	static void AtCreate(XCreateWindowEvent&, unsigned rw, unsigned rh);
 	static void AtMap(XMapEvent&);

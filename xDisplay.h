@@ -50,6 +50,10 @@ protected:
 
 	//内部イベントハンドラ
 	void AtDamage(XDamageNotifyEvent&);
+
+
+	//テスト窓
+	void TestWindow();
 };
 
 //Xvfbを起動し、イベントループは別スレッド

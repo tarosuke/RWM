@@ -27,6 +27,7 @@ float WINDOW::baseDistance(0.6);
 //窓全体関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 WINDOW* WINDOW::focused(0);
+WINDOW* WINDOW::seeing(0);
 
 
 
@@ -65,8 +66,9 @@ void WINDOW::Draw(unsigned nff){
 		const P2 center = GetLocalPosition(*headDir);
 		if(0 <= center.x && center.x < width &&
 		   0 <= center.y && center.y < height){
-			//フォーカス取得
+			//フォーカス取得、注目
 			Focus();
+			See();
 
 			//ズーム時パラメタ設定
 			zoomable = false;
@@ -113,10 +115,15 @@ void WINDOW::Draw(unsigned nff){
 	glEnd();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//必要ならマウスカーソル描画
+	if(focused == this){
+	}
 }
 
 WINDOW::~WINDOW(){
 	UnFocus();
+	UnSee();
 	node.Detach();
 	if(tID){
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -189,6 +196,17 @@ void WINDOW::AtKeyEvent(XEvent& e){
 			w.UnFocus();
 		}
 	}
+}
+
+void WINDOW::AtMappingEvent(XMappingEvent& e){
+// 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+// 		//全窓に配布
+// 		WINDOW& w(*i);
+// 		e.display = w.xDisplay;
+// 		e.window = w.wID;
+// 		XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
+// 	}
+//もしかして配布するんじゃなくてキーマップを読み込む？
 }
 
 void WINDOW::AtButtonEvent(XEvent& e){
@@ -426,4 +444,21 @@ void WINDOW::UnFocus(){
 		focused = 0;
 	}
 }
+
+
+void WINDOW::See(){
+	if(seeing != this){
+		(*seeing).UnSee();
+		//TODO:EnterNotify発行
+		seeing = this;
+	}
+}
+
+void WINDOW::UnSee(){
+	if(this == seeing){
+		//TODO:LeaveNotify発行
+	}
+}
+
+
 

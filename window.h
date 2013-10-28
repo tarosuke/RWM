@@ -34,9 +34,9 @@ public:
 	static void AtMap(XMapEvent&);
 	static void AtDestroy(XDestroyWindowEvent&);
 	static void AtUnmap(XUnmapEvent&);
-	static void AtMapping(XMappingEvent&){};
 	static void AtDamage(XEvent&);
 	static void AtKeyEvent(XEvent&);
+	static void AtMappingEvent(XMappingEvent&);
 	static void AtButtonEvent(XEvent&);
 
 private:
@@ -57,6 +57,9 @@ private:
 	static WINDOW* focused;
 	void Focus();
 	void UnFocus();
+	static WINDOW* seeing;
+	void See();
+	void UnSee();
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;

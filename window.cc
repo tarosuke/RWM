@@ -174,13 +174,16 @@ void WINDOW::AtKeyEvent(XEvent& e){
 	if(!!focused){
 		WINDOW& w(*focused);
 		if(w.mapped){
+			//キーイベント回送
 			e.xkey.display = w.xDisplay;
 			e.xkey.window = w.wID;
 			e.xkey.subwindow = None;
 			e.xkey.root = RootWindow(w.xDisplay, 0);
 			e.xkey.send_event = 1;
-printf("keyEvent to:%lu.\n", w.wID);
 			XSendEvent(w.xDisplay, w.wID, true, 0, &e);
+
+			//フォーカス窓を前面に移動
+			windowList.Pick(w.node);
 			return;
 		}else{
 			w.UnFocus();

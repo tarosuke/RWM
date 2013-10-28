@@ -53,7 +53,10 @@ protected:
 
 
 	//テスト窓
+#ifdef TEST
+	Window testWindow;
 	void TestWindow();
+#endif
 };
 
 //Xvfbを起動し、イベントループは別スレッド

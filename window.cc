@@ -24,8 +24,9 @@
 //窓までの距離
 float WINDOW::baseDistance(0.6);
 
-//窓リスト
+//窓全体関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
+WINDOW* WINDOW::focused(0);
 
 
 
@@ -64,6 +65,10 @@ void WINDOW::Draw(unsigned nff){
 		const P2 center = GetLocalPosition(*headDir);
 		if(0 <= center.x && center.x < width &&
 		   0 <= center.y && center.y < height){
+			//フォーカス取得
+			Focus();
+
+			//ズーム時パラメタ設定
 			zoomable = false;
 			if(scale < zoomedScale){
 				//拡大率設定
@@ -111,6 +116,7 @@ void WINDOW::Draw(unsigned nff){
 }
 
 WINDOW::~WINDOW(){
+	UnFocus();
 	node.Detach();
 	if(tID){
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -149,6 +155,9 @@ void WINDOW::AtUnmap(XUnmapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
 		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
+		if(focused == w){
+			focused = w;
+		}
 		(*w).mapped = false;
 	}
 }
@@ -160,6 +169,31 @@ void WINDOW::AtDamage(XEvent& ev){
 		(*w).OnDamage(e);
 	}
 }
+
+void WINDOW::AtKeyEvent(XEvent& e){
+	if(!!focused){
+		WINDOW& w(*focused);
+		if(w.mapped){
+			e.xkey.display = w.xDisplay;
+			e.xkey.window = w.wID;
+			e.xkey.subwindow = None;
+			e.xkey.root = RootWindow(w.xDisplay, 0);
+			e.xkey.send_event = 1;
+printf("keyEvent to:%lu.\n", w.wID);
+			XSendEvent(w.xDisplay, w.wID, true, 0, &e);
+			return;
+		}else{
+			w.UnFocus();
+		}
+	}
+}
+
+void WINDOW::AtButtonEvent(XEvent& e){
+}
+
+
+
+///// 個別イベントハンドラ
 
 void WINDOW::OnDamage(XDamageNotifyEvent& e){
 	if(!mapped){
@@ -261,11 +295,14 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	if(!vx && !vy && width != rootWidth && height != rootHeight){
 		//未指定なので最適な場所を探索して移動
 		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
-		const int gx(rootWidth / 2);
-		const int gy(rootHeight / 2);
+		const int gx((rootWidth - width) / 2);
+		const int gy((rootHeight - height) / 2);
 
 		//場所の絞り込み
-		SeekPosition(rootWidth, rootHeight, 256, 256, gx, gy);
+		SeekPosition(
+			rootWidth - width,
+			rootHeight - height,
+			256, 256, gx, gy);
 		SeekPosition(vx + 256, vy + 256, 16, 16, gx, gy);
 		SeekPosition(vx + 16, vy + 16, 1, 1, gx, gy);
 	}
@@ -280,16 +317,16 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 }
 
 void WINDOW::SeekPosition(
-	unsigned hTo, unsigned vTo,
-	unsigned hStep, unsigned vStep,
+	int hTo, int vTo,
+	int hStep, int vStep,
 	int gx, int gy){
 	int tx(vx);
 	int ty(vy);
 	unsigned pt(~0U);
-	for(unsigned y(vy); y < vTo; y += vStep){
-		for(unsigned x(vx); x < hTo; x += hStep){
+	for(int y(vy); y < vTo; y += vStep){
+		for(int x(vx); x < hTo; x += hStep){
 			const unsigned p(
-				WindowPositionPoint((int)x, (int)y, gx, gy));
+				WindowPositionPoint(x, y, gx, gy));
 			if(p < pt){
 				//最小ペナルティが出たので値を差し替える
 				pt = p;
@@ -308,11 +345,11 @@ unsigned WINDOW::OverLen(int s0, int l0, int s1, int l1){
 	//重なりの長さを求める
 	if(s0 <= s1){
 		if(s1 < e0){
-			return e0 < e1 ? e0 - s1 : e1 - s1;
+			return (e0 < e1 ? e0 : e1) - s1;
 		}
 	}else{
 		if(s0 < e1){
-			return e1 < s0 ? e1 - s0 : e0 - s0;
+			return (e1 < e0 ? e1 : e0) - s0;
 		}
 	}
 	return 0;
@@ -333,7 +370,8 @@ unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
 		}
 		const unsigned hl(OverLen(x, width, w.vx, w.width));
 		const unsigned vl(OverLen(y, height, w.vy, w.height));
-		p += (hl * vl) * 100;
+		const unsigned p1(hl * vl);
+		p += p1 * p1;
 	}
 	return p;
 }
@@ -369,8 +407,20 @@ void WINDOW::Move(int x, int y){
 	XMoveWindow(xDisplay, wID, x, y);
 	vx = x;
 	vy = y;
+printf("%lu:%d %d(%d %d).\n", wID, x, y, width, height);
 }
 
 
+void WINDOW::Focus(){
+	if(focused != this){
+		XSetInputFocus(xDisplay, wID, RevertToParent, CurrentTime);
+		focused = this;
+	}
+}
 
+void WINDOW::UnFocus(){
+	if(focused == this){
+		focused = 0;
+	}
+}
 

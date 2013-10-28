@@ -36,6 +36,8 @@ public:
 	static void AtUnmap(XUnmapEvent&);
 	static void AtMapping(XMappingEvent&){};
 	static void AtDamage(XEvent&);
+	static void AtKeyEvent(XEvent&);
+	static void AtButtonEvent(XEvent&);
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
@@ -52,6 +54,9 @@ private:
 	static bool zoomable; //ズーム処理する窓をひとつだけにするためのフラグ
 	static const QON* headDir;
 	static const float zoomedScale; //ズームした時の大きさ[mm/px]
+	static WINDOW* focused;
+	void Focus();
+	void UnFocus();
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;
@@ -84,8 +89,8 @@ private:
 	};
 	P2 GetLocalPosition(const QON&);
 	void SeekPosition(
-		unsigned hTo, unsigned vTo,
-		unsigned hStep, unsigned vStep,
+		int hTo, int vTo,
+		int hStep, int vStep,
 		int gx, int gy);
 	unsigned OverLen(int s0, int l0, int s1, int l1);
 	unsigned WindowPositionPoint(int x, int y, int gx, int gy);

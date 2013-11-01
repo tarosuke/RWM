@@ -197,14 +197,14 @@ void WINDOW::AtKeyEvent(XEvent& e){
 }
 
 void WINDOW::AtMappingEvent(XMappingEvent& e){
-// 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
-// 		//全窓に配布
-// 		WINDOW& w(*i);
-// 		e.display = w.xDisplay;
-// 		e.window = w.wID;
-// 		XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
-// 	}
-//もしかして配布するんじゃなくてキーマップを読み込む？
+puts("MappingNotify.");
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		//全窓に配布
+		WINDOW& w(*i);
+		e.display = w.xDisplay;
+		e.window = w.wID;
+		XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
+	}
 }
 
 int WINDOW::seenX;

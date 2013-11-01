@@ -194,7 +194,12 @@ void XDISPLAY::EventHandler(){
 				WINDOW::AtKeyEvent(e);
 				break;
 			case MappingNotify:
+#if 1
+				XRefreshKeyboardMapping(&e.xmapping);
+#else
 				WINDOW::AtMappingEvent(e.xmapping);
+#endif
+				break;
 			case ButtonPress:
 			case ButtonRelease:
 				WINDOW::AtButtonEvent(e.xbutton);

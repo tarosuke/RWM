@@ -37,7 +37,7 @@ public:
 	static void AtDamage(XEvent&);
 	static void AtKeyEvent(XEvent&);
 	static void AtMappingEvent(XMappingEvent&);
-	static void AtButtonEvent(XEvent&);
+	static void AtButtonEvent(XButtonEvent&);
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
@@ -57,9 +57,9 @@ private:
 	static WINDOW* focused;
 	void Focus();
 	void UnFocus();
-	static WINDOW* seeing;
-	void See();
-	void UnSee();
+	void See(int x, int y);
+	static int seenX;
+	static int seenY;
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;

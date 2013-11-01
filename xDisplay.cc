@@ -197,7 +197,7 @@ void XDISPLAY::EventHandler(){
 				WINDOW::AtMappingEvent(e.xmapping);
 			case ButtonPress:
 			case ButtonRelease:
-				WINDOW::AtButtonEvent(e);
+				WINDOW::AtButtonEvent(e.xbutton);
 				break;
 			default:
 				if(e.type == damageBase + XDamageNotify){

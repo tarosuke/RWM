@@ -27,7 +27,6 @@ float WINDOW::baseDistance(0.6);
 //窓全体関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 WINDOW* WINDOW::focused(0);
-WINDOW* WINDOW::seeing(0);
 
 
 
@@ -68,7 +67,7 @@ void WINDOW::Draw(unsigned nff){
 		   0 <= center.y && center.y < height){
 			//フォーカス取得、注目
 			Focus();
-			See();
+			See(center.x, center.y);
 
 			//ズーム時パラメタ設定
 			zoomable = false;
@@ -123,7 +122,6 @@ void WINDOW::Draw(unsigned nff){
 
 WINDOW::~WINDOW(){
 	UnFocus();
-	UnSee();
 	node.Detach();
 	if(tID){
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -209,7 +207,24 @@ void WINDOW::AtMappingEvent(XMappingEvent& e){
 //もしかして配布するんじゃなくてキーマップを読み込む？
 }
 
-void WINDOW::AtButtonEvent(XEvent& e){
+int WINDOW::seenX;
+int WINDOW::seenY;
+void WINDOW::AtButtonEvent(XButtonEvent& e){
+	if(!!focused){
+		WINDOW& w(*focused);
+		if(w.mapped){
+			//ボダンイベント回送
+			e.display = w.xDisplay;
+			e.window = w.wID;
+			e.root = RootWindow(w.xDisplay, 0);
+			e.x = seenX;
+			e.y = seenY;
+			e.x_root = w.vx + e.x;
+			e.y_root = w.vy + e.y;
+			e.send_event = 1;
+			XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
+		}
+	}
 }
 
 
@@ -316,8 +331,8 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	if(!vx && !vy && width != rootWidth && height != rootHeight){
 		//未指定なので最適な場所を探索して移動
 		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
-		const int gx((rootWidth - width) / 2);
-		const int gy((rootHeight - height) / 2);
+		const int gx(rootWidth * 0.5);
+		const int gy(rootHeight * 0.5);
 
 		//場所の絞り込み
 		SeekPosition(
@@ -446,18 +461,16 @@ void WINDOW::UnFocus(){
 }
 
 
-void WINDOW::See(){
-	if(seeing != this){
-		(*seeing).UnSee();
-		//TODO:EnterNotify発行
-		seeing = this;
-	}
-}
-
-void WINDOW::UnSee(){
-	if(this == seeing){
-		//TODO:LeaveNotify発行
-	}
+void WINDOW::See(int x, int y){
+	//視線カーソル移動
+	XWarpPointer(xDisplay,
+		None,
+		wID,
+		0, 0,
+		0, 0,
+		x, y);
+	seenX = x;
+	seenY = y;
 }
 
 

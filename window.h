@@ -29,14 +29,15 @@ public:
 
 	static void DrawAll(const QON& headDir);
 
-
 	//根窓関連
 	static void AtCreate(XCreateWindowEvent&, unsigned rw, unsigned rh);
 	static void AtMap(XMapEvent&);
 	static void AtDestroy(XDestroyWindowEvent&);
 	static void AtUnmap(XUnmapEvent&);
-	static void AtMapping(XMappingEvent&){};
-	static void AtDamage(XDamageNotifyEvent&);
+	static void AtDamage(XEvent&);
+	static void AtKeyEvent(XEvent&);
+	static void AtMappingEvent(XMappingEvent&);
+	static void AtButtonEvent(XButtonEvent&);
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
@@ -50,9 +51,15 @@ private:
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(Display*, unsigned wID);
-	static bool zoomable;
+	static bool zoomable; //ズーム処理する窓をひとつだけにするためのフラグ
 	static const QON* headDir;
-	static const float zoomedScale;
+	static const float zoomedScale; //ズームした時の大きさ[mm/px]
+	static WINDOW* focused;
+	void Focus();
+	void UnFocus();
+	void See(int x, int y);
+	static int seenX;
+	static int seenY;
 
 	//単体窓関連
 	TOOLBOX::NODE<WINDOW> node;
@@ -85,8 +92,8 @@ private:
 	};
 	P2 GetLocalPosition(const QON&);
 	void SeekPosition(
-		unsigned hTo, unsigned vTo,
-		unsigned hStep, unsigned vStep,
+		int hTo, int vTo,
+		int hStep, int vStep,
 		int gx, int gy);
 	unsigned OverLen(int s0, int l0, int s1, int l1);
 	unsigned WindowPositionPoint(int x, int y, int gx, int gy);

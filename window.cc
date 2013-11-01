@@ -24,8 +24,9 @@
 //窓までの距離
 float WINDOW::baseDistance(0.6);
 
-//窓リスト
+//窓全体関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
+WINDOW* WINDOW::focused(0);
 
 
 
@@ -64,6 +65,11 @@ void WINDOW::Draw(unsigned nff){
 		const P2 center = GetLocalPosition(*headDir);
 		if(0 <= center.x && center.x < width &&
 		   0 <= center.y && center.y < height){
+			//フォーカス取得、注目
+			Focus();
+			See(center.x, center.y);
+
+			//ズーム時パラメタ設定
 			zoomable = false;
 			if(scale < zoomedScale){
 				//拡大率設定
@@ -108,9 +114,14 @@ void WINDOW::Draw(unsigned nff){
 	glEnd();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//必要ならマウスカーソル描画
+	if(focused == this){
+	}
 }
 
 WINDOW::~WINDOW(){
+	UnFocus();
 	node.Detach();
 	if(tID){
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -122,7 +133,6 @@ WINDOW::~WINDOW(){
 
 //////イベント処理関連
 void WINDOW::AtCreate(XCreateWindowEvent& e, unsigned rw, unsigned rh){
-printf("create(%lu/%lu).\n", e.window, e.parent);
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(!w){
 		//追随して生成
@@ -133,7 +143,6 @@ printf("create(%lu/%lu).\n", e.window, e.parent);
 void WINDOW::AtMap(XMapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
-printf("map(%lu).\n", e.window);
 		//テクスチャ割り当て、初期画像設定
 		(*w).AssignTexture();
 		//map状態をXの窓に追随(trueなので以後Drawする)
@@ -143,7 +152,6 @@ printf("map(%lu).\n", e.window);
 void WINDOW::AtDestroy(XDestroyWindowEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
-printf("destroy(%lu).\n", e.window);
 		//外部でDestroyされたウインドウに同期する
 		delete w;
 	}
@@ -151,26 +159,83 @@ printf("destroy(%lu).\n", e.window);
 void WINDOW::AtUnmap(XUnmapEvent& e){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(w){
-printf("unmap(%lu).\n", e.window);
 		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
+		if(focused == w){
+			focused = w;
+		}
 		(*w).mapped = false;
 	}
 }
-void WINDOW::AtDamage(XDamageNotifyEvent& e){
+void WINDOW::AtDamage(XEvent& ev){
+	XDamageNotifyEvent& e(*(XDamageNotifyEvent*)&ev);
 	//知っている窓なら変化分を反映
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.drawable));
 	if(w){
-printf("damaged(%lu).\n", e.drawable);
 		(*w).OnDamage(e);
 	}
 }
+
+void WINDOW::AtKeyEvent(XEvent& e){
+	if(!!focused){
+		WINDOW& w(*focused);
+		if(w.mapped){
+			//キーイベント回送
+			e.xkey.display = w.xDisplay;
+			e.xkey.window = w.wID;
+			e.xkey.subwindow = None;
+			e.xkey.root = RootWindow(w.xDisplay, 0);
+			e.xkey.send_event = 1;
+			XSendEvent(w.xDisplay, w.wID, true, 0, &e);
+
+			//フォーカス窓を前面に移動
+			windowList.Pick(w.node);
+			return;
+		}else{
+			w.UnFocus();
+		}
+	}
+}
+
+void WINDOW::AtMappingEvent(XMappingEvent& e){
+puts("MappingNotify.");
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+		//全窓に配布
+		WINDOW& w(*i);
+		e.display = w.xDisplay;
+		e.window = w.wID;
+		XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
+	}
+}
+
+int WINDOW::seenX;
+int WINDOW::seenY;
+void WINDOW::AtButtonEvent(XButtonEvent& e){
+	if(!!focused){
+		WINDOW& w(*focused);
+		if(w.mapped){
+			//ボダンイベント回送
+			e.display = w.xDisplay;
+			e.window = w.wID;
+			e.root = RootWindow(w.xDisplay, 0);
+			e.x = seenX;
+			e.y = seenY;
+			e.x_root = w.vx + e.x;
+			e.y_root = w.vy + e.y;
+			e.send_event = 1;
+			XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
+		}
+	}
+}
+
+
+
+///// 個別イベントハンドラ
 
 void WINDOW::OnDamage(XDamageNotifyEvent& e){
 	if(!mapped){
 		//非map状態では窓のキャプチャはできない
 		return;
 	}
-printf("area:%d %d %d %d.\n", e.area.x, e.area.y, e.area.width, e.area.height);
 
 	//変化分を取得したと通知
 	XDamageSubtract(xDisplay, e.damage, None, None);
@@ -266,11 +331,14 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	if(!vx && !vy && width != rootWidth && height != rootHeight){
 		//未指定なので最適な場所を探索して移動
 		//TODO:画面をグリッド状に走査しgravity位置からの距離及び窓の重なり面積をポイントとしてポイントが最も小さい位置を採用する。重なり面積は重なっているかどうかではなく重なっている窓それぞれについて加算する。
-		const int gx(rootWidth / 2);
-		const int gy(rootHeight / 2);
+		const int gx(rootWidth * 0.5);
+		const int gy(rootHeight * 0.5);
 
 		//場所の絞り込み
-		SeekPosition(rootWidth, rootHeight, 256, 256, gx, gy);
+		SeekPosition(
+			rootWidth - width,
+			rootHeight - height,
+			256, 256, gx, gy);
 		SeekPosition(vx + 256, vy + 256, 16, 16, gx, gy);
 		SeekPosition(vx + 16, vy + 16, 1, 1, gx, gy);
 	}
@@ -285,16 +353,16 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 }
 
 void WINDOW::SeekPosition(
-	unsigned hTo, unsigned vTo,
-	unsigned hStep, unsigned vStep,
+	int hTo, int vTo,
+	int hStep, int vStep,
 	int gx, int gy){
 	int tx(vx);
 	int ty(vy);
 	unsigned pt(~0U);
-	for(unsigned y(vy); y < vTo; y += vStep){
-		for(unsigned x(vx); x < hTo; x += hStep){
+	for(int y(vy); y < vTo; y += vStep){
+		for(int x(vx); x < hTo; x += hStep){
 			const unsigned p(
-				WindowPositionPoint((int)x, (int)y, gx, gy));
+				WindowPositionPoint(x, y, gx, gy));
 			if(p < pt){
 				//最小ペナルティが出たので値を差し替える
 				pt = p;
@@ -313,11 +381,11 @@ unsigned WINDOW::OverLen(int s0, int l0, int s1, int l1){
 	//重なりの長さを求める
 	if(s0 <= s1){
 		if(s1 < e0){
-			return e0 < e1 ? e0 - s1 : e1 - s1;
+			return (e0 < e1 ? e0 : e1) - s1;
 		}
 	}else{
 		if(s0 < e1){
-			return e1 < s0 ? e1 - s0 : e0 - s0;
+			return (e1 < e0 ? e1 : e0) - s0;
 		}
 	}
 	return 0;
@@ -338,8 +406,8 @@ unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
 		}
 		const unsigned hl(OverLen(x, width, w.vx, w.width));
 		const unsigned vl(OverLen(y, height, w.vy, w.height));
-// printf("penalty:%u(%d %d %d %d.\n", hl * vl, x, y, gx, gy);
-		p += (hl * vl) * 10000;
+		const unsigned p1(hl * vl);
+		p += p1 * p1;
 	}
 	return p;
 }
@@ -362,7 +430,6 @@ WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 void WINDOW::Move(int x, int y){
 	horiz = ((x + width*0.5) - (float)rootWidth/2.0) * scale;
 	vert = ((y + height*0.5) - (float)rootHeight/2.0) * scale;
-	printf("%f %f.\n", horiz, vert);
 
 	//四元数表現
 	QON::ROTATION v = { vert, 1, 0, 0 };
@@ -376,6 +443,34 @@ void WINDOW::Move(int x, int y){
 	XMoveWindow(xDisplay, wID, x, y);
 	vx = x;
 	vy = y;
+printf("%lu:%d %d(%d %d).\n", wID, x, y, width, height);
+}
+
+
+void WINDOW::Focus(){
+	if(focused != this){
+		XSetInputFocus(xDisplay, wID, RevertToParent, CurrentTime);
+		focused = this;
+	}
+}
+
+void WINDOW::UnFocus(){
+	if(focused == this){
+		focused = 0;
+	}
+}
+
+
+void WINDOW::See(int x, int y){
+	//視線カーソル移動
+	XWarpPointer(xDisplay,
+		None,
+		wID,
+		0, 0,
+		0, 0,
+		x, y);
+	seenX = x;
+	seenY = y;
 }
 
 

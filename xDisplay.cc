@@ -187,41 +187,27 @@ void XDISPLAY::EventHandler(){
 				WINDOW::AtUnmap(e.xunmap);
 				break;
 			case KeyPress:
-				static int window(-1);
-				if(window < 0){
-					window = XCreateSimpleWindow(
-						xDisplay,
-						rootWindowID,
-						320,
-						0,
-						640,
-						800,
-						0,
-						WhitePixel(xDisplay, 0),
-						0x3C4048);
-					XMapWindow(xDisplay, window);
-					//描画テスト
-					GC gc(XCreateGC(xDisplay, window, 0, 0));
-					XSetForeground(xDisplay, gc, 0x00ff0000);
-					XFillRectangle(xDisplay, window, gc, 100, 10, 200, 400);
-					XSetForeground(xDisplay, gc, 0x000000ff);
-					XFillArc(xDisplay, window, gc, 300, 400, 400, 400, 0, 360 * 64);
-					XSetForeground(xDisplay, gc, 0xD2DEF0);
-					XSetFont(xDisplay, gc, XLoadFont(xDisplay, "-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
-					const char* const str("Testwindow appers!");
-					XDrawString(xDisplay, window, gc, 200, 600, str, strlen(str));
-					XFreeGC(xDisplay, gc);
-				}else{
-					XUnmapWindow(xDisplay, window);
-					XDestroyWindow(xDisplay, window);
-					window = -1;
-				}
+#if 0
+				TestWindow();
+#endif
+			case KeyRelease:
+				WINDOW::AtKeyEvent(e);
 				break;
-			//TODO:MouseDown/Upは座標を作った上で裏画面へ回送
+			case MappingNotify:
+#if 1
+				XRefreshKeyboardMapping(&e.xmapping);
+#else
+				WINDOW::AtMappingEvent(e.xmapping);
+#endif
+				break;
+			case ButtonPress:
+			case ButtonRelease:
+				WINDOW::AtButtonEvent(e.xbutton);
+				break;
 			default:
 				if(e.type == damageBase + XDamageNotify){
 					//XDamageのイベント
-					WINDOW::AtDamage(*(XDamageNotifyEvent*)&e);
+					WINDOW::AtDamage(e);
 				}else{
 					//その他のイベント(裏画面へ転送)
 				}
@@ -231,6 +217,44 @@ void XDISPLAY::EventHandler(){
 }
 
 
+#ifdef TEST
+void XDISPLAY::TestWindow(){
+	if(testWindow < 0){
+		testWindow = XCreateSimpleWindow(
+			xDisplay,
+			rootWindowID,
+			320,
+			0,
+			640,
+			800,
+			0,
+			WhitePixel(xDisplay, 0),
+			0x3C4048);
+		XMapWindow(xDisplay, testWindow);
+		//描画テスト
+		GC gc(XCreateGC(xDisplay, testWindow, 0, 0));
+		XSetForeground(xDisplay, gc, 0x00ff0000);
+		XFillRectangle(xDisplay, testWindow, gc, 100, 10, 200, 400);
+		XSetForeground(xDisplay, gc, 0x000000ff);
+		XFillArc(xDisplay, testWindow, gc, 300, 400, 400, 400, 0, 360 * 64);
+		XSetForeground(xDisplay, gc, 0xD2DEF0);
+		XSetFont(xDisplay, gc, XLoadFont(xDisplay,
+			"-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
+		const char* const str("Testwindow appers!");
+		XDrawString(
+			xDisplay,
+			testWindow,
+			gc,
+			200, 600,
+			str, strlen(str));
+		XFreeGC(xDisplay, gc);
+	}else{
+		XUnmapWindow(xDisplay, testWindow);
+		XDestroyWindow(xDisplay, testWindow);
+		testWindow = -1;
+	}
+}
+#endif
 
 
 

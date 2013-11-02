@@ -8,6 +8,9 @@ include make.in
 libs= view/view.a headtracker/headtracker.a toolbox/qon/qon.a toolbox/input/input.a toolbox/cyclic/cyclic.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
 
 
+install: rwm
+	sudo cp rwm /usr/local/bin/
+
 test: rwm.test
 	./rwm.test
 

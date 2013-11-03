@@ -23,8 +23,12 @@ public:
 		glXSwapBuffers(xDisplay, rootWindowID);
 	};
 	void EventHandler();
+
+	//WINDOWのためのアクセサ
 	int Width(){ return width; };
 	int Height(){ return height; };
+	Display* XDisplay(){ return xDisplay; };
+	Window Root(){ return rootWindowID; };
 protected:
 	XDISPLAY(Display*);
 	void Setup();
@@ -44,7 +48,6 @@ protected:
 	};
 
 	//XDamage関連
-	Damage dID;
 	static int damageBase;
 	static int damage_err;
 

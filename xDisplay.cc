@@ -173,8 +173,7 @@ void XDISPLAY::EventHandler(){
 				if(e.xcreatewindow.window != rootWindowID &&
 				   e.xcreatewindow.parent == rootWindowID){
 					WINDOW::AtCreate(
-						e.xcreatewindow,
-						width, height);
+						e.xcreatewindow, *this);
 				}
 				break;
 			case MapNotify:

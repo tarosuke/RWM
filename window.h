@@ -22,15 +22,16 @@
 
 
 
+class XDISPLAY;
 class WINDOW{
 	WINDOW();
 public:
-	WINDOW(XCreateWindowEvent& e, unsigned rootWidth, unsigned rootHeight);
+	WINDOW(XCreateWindowEvent& e, XDISPLAY&);
 
 	static void DrawAll(const QON& headDir);
 
 	//根窓関連
-	static void AtCreate(XCreateWindowEvent&, unsigned rw, unsigned rh);
+	static void AtCreate(XCreateWindowEvent&, XDISPLAY&);
 	static void AtMap(XMapEvent&);
 	static void AtDestroy(XDestroyWindowEvent&);
 	static void AtUnmap(XUnmapEvent&);
@@ -44,7 +45,7 @@ private:
 	void Draw(unsigned numFormFront);
 
 	//X関連
-	Display* const xDisplay;
+	XDISPLAY& display;
 	const Window wID; //窓ID
 	Damage dID; //xDamageID
 
@@ -81,8 +82,6 @@ private:
 	int vy;
 	unsigned width;
 	unsigned height;
-	unsigned rootWidth;
-	unsigned rootHeight;
 
 	//窓生成、登録
 	void AssignTexture();

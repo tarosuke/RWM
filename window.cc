@@ -34,7 +34,7 @@ WINDOW* WINDOW::focused(0);
 WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		WINDOW& w(*i.Owner());
-		if(display == w.xDisplay && wID == w.wID){
+		if(display == w.display.XDisplay() && wID == w.wID){
 			return &w;
 		}
 	}
@@ -132,11 +132,11 @@ WINDOW::~WINDOW(){
 
 
 //////イベント処理関連
-void WINDOW::AtCreate(XCreateWindowEvent& e, unsigned rw, unsigned rh){
+void WINDOW::AtCreate(XCreateWindowEvent& e, XDISPLAY& xDisplay){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
 	if(!w){
 		//追随して生成
-		new WINDOW(e, rw, rh);
+		new WINDOW(e, xDisplay);
 	}
 }
 
@@ -180,12 +180,13 @@ void WINDOW::AtKeyEvent(XEvent& e){
 		WINDOW& w(*focused);
 		if(w.mapped){
 			//キーイベント回送
-			e.xkey.display = w.xDisplay;
+			Display* d(w.display.XDisplay());
+			e.xkey.display = d;
 			e.xkey.window = w.wID;
 			e.xkey.subwindow = None;
-			e.xkey.root = RootWindow(w.xDisplay, 0);
+			e.xkey.root = w.display.Root();;
 			e.xkey.send_event = 1;
-			XSendEvent(w.xDisplay, w.wID, true, 0, &e);
+			XSendEvent(d, w.wID, true, 0, &e);
 
 			//フォーカス窓を前面に移動
 			windowList.Pick(w.node);
@@ -201,9 +202,9 @@ puts("MappingNotify.");
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
 		//全窓に配布
 		WINDOW& w(*i);
-		e.display = w.xDisplay;
+		e.display = w.display.XDisplay();
 		e.window = w.wID;
-		XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
+		XSendEvent(w.display.XDisplay(), w.wID, true, 0, (XEvent*)&e);
 	}
 }
 
@@ -214,15 +215,15 @@ void WINDOW::AtButtonEvent(XButtonEvent& e){
 		WINDOW& w(*focused);
 		if(w.mapped){
 			//ボダンイベント回送
-			e.display = w.xDisplay;
+			e.display = w.display.XDisplay();
 			e.window = w.wID;
-			e.root = RootWindow(w.xDisplay, 0);
+			e.root = RootWindow(w.display.XDisplay(), 0);
 			e.x = seenX;
 			e.y = seenY;
 			e.x_root = w.vx + e.x;
 			e.y_root = w.vy + e.y;
 			e.send_event = 1;
-			XSendEvent(w.xDisplay, w.wID, true, 0, (XEvent*)&e);
+			XSendEvent(w.display.XDisplay(), w.wID, true, 0, (XEvent*)&e);
 		}
 	}
 }
@@ -238,11 +239,11 @@ void WINDOW::OnDamage(XDamageNotifyEvent& e){
 	}
 
 	//変化分を取得したと通知
-	XDamageSubtract(xDisplay, e.damage, None, None);
+	XDamageSubtract(display.XDisplay(), e.damage, None, None);
 
 	//変化分をwImageへ取得
 	XImage* wImage(XGetImage(
-		xDisplay,
+		display.XDisplay(),
 		wID,
 		e.area.x,
 		e.area.y,
@@ -276,7 +277,7 @@ void WINDOW::AssignTexture(){
 	const int h(height);
 
 	XImage* wImage(XGetImage(
-		xDisplay, wID, 0, 0, width, height, AllPlanes, ZPixmap));
+		display.XDisplay(), wID, 0, 0, width, height, AllPlanes, ZPixmap));
 
 	//テクスチャの生成
 	if(!tID){
@@ -307,8 +308,8 @@ void WINDOW::AssignTexture(){
 }
 
 
-WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
-	xDisplay(e.display),
+WINDOW::WINDOW(XCreateWindowEvent& e, XDISPLAY& xDisplay) :
+	display(xDisplay),
 	wID(e.window),
 	node(*this),
 	mapped(false),
@@ -316,9 +317,9 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	vx(e.x),
 	vy(e.y),
 	width(e.width),
-	height(e.height),
-	rootWidth(rw),
-	rootHeight(rh){
+	height(e.height){
+	const unsigned rootWidth(display.Width());
+	const unsigned rootHeight(display.Height());
 
 	//窓リストへ登録
 	windowList.Insert(node);
@@ -326,7 +327,7 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	//幅と高さ(rw=π=180°とした時の半径baseDistance上の弧の長さ)
 	//位置の時は弧の長さ、大きさの時は(弦の長さではなくただの)長さとして使う
 	//ピクセルサイズを乗じると空間中の長さになる値
-	scale = baseDistance * M_PI / rw;
+	scale = baseDistance * M_PI / rootWidth;
 
 	if(!vx && !vy && width != rootWidth && height != rootHeight){
 		//未指定なので最適な場所を探索して移動
@@ -347,9 +348,9 @@ WINDOW::WINDOW(XCreateWindowEvent& e, unsigned rw, unsigned rh) :
 	Move(vx, vy);
 
 	//拡張イベントを設定
-	XSelectInput(xDisplay, wID, PropertyChangeMask);
+	XSelectInput(display.XDisplay(), wID, PropertyChangeMask);
 	dID = XDamageCreate(
-		xDisplay, wID, XDamageReportNonEmpty);
+		display.XDisplay(), wID, XDamageReportNonEmpty);
 }
 
 void WINDOW::SeekPosition(
@@ -428,6 +429,8 @@ WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 }
 
 void WINDOW::Move(int x, int y){
+	const unsigned rootWidth(display.Width());
+	const unsigned rootHeight(display.Height());
 	horiz = ((x + width*0.5) - (float)rootWidth/2.0) * scale;
 	vert = ((y + height*0.5) - (float)rootHeight/2.0) * scale;
 
@@ -440,7 +443,7 @@ void WINDOW::Move(int x, int y){
 	center = hq;
 
 	//フレームバッファ上の窓も移動
-	XMoveWindow(xDisplay, wID, x, y);
+	XMoveWindow(display.XDisplay(), wID, x, y);
 	vx = x;
 	vy = y;
 printf("%lu:%d %d(%d %d).\n", wID, x, y, width, height);
@@ -449,7 +452,7 @@ printf("%lu:%d %d(%d %d).\n", wID, x, y, width, height);
 
 void WINDOW::Focus(){
 	if(focused != this){
-		XSetInputFocus(xDisplay, wID, RevertToParent, CurrentTime);
+		XSetInputFocus(display.XDisplay(), wID, RevertToParent, CurrentTime);
 		focused = this;
 	}
 }
@@ -463,7 +466,7 @@ void WINDOW::UnFocus(){
 
 void WINDOW::See(int x, int y){
 	//視線カーソル移動
-	XWarpPointer(xDisplay,
+	XWarpPointer(display.XDisplay(),
 		None,
 		wID,
 		0, 0,

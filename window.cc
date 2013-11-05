@@ -22,7 +22,7 @@
 
 
 //窓までの距離
-float WINDOW::baseDistance(0.6);
+float WINDOW::baseDistance(0.8);
 
 //窓全体関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;

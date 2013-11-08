@@ -39,6 +39,7 @@ public:
 	static void AtKeyEvent(XEvent&);
 	static void AtMappingEvent(XMappingEvent&);
 	static void AtButtonEvent(XButtonEvent&);
+	static void AtConfigureEvent(XConfigureEvent&);
 
 private:
 	~WINDOW(); //自身をwindowListから削除して消滅
@@ -75,7 +76,10 @@ private:
 	static float baseDistance;
 	QON center; //中心の向き
 
-	void Move(int x, int y);
+	void Moved(int x, int y); //仮想空間側の窓だけ移動
+	void Move(int x, int y); //X側の窓も移動
+	void Resized(unsigned w, unsigned h); //仮想空間側の窓をリサイズ、テクスチャ再設定
+	void Resize(unsigned w, unsigned h); //X側の窓だけリサイズ(仮想空間側はXConfigureEventにて追随)
 
 	//ピクセル位置、サイズ(scaleを乗じたサイズで描画)
 	int vx;

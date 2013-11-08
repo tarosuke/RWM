@@ -228,6 +228,21 @@ void WINDOW::AtButtonEvent(XButtonEvent& e){
 	}
 }
 
+void WINDOW::AtConfigureEvent(XConfigureEvent& e){
+	WINDOW* wp(FindWindowByID(e.display, e.window));
+	if(wp){
+		WINDOW& w(*wp);
+		if(w.vx != e.x || w.vy != e.y){
+			//移動を検出
+			w.Moved(e.x, e.y);
+		}
+		if(w.width != (unsigned)e.width ||
+		   w.height != (unsigned)e.height){
+			//リサイズを検出
+			w.Resized(e.width, e.height);
+		}
+	}
+}
 
 
 ///// 個別イベントハンドラ
@@ -428,7 +443,7 @@ WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 	return r;
 }
 
-void WINDOW::Move(int x, int y){
+void WINDOW::Moved(int x, int y){
 	const unsigned rootWidth(display.Width());
 	const unsigned rootHeight(display.Height());
 	horiz = ((x + width*0.5) - (float)rootWidth/2.0) * scale;
@@ -442,11 +457,20 @@ void WINDOW::Move(int x, int y){
 	hq *= vq;
 	center = hq;
 
-	//フレームバッファ上の窓も移動
-	XMoveWindow(display.XDisplay(), wID, x, y);
+	//フレームバッファ上表現
 	vx = x;
 	vy = y;
-printf("%lu:%d %d(%d %d).\n", wID, x, y, width, height);
+	printf("%lu:%d %d(%d %d).\n", wID, x, y, width, height);
+}
+
+void WINDOW::Move(int x, int y){
+	//仮想空間側の窓を移動
+	Moved(x, y);
+
+	//それがXの窓ならフレームバッファ側の窓を移動
+	if(wID){
+		XMoveWindow(display.XDisplay(), wID, x, y);
+	}
 }
 
 
@@ -474,6 +498,22 @@ void WINDOW::See(int x, int y){
 		x, y);
 	seenX = x;
 	seenY = y;
+}
+
+void WINDOW::Resized(unsigned w, unsigned h){
+	width = w;
+	height = h;
+
+	//テクスチャの入れ替え
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDeleteTextures(1, &tID);
+	tID = 0;
+	AssignTexture();
+}
+
+void WINDOW::Resize(unsigned w, unsigned h){
+	//X側の窓をリサイズ(仮想空間側はConfigureNotifyで追随)
+	XResizeWindow(display.XDisplay(), wID, width, height);
 }
 
 

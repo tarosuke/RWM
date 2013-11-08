@@ -185,6 +185,9 @@ void XDISPLAY::EventHandler(){
 			case UnmapNotify:
 				WINDOW::AtUnmap(e.xunmap);
 				break;
+			case ConfigureNotify:
+				WINDOW::AtConfigureEvent(e.xconfigure);
+				break;
 			case KeyPress:
 #if 0
 				TestWindow();

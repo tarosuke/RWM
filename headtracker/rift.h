@@ -28,7 +28,6 @@ private:
 	VQON position; //位置
 	double gravity; //おそらく重力によるものと思われる平均重力加速度
 
-	static const double magMaxValue = 0x7fffffff;
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値
 	bool magReadyX;

@@ -13,6 +13,8 @@ public:
 	virtual ~HEADTRACKER(){};
 	virtual const QON& GetDirection() const{ return direction; };
 protected:
+	void Rotate(const QON& r){ direction *= r; };
+private:
 	QON direction;
 };
 

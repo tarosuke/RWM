@@ -237,6 +237,8 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	offset *= 0.5;
 	mag -= offset;
 	mag.Normalize();
-	magneticField = mag;
+	mag *= 1.0 / magAverageRatio;
+	magneticField *= 1.0 - 1.0 / magAverageRatio;
+	magneticField += mag;
 }
 

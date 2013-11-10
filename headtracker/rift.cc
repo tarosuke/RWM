@@ -73,25 +73,6 @@ RIFT::~RIFT(){
 }
 
 
-QON RIFT::PickHorizonal(double ratio){
-	QON r;
-	if(-0.5 < direction.i && direction.i < 0.5 &&
-		-0.5 < direction.k && direction.k < 0.5){
-		//pitchとrollが-60°〜60°の間だけ機能
-		r.w = direction.w;
-		r.j = direction.j;
-		r.i = r.k = 0;
-		direction.j *= 1.0 - ratio;
-		r.j *= ratio;
-		direction.Normalize();
-		r.Normalize();
-	}
-	return r;
-}
-
-
-
-
 void RIFT::SensorThread(){
 	fd_set readset;
 
@@ -202,14 +183,14 @@ void RIFT::Correction(){
 
 	//正しいはずの方向
 	VQON down(0, -1, 0); //こうなっているはずの値
-	down.ReverseRotate(direction);
+	down.ReverseRotate(GetDirection());
 
 	//重力方向との差分で姿勢を補正
 	QON differ(acc, down);
 	const double in(acc.In(down) * 10);
 	const double nearRatio(in * in * in * in / 100);
 	differ *= 0.005 / (0.5 + gravityUnreliability + nearRatio);
-	direction *= differ;
+	Rotate(differ);
 
 #if 0
 	//磁気による姿勢補正
@@ -226,7 +207,7 @@ void RIFT::Correction(){
 
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
-	direction *= delta;
+	Rotate(delta);
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
@@ -235,7 +216,7 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 
 	//位置や速度を求める
 	if(dt <= 0.02){ //dtが異常に大きい時は位置更新しない
-		acc.Rotate(direction);
+		acc.Rotate(GetDirection());
 		acc.j -= gravity;
 		acc *= dt;
 		velocity += acc;

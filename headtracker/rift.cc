@@ -50,8 +50,8 @@ int RIFT::OpenDevice(){
 RIFT::RIFT() :
 	fd(OpenDevice()),
 	gravity(G),
-	magMax(-magMaxValue, -magMaxValue, -magMaxValue),
-	magMin(magMaxValue, magMaxValue, magMaxValue),
+	magMax(-FP_INFINITE, -FP_INFINITE, -FP_INFINITE),
+	magMin(FP_INFINITE, FP_INFINITE, FP_INFINITE),
 	magReadyX(false),
 	magReadyY(false),
 	magReadyZ(false){
@@ -143,9 +143,10 @@ void RIFT::Decode(const char* buff){
 		DecodeSensor((unsigned char*)buff + 8 + 16 * i, sample[i].accel);
 		DecodeSensor((unsigned char*)buff + 16 + 16 * i, sample[i].rotate);
 	}
+	//磁気センサのデータ取得(座標系が違うのでY-Zを交換)
 	mag[0] = *(short*)&buff[56];
-	mag[1] = *(short*)&buff[58];
-	mag[2] = *(short*)&buff[60];
+	mag[1] = *(short*)&buff[60];
+	mag[2] = *(short*)&buff[58];
 
 	static unsigned short prevTime;
 	const unsigned short deltaT(timestamp - prevTime);
@@ -229,7 +230,6 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
-#if 0
 	VQON mag(axis, 1.0);
 	magMax.Max(mag);
 	magMin.Min(mag);
@@ -237,8 +237,8 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	offset *= 0.5;
 	mag -= offset;
 	mag.Normalize();
-	magneticField = mag;
-// mag.print("mag");
-#endif
+	mag *= 1.0 / magAverageRatio;
+	magneticField *= 1.0 - 1.0 / magAverageRatio;
+	magneticField += mag;
 }
 

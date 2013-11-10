@@ -94,18 +94,13 @@ QON RIFT::PickHorizonal(double ratio){
 
 void RIFT::SensorThread(){
 	fd_set readset;
-	struct timeval waitTime;
 
 	FD_ZERO(&readset);
 	FD_SET(fd, &readset);
 
 	for(;; pthread_testcancel()){
-		// KeepAlive処理のために500msまでは待つ
-		waitTime.tv_sec = 0;
-		waitTime.tv_usec = 500000;
-
 		int result(select(
-			fd + 1, &readset, NULL, NULL, &waitTime));
+			fd + 1, &readset, NULL, NULL, NULL));
 
 		if(result && FD_ISSET( fd, &readset )){
 			char buff[256];
@@ -117,7 +112,7 @@ void RIFT::SensorThread(){
 			}
 		}
 
-		// Send a keepalive - this is too often.  Need to only send on keepalive interval
+		//KeepAliveを送信
 		char buff[5];
 		buff[0] = 8;
 		buff[1] = buff[2] = 0; //command ID

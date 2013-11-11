@@ -54,7 +54,8 @@ RIFT::RIFT() :
 	magMin(FP_INFINITE, FP_INFINITE, FP_INFINITE),
 	magReadyX(false),
 	magReadyY(false),
-	magReadyZ(false){
+	magReadyZ(false),
+	magneticField(0.0, 0.0, -0.01){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
@@ -193,22 +194,24 @@ void RIFT::Correction(){
 	differ *= 0.005 / (0.5 + gravityUnreliability + nearRatio);
 	Rotate(differ);
 
-#if 0
 	//磁気による姿勢補正
 	VQON n(0.0, 0.0, -1.0); //北
-	n.ReverseRotate(direction);
+	QON hd(GetDirection());
+	n.ReverseRotate(hd);
 
 	//北との差分で姿勢を補正
 	QON magDiffer(magneticField, n);
-	magDiffer *= 0.00001;
-	direction *= magDiffer;
-#endif
+// 	magDiffer.i = magDifd5fer.k = 0.0; //水平角のみ補正
+	magDiffer.Normalize();
+	magDiffer *= 0.0001;
+	Rotate(magDiffer);
 }
 
 
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
 	Rotate(delta);
+	magneticField.ReverseRotate(delta);
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){

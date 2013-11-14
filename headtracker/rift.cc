@@ -165,13 +165,17 @@ void RIFT::Decode(const char* buff){
 	}
 
 	// 磁界値取得
+#if 0
 	UpdateMagneticField(mag);
+#endif
 
 	//補正
 	Correction();
 }
 
 void RIFT::Correction(){
+	const QON direction(GetDirection());
+
 	//重力による姿勢補正
 	const double g(accel.Length());
 	const double d((gravity - g) * 50);
@@ -185,7 +189,7 @@ void RIFT::Correction(){
 
 	//正しいはずの方向
 	VQON down(0, -1, 0); //こうなっているはずの値
-	down.ReverseRotate(GetDirection());
+	down.ReverseRotate(direction);
 
 	//重力方向との差分で姿勢を補正
 	QON differ(acc, down);
@@ -195,16 +199,21 @@ void RIFT::Correction(){
 	Rotate(differ);
 
 	//磁気による姿勢補正
-	VQON n(0.0, 0.0, -1.0); //北
-	QON hd(GetDirection());
-	n.ReverseRotate(hd);
+#if 0
+	VQON north(-1.0, 0.0, 0.0); //北(のはずの方向)
+	north.ReverseRotate(direction); //機体基準に変換
 
 	//北との差分で姿勢を補正
-	QON magDiffer(magneticField, n);
-// 	magDiffer.i = magDifd5fer.k = 0.0; //水平角のみ補正
-	magDiffer.Normalize();
-	magDiffer *= 0.0001;
+	QON magDiffer(magneticField, north);
+// 	magDiffer *= direction; //絶対方位に変換
+// 	magDiffer.i = magDiffer.k = 0.0; //水平角以外をキャンセル
+// 	magDiffer *= -direction; //機体基準に変換
+
+// 	magDiffer.Normalize();
+	const double mdr(magDiffer.Length());
+	magDiffer *= 0.001 * mdr * mdr;
 	Rotate(magDiffer);
+#endif
 }
 
 
@@ -234,12 +243,18 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 
 void RIFT::UpdateMagneticField(const int axis[3]){
 	VQON mag(axis, 1.0);
+
+	//キャリブレーション
 	magMax.Max(mag);
 	magMin.Min(mag);
 	VQON offset(magMax + magMin);
 	offset *= 0.5;
+
+	//磁化分を除去
 	mag -= offset;
 	mag.Normalize();
+
+	//平均化処理
 	mag *= 1.0 / magAverageRatio;
 	magneticField *= 1.0 - 1.0 / magAverageRatio;
 	magneticField += mag;

@@ -36,7 +36,7 @@ private:
 	bool magReadyX;
 	bool magReadyY;
 	bool magReadyZ;
-	VQON magneticField; //磁気の向き
+	VQON magneticField; //磁気の向き(機体基準)
 
 	float temperature; // センサ表面温度[℃]
 

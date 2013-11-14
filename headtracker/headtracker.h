@@ -10,8 +10,8 @@
 class HEADTRACKER{
 public:
 	HEADTRACKER(){};
-	virtual ~HEADTRACKER(){};
-	virtual const QON& GetDirection() const{ return direction; };
+	~HEADTRACKER(){};
+	const QON& GetDirection() const{ return direction; };
 protected:
 	void Rotate(const QON& r){ direction *= r; };
 private:

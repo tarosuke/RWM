@@ -173,7 +173,6 @@ void RIFTVIEW::PreDraw(){
 	const float sr(nearDistance / (realDistance * 2));
 	const int hw(width / 2);
 	const int rhw(realWidth / 2);
-	const double inset(0.1453);
 
 	//左目
 	glViewport(0, 0, hw, height);
@@ -191,7 +190,6 @@ void RIFTVIEW::PostDraw(){
 	const float sr(nearDistance / (realDistance * 2));
 	const int hw(width / 2);
 	const int rhw(realWidth / 2);
-	const double inset(0.1453);
 
 	glEndList(); //記録完了
 

@@ -33,6 +33,6 @@ private:
 	const int displayList;
 
 	//大きさなど
-	static const double inset = 0.1453;
+	static const double inset = 0.1453 + 0.04;
 };
 #endif

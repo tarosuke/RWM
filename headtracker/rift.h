@@ -30,13 +30,13 @@ private:
 	double gravity; //おそらく重力によるものと思われる平均重力加速度
 
 	//磁気センサ
-	const static int magAverageRatio = 1000;
+	const static int magAverageRatio = 10000;
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値
 	bool magReadyX;
 	bool magReadyY;
 	bool magReadyZ;
-	VQON magneticField; //磁気の向き
+	VQON magneticField; //磁気の向き(機体基準)
 
 	float temperature; // センサ表面温度[℃]
 

@@ -165,9 +165,7 @@ void RIFT::Decode(const char* buff){
 	}
 
 	// 磁界値取得
-#if 0
 	UpdateMagneticField(mag);
-#endif
 
 	//補正
 	Correction();
@@ -242,6 +240,7 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
+#if 0
 	VQON mag(axis, 1.0);
 
 	//キャリブレーション
@@ -258,5 +257,6 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	mag *= 1.0 / magAverageRatio;
 	magneticField *= 1.0 - 1.0 / magAverageRatio;
 	magneticField += mag;
+#endif
 }
 

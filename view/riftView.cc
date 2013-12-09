@@ -110,8 +110,8 @@ RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 
 		//歪み情報テクスチャを作る
 		struct DISTORE_ELEMENT{
-			unsigned char u;
-			unsigned char v;
+			float u;
+			float v;
 		}__attribute__((packed)) *body((DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
 		assert(body);
 		for(int v(0); v < height; v++){
@@ -126,19 +126,26 @@ RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 				}else{
 #endif
 					P2 tc(GetTrueCoord(u, v));
-					const float uu(tc.u - u);
-					const float vv(tc.v - v);
-					if(tc.u < 0.0 || width / 2 <= tc.u ||
-					   tc.v < 0.0 || height <= tc.v ||
-					   uu < -127 || 127 < uu ||
-					   vv < -127 || 127 < vv){
-						b.u = d.u = b.v = d.v = 0;
-					}else{
-						b.u = uu + 128;
-						d.u = -uu + 128;
-						b.v =
-						d.v = vv + 128;
+					tc.u /= width;
+					tc.v /= height;
+
+					//座標補正
+					if(tc.u < 0.0){
+						tc.u = 0.0;
+					}else if(0.5 < tc.u){
+						tc.u = 0.5;
 					}
+					if(tc.v < 0.0){
+						tc.v = 0.0;
+					}else if(1.0 < tc.v){
+						tc.v = 1.0;
+					}
+
+					// 座標を書き込む
+					b.u = tc.u;
+					d.u = 1.0 - tc.u;
+					b.v =
+					d.v = tc.v;
 #if DISTORFIX
 				}
 #endif
@@ -154,8 +161,8 @@ RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 		assert(glGetError() == GL_NO_ERROR);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RG,
-			width, height, 0, GL_RG, GL_UNSIGNED_BYTE, body);
+			GL_TEXTURE_2D, 0, GL_RG32F,
+			width, height, 0, GL_RG, GL_FLOAT, body);
 		free(body);
 		assert(glGetError() == GL_NO_ERROR);
 

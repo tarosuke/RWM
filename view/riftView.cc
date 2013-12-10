@@ -110,14 +110,16 @@ RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 
 		//歪み情報テクスチャを作る
 		struct DISTORE_ELEMENT{
-			unsigned char u;
-			unsigned char v;
+			float u;
+			float v;
 		}__attribute__((packed)) *body((DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
 		assert(body);
+		const float rightSide((float)(width - 1)/width);
+		const float halfRight((float)(width/2 - 2)/width);
 		for(int v(0); v < height; v++){
 			for(int u(0); u < width / 2; u++){
 				DISTORE_ELEMENT& b(body[v*width + u]);
-				DISTORE_ELEMENT& d(body[v*width + width - u - 1]);
+				DISTORE_ELEMENT& d(body[v*width + width-u-1]);
 #if DISTORFIX
 				if((320 <= u && u < 325) ||
 				   (400 <= v && v < 405)){
@@ -126,18 +128,18 @@ RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 				}else{
 #endif
 					P2 tc(GetTrueCoord(u, v));
-					const float uu(tc.u - u);
-					const float vv(tc.v - v);
-					if(tc.u < 0.0 || width / 2 <= tc.u ||
-					   tc.v < 0.0 || height <= tc.v ||
-					   uu < -127 || 127 < uu ||
-					   vv < -127 || 127 < vv){
-						b.u = d.u = b.v = d.v = 0;
+					tc.u /= width;
+					tc.v /= height;
+					if(tc.u < 0.0 || halfRight <= tc.u ||
+					   tc.v < 0.0 || 1.0 <= tc.v){
+						// 範囲外
+						b.u = d.u = b.v = d.v = -2.0;
 					}else{
-						b.u = uu + 128;
-						d.u = -uu + 128;
+						// 座標を書き込む
+						b.u = tc.u;
+						d.u = rightSide - tc.u;
 						b.v =
-						d.v = vv + 128;
+						d.v = tc.v;
 					}
 #if DISTORFIX
 				}
@@ -154,8 +156,8 @@ RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 		assert(glGetError() == GL_NO_ERROR);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RG,
-			width, height, 0, GL_RG, GL_UNSIGNED_BYTE, body);
+			GL_TEXTURE_2D, 0, GL_RG16F,
+			width, height, 0, GL_RG, GL_FLOAT, body);
 		free(body);
 		assert(glGetError() == GL_NO_ERROR);
 
@@ -262,7 +264,7 @@ float RIFTVIEW::D(float dd){
 }
 
 RIFTVIEW::P2 RIFTVIEW::GetTrueCoord(float u, float v){
-	const P2 lens = { (float)1.1453 * width/4, (float)height / 2 };
+	const P2 lens = { (1 + inset) * width/4, (float)height / 2 };
 
 	//レンズ位置からの相対座標へ変換
 	const P2 l = { u - lens.u, v - lens.v };

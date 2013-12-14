@@ -118,6 +118,33 @@ void XDISPLAY::Setup(){
 		KeyReleaseMask);
 	XFlush( xDisplay );
 	XSync(xDisplay, false);
+
+	//既存窓取得
+	Window r;
+	Window p;
+	unsigned num;
+	Window* wl;
+	XQueryTree(xDisplay, rootWindowID, &r, &p, &wl, &num);
+	if(!!wl){
+		Window* w(wl);
+		for(unsigned n(0); n < num; n++, w++){
+			XWindowAttributes attr;
+			XGetWindowAttributes(xDisplay, *w, &attr);
+			XCreateWindowEvent e;
+			e.type = CreateNotify;
+			e.display = xDisplay;
+			e.parent = rootWindowID;
+			e.window = *w;
+			e.x = attr.x;
+			e.y = attr.y;
+			e.width = attr.width;
+			e.height = attr.height;
+			e.border_width = attr.border_width;
+			e.override_redirect = attr.override_redirect;
+			new WINDOW(e, *this, attr.map_state == IsViewable);
+		}
+		XFree(wl);
+	}
 }
 
 void XDISPLAY::SetupGL(){

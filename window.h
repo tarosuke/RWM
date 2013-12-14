@@ -26,7 +26,7 @@ class XDISPLAY;
 class WINDOW{
 	WINDOW();
 public:
-	WINDOW(XCreateWindowEvent& e, XDISPLAY&);
+	WINDOW(XCreateWindowEvent& e, XDISPLAY&, bool mapState = false);
 
 	static void DrawAll(const QON& headDir);
 

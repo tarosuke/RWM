@@ -134,7 +134,7 @@ WINDOW::~WINDOW(){
 //////イベント処理関連
 void WINDOW::AtCreate(XCreateWindowEvent& e, XDISPLAY& xDisplay){
 	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
-	if(!w){
+	if(!w && !e.override_redirect){
 		//追随して生成
 		new WINDOW(e, xDisplay);
 	}
@@ -323,11 +323,11 @@ void WINDOW::AssignTexture(){
 }
 
 
-WINDOW::WINDOW(XCreateWindowEvent& e, XDISPLAY& xDisplay) :
+WINDOW::WINDOW(XCreateWindowEvent& e, XDISPLAY& xDisplay, bool mapState) :
 	display(xDisplay),
 	wID(e.window),
 	node(*this),
-	mapped(false),
+	mapped(mapState),
 	tID(0),
 	vx(e.x),
 	vy(e.y),
@@ -366,6 +366,11 @@ WINDOW::WINDOW(XCreateWindowEvent& e, XDISPLAY& xDisplay) :
 	XSelectInput(display.XDisplay(), wID, PropertyChangeMask);
 	dID = XDamageCreate(
 		display.XDisplay(), wID, XDamageReportNonEmpty);
+
+	//mapStateが真ならテクスチャを割り当てておく
+	if(mapState){
+		AssignTexture();
+	}
 }
 
 void WINDOW::SeekPosition(

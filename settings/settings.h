@@ -8,9 +8,13 @@
 
 #include "db.h"
 
-class SETTINGS : private DB{
+class SETTINGS : public DB{
 public:
-	SETTINGS() : DB("rwm.settings"){};
+	SETTINGS();
+
+private:
+	static char* path;
+	static const char* GetPath();
 };
 
 extern SETTINGS settings;

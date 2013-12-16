@@ -28,4 +28,4 @@ rwm
 *.svg
 *.map
 *.d
-rwm.settings
+.rwm.settings

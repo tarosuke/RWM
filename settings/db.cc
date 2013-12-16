@@ -9,31 +9,34 @@
 #include "db.h"
 
 
-DB::DB(const char* path) throw(gdbm_error) : replaceable(true){
-	try{
-		db = gdbm_open(
-			const_cast<char*>(path),
-			512, GDBM_WRCREAT, 0600, 0);
-		if(!db){
-			throw gdbm_errno;
-		}
-	}
-	catch(void*){}
+DB::DB(const char* path) : replaceable(true){
+	db = gdbm_open(
+		const_cast<char*>(path),
+		512, GDBM_WRCREAT, 0600, 0);
 }
 
 void DB::Store(const char* key_, const void* content_, unsigned len){
+	if(!IsAvail()){
+		return;
+	}
 	datum key = { const_cast<char*>(key_), (int)(strlen(key_) + 1) };
 	datum content = { (char*)const_cast<void*>(content_), (int)len };
 	gdbm_store(db, key, content, GDBM_REPLACE);
 }
 
-void DB::Fetch(const char* key_, void* content_, unsigned len){
+bool DB::Fetch(const char* key_, void* content_, unsigned len){
+	if(!IsAvail()){
+		return false;
+	}
 	datum key = { const_cast<char*>(key_), (int)(strlen(key_) + 1) };
 	datum content(gdbm_fetch(db, key));
-	memcpy(
-		content_, content.dptr,
-		(int)len < content.dsize ? (int)len : content.dsize);
-	free(content.dptr);
+	if(content.dptr){
+		memcpy(content_, content.dptr,
+			(int)len < content.dsize ? (int)len : content.dsize);
+		free(content.dptr);
+		return true;
+	}
+	return false;
 }
 
 
@@ -44,8 +47,12 @@ template<> void DB::Store(const char* key, const char* body){
 	Store(key, body, strlen(body) + 1);
 }
 
-template<typename T> void DB::Fetch(const char* key, T* body, unsigned maxLen){
+template<typename T> bool DB::Fetch(const char* key, T* body, unsigned maxLen){
+	return Fetch(key, body, sizeof(T));
 }
 
-template<> void DB::Fetch(const char* key, const char* body, unsigned maxLen){
+template<> bool DB::Fetch(const char* key, char* body, unsigned maxLen){
+	const bool stat(Fetch(key, body, maxLen));
+	body[stat ? maxLen - 1 : 0] = 0;
+	return stat;
 }

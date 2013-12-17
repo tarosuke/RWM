@@ -66,7 +66,7 @@ RIFT::RIFT() :
 	//過去の磁化情報があれば取得
 puts("loading...");
 	settings.Fetch("magMax", &magMax);
-	settings.Fetch("magMin", &magMax);
+	settings.Fetch("magMin", &magMin);
 magMax.print("fetch:magMax");
 magMin.print("fetch:magMin");
 
@@ -82,9 +82,9 @@ RIFT::~RIFT(){
 
 	//磁化情報を保存
 	settings.Store("magMax", &magMax);
-	settings.Store("magMin", &magMax);
-magMax.print("fetch:magMax");
-magMin.print("fetch:magMin");
+	settings.Store("magMin", &magMin);
+magMax.print("store:magMax");
+magMin.print("store:magMin");
 }
 
 
@@ -254,7 +254,7 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
-#if 0
+#if 1
 	VQON mag(axis, 1.0);
 
 	//キャリブレーション

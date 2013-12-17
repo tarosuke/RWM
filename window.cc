@@ -176,6 +176,15 @@ void WINDOW::AtDamage(XEvent& ev){
 }
 
 void WINDOW::AtKeyEvent(XEvent& e){
+	XKeyEvent& ke(e.xkey);
+	const unsigned testState(ShiftMask | ControlMask);
+	if(ke.type == KeyRelease &&
+	  (ke.state & testState) == testState){
+// 		  printf("keyCode:%x.\n", ke.keycode);
+		if(ke.keycode == 0x16){
+			VIEW::Quit();
+		}
+	}
 	if(!!focused){
 		WINDOW& w(*focused);
 		if(w.mapped){

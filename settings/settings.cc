@@ -20,14 +20,10 @@ SETTINGS::SETTINGS() : DB(GetPath()){
 
 const char* SETTINGS::GetPath(){
 	const char* fileName = ".rwm.settings";
-#if TEST
-	path = (char*)malloc(strlen(fileName);
-	strcpy(path, fileName);
-#else
 	const char* home(getenv("HOME"));
 	path = (char*)malloc(strlen(home) + strlen(fileName) + 2);
 	sprintf(path, "%s/%s", home, fileName);
-#endif
+
 	return path;
 }
 

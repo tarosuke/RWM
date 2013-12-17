@@ -10,6 +10,7 @@
 #include <linux/hidraw.h>
 
 #include "rift.h"
+#include <settings/settings.h>
 
 
 int RIFT::OpenDevice(){
@@ -62,6 +63,13 @@ RIFT::RIFT() :
 		return;
 	}
 
+	//過去の磁化情報があれば取得
+puts("loading...");
+	settings.Fetch("magMax", &magMax);
+	settings.Fetch("magMin", &magMax);
+magMax.print("fetch:magMax");
+magMin.print("fetch:magMin");
+
 	//センサデータ取得開始
 	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
 }
@@ -71,6 +79,12 @@ RIFT::~RIFT(){
 		pthread_cancel(sensorThread);
 		close(fd);
 	}
+
+	//磁化情報を保存
+	settings.Store("magMax", &magMax);
+	settings.Store("magMin", &magMax);
+magMax.print("fetch:magMax");
+magMin.print("fetch:magMin");
 }
 
 

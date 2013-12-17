@@ -5,7 +5,7 @@ COPTS += -IX11 -I.
 include make.in
 
 
-libs= view/view.a headtracker/headtracker.a toolbox/qon/qon.a extra/extra.a toolbox/input/input.a toolbox/cyclic/cyclic.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++
+libs= view/view.a headtracker/headtracker.a toolbox/qon/qon.a extra/extra.a settings/settings.a toolbox/input/input.a toolbox/cyclic/cyclic.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++ -lgdbm
 
 
 install: rwm

@@ -6,7 +6,6 @@
 #include <window.h>
 
 
-
 int main(int argc, char *argv[]){
 	static RIFTVIEW view;
 	view.Run();

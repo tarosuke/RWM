@@ -93,8 +93,8 @@ void VIEW::Run(){
 		//描画後処理
 		PostDraw();
 
-#if 1
-		head.ResetAzimuth(0.001);
+#if 0
+		head.ResetAzimuth(0.0001);
 #endif
 	}
 }

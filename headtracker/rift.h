@@ -24,13 +24,15 @@ private:
 	pthread_t sensorThread;
 
 	//加速度センサ
+	//TODO:magAverageRatioのように重力の補正もファストスタートする
 	VQON accel; //加速度
 	VQON velocity; //移動速度
 	VQON position; //位置
 	double gravity; //おそらく重力によるものと思われる平均重力加速度
 
 	//磁気センサ
-	const static int magAverageRatio = 10000;
+	const static int maxMagAverageRatio = 100000;
+	int magAverageRatio;
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値
 	bool magReadyX;

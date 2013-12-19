@@ -48,11 +48,13 @@ int RIFT::OpenDevice(){
 	return -1;
 }
 
+namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
 	fd(OpenDevice()),
 	gravity(G),
-	magMax(-FP_INFINITE, -FP_INFINITE, -FP_INFINITE),
-	magMin(FP_INFINITE, FP_INFINITE, FP_INFINITE),
+	magAverageRatio(100),
+	magMax(-MAXFLOAT, -MAXFLOAT, -MAXFLOAT),
+	magMin(MAXFLOAT, MAXFLOAT, MAXFLOAT),
 	magReadyX(false),
 	magReadyY(false),
 	magReadyZ(false),
@@ -211,21 +213,16 @@ void RIFT::Correction(){
 	Rotate(differ);
 
 	//磁気による姿勢補正
-#if 0
 	VQON north(-1.0, 0.0, 0.0); //北(のはずの方向)
-	north.ReverseRotate(direction); //機体基準に変換
+	VQON mag(magneticField);
+	mag.Rotate(direction); //絶対基準にする
 
 	//北との差分で姿勢を補正
-	QON magDiffer(magneticField, north);
-// 	magDiffer *= direction; //絶対方位に変換
-// 	magDiffer.i = magDiffer.k = 0.0; //水平角以外をキャンセル
-// 	magDiffer *= -direction; //機体基準に変換
-
-// 	magDiffer.Normalize();
-	const double mdr(magDiffer.Length());
-	magDiffer *= 0.001 * mdr * mdr;
-	Rotate(magDiffer);
-#endif
+	QON magDiffer(north, mag);
+	magDiffer.i = magDiffer.k = 0.0; //水平角以外をキャンセル
+	magDiffer.Normalize();
+	magDiffer *= 0.01;
+	RotateAzimuth(magDiffer);
 }
 
 
@@ -254,7 +251,12 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 }
 
 void RIFT::UpdateMagneticField(const int axis[3]){
-#if 1
+	//キャリブレーションのファストスタート処理
+	if(magAverageRatio < maxMagAverageRatio){
+		magAverageRatio++;
+	}
+
+	//磁力情報取得
 	VQON mag(axis, 1.0);
 
 	//キャリブレーション
@@ -271,6 +273,5 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	mag *= 1.0 / magAverageRatio;
 	magneticField *= 1.0 - 1.0 / magAverageRatio;
 	magneticField += mag;
-#endif
 }
 

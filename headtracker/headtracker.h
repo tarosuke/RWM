@@ -18,6 +18,7 @@ public:
 	void ResetAzimuth(double ratio = 1.0);
 protected:
 	void Rotate(const QON& r){ direction *= r; };
+	void RotateAzimuth(const QON& r){ offset *= r; };
 private:
 	QON direction;
 	QON offset;

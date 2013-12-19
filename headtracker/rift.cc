@@ -214,10 +214,11 @@ void RIFT::Correction(){
 
 	//磁気による姿勢補正
 	VQON north(-1.0, 0.0, 0.0); //北(のはずの方向)
-	north.ReverseRotate(direction);
+	VQON mag(magneticField);
+	mag.Rotate(direction); //絶対基準にする
 
 	//北との差分で姿勢を補正
-	QON magDiffer(north, magneticField);
+	QON magDiffer(north, mag);
 	magDiffer.i = magDiffer.k = 0.0; //水平角以外をキャンセル
 	magDiffer.Normalize();
 	magDiffer *= 0.01;

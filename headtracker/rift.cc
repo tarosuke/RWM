@@ -51,13 +51,14 @@ int RIFT::OpenDevice(){
 namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	gravity(G),
+	gravityAverageRatio(10),
+	gravity(0.0, -G, 0.0),
 	magAverageRatio(100),
+	magFront(0.0, 0.0, 1.0),
 	magMax(-MAXFLOAT, -MAXFLOAT, -MAXFLOAT),
 	magMin(MAXFLOAT, MAXFLOAT, MAXFLOAT),
-	magReadyX(false),
-	magReadyY(false),
-	magReadyZ(false),
+	magReady(false),
+	magFinished(false),
 	magneticField(0.0, 0.0, -0.01){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
@@ -66,11 +67,9 @@ RIFT::RIFT() :
 	}
 
 	//過去の磁化情報があれば取得
-puts("loading...");
+	settings.Fetch("magFront", &magFront);
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
-magMax.print("fetch:magMax");
-magMin.print("fetch:magMin");
 
 	//センサデータ取得開始
 	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
@@ -83,10 +82,9 @@ RIFT::~RIFT(){
 	}
 
 	//磁化情報を保存
+	settings.Store("magFront", &magFront);
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
-magMax.print("store:magMax");
-magMin.print("store:magMin");
 }
 
 
@@ -191,62 +189,72 @@ void RIFT::Correction(){
 	const QON direction(GetDirection());
 
 	//重力による姿勢補正
-	const double g(accel.Length());
-	const double d((gravity - g) * 50);
-	const double gravityUnreliability(d*d);
-	VQON acc(accel);
-	acc.Normalize();
-
-	//重力加速度の実測値を更新
-	gravity *= 0.99;
-	gravity += g * 0.01;
-
-	//正しいはずの方向
-	VQON down(0, -1, 0); //こうなっているはずの値
-	down.ReverseRotate(direction);
+	VQON down(0, 1, 0); //こうなっているはずの値(向きのみ)
+	down.ReverseRotate(direction); //機体座標系にする
 
 	//重力方向との差分で姿勢を補正
-	QON differ(acc, down);
-	const double in(acc.In(down) * 10);
-	const double nearRatio(in * in * in * in / 100);
-	differ *= 0.005 / (0.5 + gravityUnreliability + nearRatio);
+	QON differ(down, gravity);
 	Rotate(differ);
 
 	//磁気による姿勢補正
-	VQON north(-1.0, 0.0, 0.0); //北(のはずの方向)
-	VQON mag(magneticField);
-	mag.Rotate(direction); //絶対基準にする
+	if(magReady && !magFinished){
+		//準備ができていて、かつまだ補正が完了していない
+		VQON front(magFront); //正面(のはずの方位)
+		VQON mag(magneticField);
+		mag.Rotate(direction); //絶対基準にする
 
-	//北との差分で姿勢を補正
-	QON magDiffer(north, mag);
-	magDiffer.i = magDiffer.k = 0.0; //水平角以外をキャンセル
-	magDiffer.Normalize();
-	magDiffer *= 0.01;
-	RotateAzimuth(magDiffer);
+		//正面との差分で姿勢を補正
+		QON magDiffer(mag, front);
+		magDiffer.i = magDiffer.k = 0.0; //水平角以外をキャンセル
+		magDiffer.Normalize();
+
+		if(magAverageRatio < 1000 || magDiffer.w < 0.999999){
+			RotateAzimuth(magDiffer);
+		}else{
+			//終了処理
+			magFinished = true;
+		}
+	}
 }
 
 
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
 	Rotate(delta);
+	gravity.ReverseRotate(delta);
 	magneticField.ReverseRotate(delta);
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
+	//キャリブレーションのファストスタート処理
+	if(gravityAverageRatio < maxGravityAverageRatio){
+		gravityAverageRatio++;
+	}
+
+	//加速度情報取得
 	VQON acc(axis, 0.0001);
-	accel = acc;
+
+	//重力加速度分離
+	VQON g(acc);
+	const double ratio(1.0 / gravityAverageRatio);
+	g *= ratio;
+	gravity *= 1.0 - ratio;
+	gravity += g;
+
+	//重力を除去
+	acc -= gravity;
 
 	//位置や速度を求める
-	if(dt <= 0.02){ //dtが異常に大きい時は位置更新しない
-		acc.Rotate(GetDirection());
-		acc.j -= gravity;
+	if(dt <= 0.02){ //dtが異常に大きい時はデータが欠損しているので位置更新しない
+		acc.Rotate(GetDirection()); //絶対座標系へ変換
 		acc *= dt;
 		velocity += acc;
-		velocity *= 0.99;
+		velocity *= 0.9;
 		VQON v(velocity);
 		v *= dt;
 		position += v;
-		position *= 0.99;
+		position *= 0.9;
+		MoveTo(position);
 	}
 }
 
@@ -265,13 +273,21 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	VQON offset(magMax + magMin);
 	offset *= 0.5;
 
-	//磁化分を除去
-	mag -= offset;
-	mag.Normalize();
+	if(magReady){
+		//磁化分を除去
+		mag -= offset;
+		mag.Normalize();
 
-	//平均化処理
-	mag *= 1.0 / magAverageRatio;
-	magneticField *= 1.0 - 1.0 / magAverageRatio;
-	magneticField += mag;
+		//平均化処理
+		mag *= 1.0 / magAverageRatio;
+		magneticField *= 1.0 - 1.0 / magAverageRatio;
+		magneticField += mag;
+	}else{
+		//キャリブレーション判定
+		VQON d(magMax - magMin);
+		if(7000 < abs(d.i) && 7000 < abs(d.j) && 7000 < abs(d.k)){
+			magReady = true;
+		}
+	}
 }
 

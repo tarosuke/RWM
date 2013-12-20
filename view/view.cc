@@ -85,6 +85,10 @@ void VIEW::Run(){
 		QON headDir(head.GetDirection());
 		GLQON glHeadDir(headDir);
 		glHeadDir.GetView(); //視野を取得
+#if 0
+		GLVQON glPlace(head.GetPosition());
+		glPlace.GetView();
+#endif
 		WINDOW::DrawAll(headDir); //窓を描画
 
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする

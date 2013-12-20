@@ -23,22 +23,22 @@ private:
 	static const double G = 9.80665;
 	pthread_t sensorThread;
 
-	//加速度センサ
-	//TODO:magAverageRatioのように重力の補正もファストスタートする
-	VQON accel; //加速度
+	//加速度センサ(絶対座標系)
+	const static int maxGravityAverageRatio = 1000000;
+	int gravityAverageRatio;
 	VQON velocity; //移動速度
-	VQON position; //位置
-	double gravity; //おそらく重力によるものと思われる平均重力加速度
+	VQON position; //位置(変位)
+	VQON gravity; //平均加速度(機体座標系)
 
 	//磁気センサ
-	const static int maxMagAverageRatio = 100000;
+	const static int maxMagAverageRatio = 1000000;
 	int magAverageRatio;
+	VQON magFront; //正面の方位
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値
-	bool magReadyX;
-	bool magReadyY;
-	bool magReadyZ;
-	VQON magneticField; //磁気の向き(機体基準)
+	bool magReady; //磁化情報取得完了
+	bool magFinished; //方位補正完了
+	VQON magneticField; //磁気の向き(機体座標系)
 
 	float temperature; // センサ表面温度[℃]
 

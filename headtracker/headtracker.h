@@ -22,7 +22,7 @@ public:
 protected:
 	void Rotate(const QON& r){ direction *= r; };
 	void RotateAzimuth(const QON& r){ offset *= r; };
-	void MoveTo(const VQON& d){ displacement += d; };
+	void MoveTo(const VQON& d){ displacement = d; };
 private:
 	QON direction;
 	QON offset;

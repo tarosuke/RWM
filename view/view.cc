@@ -85,7 +85,7 @@ void VIEW::Run(){
 		QON headDir(head.GetDirection());
 		GLQON glHeadDir(headDir);
 		glHeadDir.GetView(); //視野を取得
-#if 0
+#if 1
 		GLVQON glPlace(head.GetPosition());
 		glPlace.GetView();
 #endif

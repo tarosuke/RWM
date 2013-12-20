@@ -249,12 +249,16 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 		acc.Rotate(GetDirection()); //絶対座標系へ変換
 		acc *= dt;
 		velocity += acc;
-		velocity *= 0.9;
+		velocity *= 0.999;
 		VQON v(velocity);
 		v *= dt;
 		position += v;
-		position *= 0.9;
+		position *= 0.99;
 		MoveTo(position);
+
+// acc.print("a");
+// velocity.print("v");
+// position.print("p");
 	}
 }
 

@@ -51,7 +51,7 @@ int RIFT::OpenDevice(){
 namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	gravityAverageRatio(10),
+	gravityAverageRatio(1),
 	gravity(0.0, -G, 0.0),
 	magAverageRatio(100),
 	magFront(0.0, 0.0, 1.0),
@@ -221,7 +221,9 @@ void RIFT::Correction(){
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
 	Rotate(delta);
+	const double norm(gravity.Abs());
 	gravity.ReverseRotate(delta);
+	gravity *= norm;
 	magneticField.ReverseRotate(delta);
 }
 
@@ -249,11 +251,12 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 		acc.Rotate(GetDirection()); //絶対座標系へ変換
 		acc *= dt;
 		velocity += acc;
-		velocity *= 0.999;
+		velocity -= vAverage;
+		velocity *= 0.9;
 		VQON v(velocity);
 		v *= dt;
 		position += v;
-		position *= 0.99;
+		position *= 0.9999;
 		MoveTo(position);
 
 // acc.print("a");

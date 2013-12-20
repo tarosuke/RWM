@@ -27,6 +27,7 @@ private:
 	const static int maxGravityAverageRatio = 1000000;
 	int gravityAverageRatio;
 	VQON velocity; //移動速度
+	VQON vAverage; //速度のドリフト分
 	VQON position; //位置(変位)
 	VQON gravity; //平均加速度(機体座標系)
 

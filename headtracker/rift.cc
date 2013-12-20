@@ -51,7 +51,7 @@ int RIFT::OpenDevice(){
 namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	gravityAverageRatio(1),
+	gravityAverageRatio(10),
 	gravity(0.0, -G, 0.0),
 	magAverageRatio(100),
 	magFront(0.0, 0.0, 1.0),
@@ -251,17 +251,27 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 		acc.Rotate(GetDirection()); //絶対座標系へ変換
 		acc *= dt;
 		velocity += acc;
-		velocity -= vAverage;
-		velocity *= 0.9;
 		VQON v(velocity);
 		v *= dt;
 		position += v;
-		position *= 0.9999;
 		MoveTo(position);
 
-// acc.print("a");
-// velocity.print("v");
-// position.print("p");
+		//枠を出ていたら止める
+		const float limit(0.3);
+		if(position.i < - limit || limit < position.i){
+			velocity.i = 0;
+			position.i = position.i < 0 ? -limit : limit;
+		}
+		if(position.j < - limit || limit < position.j){
+			velocity.j = 0;
+			position.j = position.j < 0 ? -limit : limit;
+		}
+		if(position.k < - limit || limit < position.k){
+			velocity.k = 0;
+			position.k = position.k < 0 ? -limit : limit;
+		}
+		velocity *= 0.999;
+		position *= 0.995;
 	}
 }
 

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/file.h>
+#include <sys/mman.h>
 #include <assert.h>
 #include <linux/types.h>
 #include <linux/input.h>
@@ -50,6 +51,7 @@ int RIFT::OpenDevice(){
 
 namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
+	pack(*(PACK*)mmap(0, sizeof(PACK), PROT_READ | PROT_WRITE, MAP_ANON | MAP_SHARED, -1, 0)),
 	fd(OpenDevice()),
 	gravityAverageRatio(10),
 	gravity(0.0, -G, 0.0),
@@ -76,7 +78,10 @@ RIFT::RIFT() :
 	pack.avail = &pack.states[0];
 
 	//センサデータ取得開始
-	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
+	if(!fork()){
+		SensorThread();
+	}
+// 	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
 }
 
 RIFT::~RIFT(){

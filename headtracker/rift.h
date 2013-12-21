@@ -16,10 +16,11 @@ private:
 
 	//インターフェイス用データ
 	mutable STATE state;
-	mutable struct PACK{
+	struct PACK{
 		STATE* avail;
 		STATE states[2];
-	}pack;
+	};
+	PACK& pack;
 
 	//最新情報
 	unsigned serial;

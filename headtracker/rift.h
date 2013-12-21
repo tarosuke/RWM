@@ -12,6 +12,33 @@ public:
 	~RIFT();
 	bool IsEnable() const { return 0 <= fd; };
 private:
+	virtual const STATE& GetState() const;
+
+	//インターフェイス用データ
+	mutable STATE state;
+	struct PACK{
+		STATE* avail;
+		STATE states[2];
+	};
+	PACK& pack;
+
+	//最新情報
+	unsigned serial;
+	STATE status;
+	void Rotate(const QON& r){ status.direction *= r; };
+	void RotateAzimuth(const QON& r){ status.azimuth *= r; };
+	void MoveTo(const VQON& d){ status.place = d; };
+	QON GetDirection(){
+		QON direction(status.azimuth);
+		direction *= status.direction;
+		return direction;
+	};
+	void Update(){
+		STATE& t(pack.states[++serial & 1]);
+		t = status;
+		pack.avail = &t;
+	};
+
 	// HID
 	const int fd;
 	static const int VendorID = 0x2833;

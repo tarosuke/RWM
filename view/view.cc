@@ -82,10 +82,13 @@ void VIEW::Run(){
 
 		//各段階描画
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
-
-		//頭の向きや位置を反映
-		const QON& headDir(head.GetView());
-
+		QON headDir(head.GetDirection());
+		GLQON glHeadDir(headDir);
+		glHeadDir.GetView(); //視野を取得
+#if 1
+		GLVQON glPlace(head.GetPosition());
+		glPlace.GetView();
+#endif
 		WINDOW::DrawAll(headDir); //窓を描画
 
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
@@ -94,8 +97,8 @@ void VIEW::Run(){
 		//描画後処理
 		PostDraw();
 
-#if 1
-		head.ResetAzimuth(0.0005);
+#if 0
+		head.ResetAzimuth(0.0001);
 #endif
 	}
 }

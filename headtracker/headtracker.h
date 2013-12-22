@@ -9,21 +9,25 @@
 
 class HEADTRACKER{
 public:
-	struct STATE{
-		QON direction;
-		QON azimuth;
-		VQON place;
-	};
 	HEADTRACKER(){};
 	~HEADTRACKER(){};
-	const QON& GetView();
+	const QON GetDirection() const{
+		QON r(-offset);
+		r *= direction;
+		return r; };
+	const VQON& GetPosition() const{
+		return displacement;
+	};
 	void ResetAzimuth(double ratio = 1.0);
 protected:
-	virtual const STATE& GetState() const{ return state; };
+	void Rotate(const QON& r){ direction *= r; };
+	void RotateAzimuth(const QON& r){ offset *= r; };
+	void MoveTo(const VQON& d){ displacement = d; };
 private:
-	void Update();
-	STATE state;
-	QON azimuth;
+	QON direction;
+	QON offset;
+
+	VQON displacement;
 };
 
 

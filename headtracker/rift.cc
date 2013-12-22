@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/file.h>
-#include <sys/mman.h>
 #include <assert.h>
 #include <linux/types.h>
 #include <linux/input.h>
@@ -51,12 +50,11 @@ int RIFT::OpenDevice(){
 
 namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
-	pack(*(PACK*)mmap(0, sizeof(PACK), PROT_READ | PROT_WRITE, MAP_ANON | MAP_SHARED, -1, 0)),
 	fd(OpenDevice()),
 	gravityAverageRatio(10),
 	gravity(0.0, -G, 0.0),
 	magAverageRatio(100),
-	magFront(0.0, 0.0, -1.0),
+	magFront(0.0, 0.0, 1.0),
 	magMax(-MAXFLOAT, -MAXFLOAT, -MAXFLOAT),
 	magMin(MAXFLOAT, MAXFLOAT, MAXFLOAT),
 	magReady(false),
@@ -73,15 +71,8 @@ RIFT::RIFT() :
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
 
-	//シリアル番号を初期化
-	serial = 0;
-	pack.avail = &pack.states[0];
-
 	//センサデータ取得開始
-	if(!fork()){
-		SensorThread();
-	}
-// 	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
+	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
 }
 
 RIFT::~RIFT(){
@@ -94,12 +85,6 @@ RIFT::~RIFT(){
 	settings.Store("magFront", &magFront);
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
-}
-
-const HEADTRACKER::STATE& RIFT::GetState() const{
-	//読み出す
-	state = *pack.avail;
-	return state;
 }
 
 
@@ -198,9 +183,6 @@ void RIFT::Decode(const char* buff){
 
 	//補正
 	Correction();
-
-	//値のアップデート
-	Update();
 }
 
 void RIFT::Correction(){
@@ -227,7 +209,6 @@ void RIFT::Correction(){
 		magDiffer.Normalize();
 
 		if(magAverageRatio < 1000 || magDiffer.w < 0.999999){
-			magDiffer *= 0.1;
 			RotateAzimuth(magDiffer);
 		}else{
 			//終了処理
@@ -321,7 +302,7 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	}else{
 		//キャリブレーション判定
 		VQON d(magMax - magMin);
-		if(6500 < abs(d.i) && 6500 < abs(d.j) && 6500 < abs(d.k)){
+		if(7000 < abs(d.i) && 7000 < abs(d.j) && 7000 < abs(d.k)){
 			magReady = true;
 		}
 	}

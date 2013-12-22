@@ -1,6 +1,8 @@
 #ifndef _RIFT_
 #define _RIFT_
 
+#include <pthread.h>
+
 #include "headtracker.h"
 
 
@@ -15,7 +17,6 @@ private:
 	//インターフェイス用データ
 	mutable STATE state;
 	struct PACK{
-		bool alive;
 		STATE* avail;
 		STATE states[2];
 	};
@@ -47,6 +48,7 @@ private:
 
 	// SENSOR
 	static const double G = 9.80665;
+	pthread_t sensorThread;
 
 	//加速度センサ(絶対座標系)
 	const static int maxGravityAverageRatio = 1000000;
@@ -67,6 +69,7 @@ private:
 
 	float temperature; // センサ表面温度[℃]
 
+	static void* _SensorThread(void* initialData);
 	void SensorThread();
 	static void DecodeSensor(const unsigned char* buff, int* const sample);
 	void Decode(const char* buff);

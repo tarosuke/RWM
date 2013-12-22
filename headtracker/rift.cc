@@ -76,17 +76,17 @@ RIFT::RIFT() :
 	//シリアル番号を初期化
 	serial = 0;
 	pack.avail = &pack.states[0];
+	pack.alive = true;
 
 	//センサデータ取得開始
 	if(!fork()){
 		SensorThread();
 	}
-// 	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
 }
 
 RIFT::~RIFT(){
 	if(0 <= fd){
-		pthread_cancel(sensorThread);
+		pack.alive = false;
 		close(fd);
 	}
 
@@ -109,7 +109,7 @@ void RIFT::SensorThread(){
 	FD_ZERO(&readset);
 	FD_SET(fd, &readset);
 
-	for(;; pthread_testcancel()){
+	while(pack.alive){
 		int result(select(
 			fd + 1, &readset, NULL, NULL, NULL));
 
@@ -131,10 +131,7 @@ void RIFT::SensorThread(){
 		buff[4] = keepAliveInterval >> 8;
 		ioctl(fd, HIDIOCSFEATURE(5), buff);
 	}
-}
-void* RIFT::_SensorThread(void* initialData){
-	(*(RIFT*)initialData).SensorThread();
-	return 0;
+	exit(0);
 }
 
 

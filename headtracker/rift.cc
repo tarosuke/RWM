@@ -52,14 +52,14 @@ namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
 	fd(OpenDevice()),
 	gravityAverageRatio(10),
-	gravity(0.0, -G, 0.0),
+	gravity((const double[]){ 0.0, 0-G, 0.0 }),
 	magAverageRatio(100),
-	magFront(0.0, 0.0, 1.0),
-	magMax(-MAXFLOAT, -MAXFLOAT, -MAXFLOAT),
-	magMin(MAXFLOAT, MAXFLOAT, MAXFLOAT),
+	magFront((const double[]){ 0.0, 0.0, 1.0 }),
+	magMax((const double[]){ 0-MAXFLOAT, 0-MAXFLOAT, 0-MAXFLOAT }),
+	magMin((const double[]){ MAXFLOAT, MAXFLOAT, MAXFLOAT }),
 	magReady(false),
 	magFinished(false),
-	magneticField(0.0, 0.0, -0.01){
+	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
 		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
@@ -190,7 +190,7 @@ void RIFT::Correction(){
 	const QON direction(GetDirection());
 
 	//重力による姿勢補正
-	VQON down(0, 1, 0); //こうなっているはずの値(向きのみ)
+	VQON down((const double[]){ 0, 1, 0 }); //こうなっているはずの値(向きのみ)
 	down.ReverseRotate(direction); //機体座標系にする
 
 	//重力方向との差分で姿勢を補正
@@ -206,14 +206,14 @@ void RIFT::Correction(){
 
 		//正面との差分で姿勢を補正
 		QON magDiffer(mag, front);
-		magDiffer.i = magDiffer.k = 0.0; //水平角以外をキャンセル
-		magDiffer.Normalize();
+		magDiffer.FilterAxis(2); //水平角以外をキャンセル
 
-		if(magAverageRatio < 1000 || magDiffer.w < 0.999999){
+		if(magAverageRatio < 1000 || magDiffer < 0.999999){
 			RotateAzimuth(magDiffer);
 		}else{
 			//終了処理
 			magFinished = true;
+			puts("magnetic correction finished.");
 		}
 	}
 }
@@ -259,17 +259,13 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 
 		//枠を出ていたら止める
 		const float limit(0.3);
-		if(position.i < - limit || limit < position.i){
-			velocity.i = 0;
-			position.i = position.i < 0 ? -limit : limit;
-		}
-		if(position.j < - limit || limit < position.j){
-			velocity.j = 0;
-			position.j = position.j < 0 ? -limit : limit;
-		}
-		if(position.k < - limit || limit < position.k){
-			velocity.k = 0;
-			position.k = position.k < 0 ? -limit : limit;
+		double* p(position);
+		double* ve(velocity);
+		for(unsigned n(0); n < 3; ++n){
+			if(p[n] < - limit || limit < p[n]){
+				ve[n] = 0;
+				p[n] = p[n] < 0 ? -limit : limit;
+			}
 		}
 		velocity *= 0.999;
 		position *= 0.995;
@@ -283,7 +279,7 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	}
 
 	//磁力情報取得
-	VQON mag(axis, 1.0);
+	VQON mag(axis);
 
 	//キャリブレーション
 	magMax.Max(mag);
@@ -302,9 +298,11 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		magneticField += mag;
 	}else{
 		//キャリブレーション判定
-		VQON d(magMax - magMin);
-		if(7000 < abs(d.i) && 7000 < abs(d.j) && 7000 < abs(d.k)){
+		const VECTOR<3> diff(magMax - magMin);
+		const double* d(diff);
+		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
 			magReady = true;
+			puts("magnetic correction to be READY.");
 		}
 	}
 }

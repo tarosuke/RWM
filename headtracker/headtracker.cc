@@ -10,8 +10,7 @@
 //方位角リセット
 void HEADTRACKER::ResetAzimuth(double ratio){
 	QON o(GetDirection());
-	o.i = o.k = 0.0; //垂直軸だけを残す
-	o.Normalize();
+	o.FilterAxis(2); //垂直軸だけを残す
 	o *= ratio;
 	offset *= o;
 }

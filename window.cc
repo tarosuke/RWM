@@ -446,14 +446,15 @@ WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
 	QON dir(d);
 
 	//頭の向きをベクタにして窓の中心を基準に変換
-	VQON tgt(0, 0, 1);
+	VQON tgt((const double[]){ 0, 0, 1});
 	tgt.ReverseRotate(center);
 	tgt.ReverseRotate(dir);
 
 	//窓の上の位置に直す
-	const float s(distance / (scale * tgt.k));
-	P2 r = { (float)(tgt.i * s) + width * 0.5f,
-		(float)(-tgt.j * s) + height * 0.5f };
+	const double* a(tgt);
+	const float s(distance / (scale * a[2]));
+	P2 r = { (float)(a[0] * s) + width * 0.5f,
+		(float)(-a[1] * s) + height * 0.5f };
 	return r;
 }
 
@@ -464,8 +465,8 @@ void WINDOW::Moved(int x, int y){
 	vert = ((y + height*0.5) - (float)rootHeight/2.0) * scale;
 
 	//四元数表現
-	QON::ROTATION v = { vert, 1, 0, 0 };
-	QON::ROTATION h = { horiz, 0, 1, 0 };
+	QON::ROTATION v = { vert, { 1, 0, 0 } };
+	QON::ROTATION h = { horiz, { 0, 1, 0 } };
 	QON hq(h);
 	QON vq(v);
 	hq *= vq;

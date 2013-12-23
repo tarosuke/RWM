@@ -168,8 +168,6 @@ void RIFT::Decode(const char* buff){
 	prevTime = timestamp;
 
 	const float qtime(1.0/1000.0);
-	temperature = 0.01 * temp;
-
 	const double dt(qtime * deltaT / numOfSamples);
 
 	// 各サンプル値で状況を更新
@@ -180,6 +178,9 @@ void RIFT::Decode(const char* buff){
 
 	// 磁界値取得
 	UpdateMagneticField(mag);
+
+	//温度取得
+	temperature = 0.01 * temp;
 
 	//補正
 	Correction();

@@ -11,22 +11,17 @@ class HEADTRACKER{
 public:
 	HEADTRACKER(){};
 	~HEADTRACKER(){};
-	const QON GetDirection() const{
-		QON r(-offset);
-		r *= direction;
-		return r; };
+	const QON& GetDirection() const{ return direction; };
 	const VQON& GetPosition() const{
 		return displacement;
 	};
 	void ResetAzimuth(double ratio = 1.0);
 protected:
 	void Rotate(const QON& r){ direction *= r; };
-	void RotateAzimuth(const QON& r){ offset *= r; };
+	void RotateAzimuth(const QON& r);
 	void MoveTo(const VQON& d){ displacement = d; };
 private:
 	QON direction;
-	QON offset;
-
 	VQON displacement;
 };
 

@@ -44,9 +44,9 @@ WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 
 /////窓描画関連
 bool WINDOW::zoomable(false);
-const QON* WINDOW::headDir;
+const COMPLEX<4>* WINDOW::headDir;
 const float WINDOW::zoomedScale(0.0015);
-void WINDOW::DrawAll(const QON& dir){
+void WINDOW::DrawAll(const COMPLEX<4>& dir){
 	zoomable = true;
 	headDir = &dir;
 	unsigned n(0);
@@ -442,11 +442,11 @@ unsigned WINDOW::WindowPositionPoint(int x, int y, int gx, int gy){
 	return p;
 }
 
-WINDOW::P2 WINDOW::GetLocalPosition(const QON& d){
-	QON dir(d);
+WINDOW::P2 WINDOW::GetLocalPosition(const COMPLEX<4>& d){
+	COMPLEX<4> dir(d);
 
 	//頭の向きをベクタにして窓の中心を基準に変換
-	VQON tgt((const double[]){ 0, 0, 1});
+	VECTOR<3> tgt((const double[]){ 0, 0, 1});
 	tgt.ReverseRotate(center);
 	tgt.ReverseRotate(dir);
 
@@ -465,10 +465,10 @@ void WINDOW::Moved(int x, int y){
 	vert = ((y + height*0.5) - (float)rootHeight/2.0) * scale;
 
 	//四元数表現
-	QON::ROTATION v = { vert, { 1, 0, 0 } };
-	QON::ROTATION h = { horiz, { 0, 1, 0 } };
-	QON hq(h);
-	QON vq(v);
+	COMPLEX<4>::ROTATION v = { vert, { 1, 0, 0 } };
+	COMPLEX<4>::ROTATION h = { horiz, { 0, 1, 0 } };
+	COMPLEX<4> hq(h);
+	COMPLEX<4> vq(v);
 	hq *= vq;
 	center = hq;
 

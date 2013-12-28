@@ -1,29 +1,19 @@
 /******************************************************** adstract headtracker
  *
  */
-#ifndef _HEADTRACKER_
-#define _HEADTRACKER_
+#pragma once
 
-#include <toolbox/qon/qon.h>
+#include <toolbox/glpose/glpose.h>
 
 
-class HEADTRACKER{
+class HEADTRACKER : public GLPOSE{
 public:
+	//TODO:HEADTRACKERそれ自体の構築子は隠してRIFTとかとのファクトリメソッドが必要
 	HEADTRACKER(){};
 	~HEADTRACKER(){};
-	const QON& GetDirection() const{ return direction; };
-	const VQON& GetPosition() const{
-		return displacement;
-	};
-	void ResetAzimuth(double ratio = 1.0);
 protected:
-	void Rotate(const QON& r){ direction *= r; };
-	void RotateAzimuth(const QON& r);
-	void MoveTo(const VQON& d){ displacement = d; };
 private:
-	QON direction;
-	VQON displacement;
+	GLPOSE pose;
 };
 
 
-#endif

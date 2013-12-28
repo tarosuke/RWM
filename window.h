@@ -4,8 +4,7 @@
  * rootに対してXCompositRedirectSubWindowsして内容を取得
  * また、窓に対してxdamegeイベントを受け付けるよう設定。
  */
-#ifndef _WINDOW_
-#define _WINDOW_
+#pragma once
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -16,7 +15,7 @@
 #include <GL/glx.h>
 
 #include <toolbox/queue/queue.h>
-#include <toolbox/qon/qon.h>
+#include <toolbox/complex/complex.h>
 
 #include <view/view.h>
 
@@ -28,7 +27,7 @@ class WINDOW{
 public:
 	WINDOW(XCreateWindowEvent& e, XDISPLAY&, bool mapState = false);
 
-	static void DrawAll(const QON& headDir);
+	static void DrawAll(const COMPLEX<4>& headDir);
 
 	//根窓関連
 	static void AtCreate(XCreateWindowEvent&, XDISPLAY&);
@@ -54,7 +53,7 @@ private:
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static WINDOW* FindWindowByID(Display*, unsigned wID);
 	static bool zoomable; //ズーム処理する窓をひとつだけにするためのフラグ
-	static const QON* headDir;
+	static const COMPLEX<4>* headDir;
 	static const float zoomedScale; //ズームした時の大きさ[mm/px]
 	static WINDOW* focused;
 	void Focus();
@@ -74,7 +73,7 @@ private:
 	float scale; //非ズーム時の大きさ(ズーム時はピクセル基準)
 	float distance; //最後に描画した時の距離
 	static float baseDistance;
-	QON center; //中心の向き
+	COMPLEX<4> center; //中心の向き
 
 	void Moved(int x, int y); //仮想空間側の窓だけ移動
 	void Move(int x, int y); //X側の窓も移動
@@ -93,7 +92,7 @@ private:
 		float x;
 		float y;
 	};
-	P2 GetLocalPosition(const QON&);
+	P2 GetLocalPosition(const COMPLEX<4>&);
 	void SeekPosition(
 		int hTo, int vTo,
 		int hStep, int vStep,
@@ -106,4 +105,3 @@ private:
 };
 
 
-#endif

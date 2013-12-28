@@ -1,5 +1,7 @@
-#ifndef _RIFT_
-#define _RIFT_
+/**************************************************** Oculus Rift handler:rift
+ *
+ */
+#pragma once
 
 #include <pthread.h>
 
@@ -8,6 +10,8 @@
 
 class RIFT : public HEADTRACKER{
 public:
+	typedef COMPLEX<4> QON;
+	typedef VECTOR<3> VQON;
 	RIFT();
 	~RIFT();
 	bool IsEnable() const { return 0 <= fd; };
@@ -24,14 +28,14 @@ private:
 	pthread_t sensorThread;
 
 	//加速度センサ(絶対座標系)
-	const static int maxGravityAverageRatio = 1000000;
+	const static int maxGravityAverageRatio = 100000;
 	int gravityAverageRatio;
 	VQON velocity; //移動速度
 	VQON position; //位置(変位)
 	VQON gravity; //平均加速度(機体座標系)
 
 	//磁気センサ
-	const static int maxMagAverageRatio = 1000000;
+	const static int maxMagAverageRatio = 100000;
 	int magAverageRatio;
 	VQON magFront; //正面の方位
 	VQON magMax; //磁気センサの最大値
@@ -54,4 +58,3 @@ private:
 };
 
 
-#endif

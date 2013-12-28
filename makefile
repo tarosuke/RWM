@@ -5,7 +5,7 @@ COPTS += -IX11 -I.
 include make.in
 
 
-libs= view/view.a headtracker/headtracker.a toolbox/qon/qon.a extra/extra.a settings/settings.a toolbox/input/input.a toolbox/cyclic/cyclic.a toolbox/complex/complex.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++ -lgdbm
+libs= view/view.a headtracker/headtracker.a toolbox/glpose/glpose.a extra/extra.a settings/settings.a toolbox/input/input.a toolbox/cyclic/cyclic.a toolbox/complex/complex.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lstdc++ -lgdbm
 
 
 install: rwm
@@ -27,7 +27,7 @@ rwm.test: makefile $(objs) extralibs
 
 extralibs:
 	@for f in *; do if [ -f $$f/makefile ]; then make -j -C $$f; fi; done
-	make -C toolbox/qon
+	make -C toolbox/glpose
 	make -C toolbox/input
 	make -C toolbox/cyclic
 	make -C toolbox/complex

@@ -61,7 +61,6 @@ RIFT::RIFT() :
 	magMax((const double[]){ 0-MAXFLOAT, 0-MAXFLOAT, 0-MAXFLOAT }),
 	magMin((const double[]){ MAXFLOAT, MAXFLOAT, MAXFLOAT }),
 	magReady(false),
-	magFinished(false),
 	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
 	if(fd < 0){
 		printf("Could not locate Rift\n");
@@ -198,10 +197,11 @@ void RIFT::Correction(){
 
 	//重力方向との差分で姿勢を補正
 	QON differ(down, gravity);
+	differ *= GetCorrectionGain(differ);
 	Rotate(differ);
 
 	//磁気による姿勢補正
-	if(magReady && !magFinished){
+	if(magReady){
 		//準備ができていて、かつまだ補正が完了していない
 		VQON front(magFront); //正面(のはずの方位)
 		VQON mag(magneticField);
@@ -211,13 +211,9 @@ void RIFT::Correction(){
 		QON magDiffer(mag, front);
 		magDiffer.FilterAxis(2); //水平角以外をキャンセル
 
-		if(magAverageRatio < 1000 || magDiffer < 0.999999){
-			RotateAzimuth(magDiffer);
-		}else{
-			//終了処理
-			magFinished = true;
-			puts("magnetic correction finished.");
-		}
+		magDiffer *= GetCorrectionGain(magDiffer);
+		RotateAzimuth(magDiffer);
+		gravity.ReverseRotate(magDiffer);
 	}
 }
 
@@ -225,10 +221,6 @@ void RIFT::Correction(){
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	QON delta(angles, 0.0001 * dt);
 	Rotate(delta);
-	const double norm(gravity.Abs());
-	gravity.ReverseRotate(delta);
-	gravity *= norm;
-	magneticField.ReverseRotate(delta);
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
@@ -305,8 +297,25 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		const double* d(diff);
 		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
 			magReady = true;
-			puts("magnetic correction to be READY.");
+			magAverageRatio = 100;
+			puts("magnetic azimuth correction READY.");
 		}
 	}
 }
+
+
+double RIFT::GetCorrectionGain(const COMPLEX<4>& diff) const{
+	double gain(diff.Norm());
+	gain *= gain * correctionGainSeed;
+	return gain / (correctionGainSeed * correctionGainSeed);
+}
+
+void RIFT::Rotate(const COMPLEX<4>& r){
+	HEADTRACKER::Rotate(r);
+	const double norm(gravity.Abs());
+	gravity.ReverseRotate(r);
+	gravity *= norm;
+	magneticField.ReverseRotate(r);
+}
+
 

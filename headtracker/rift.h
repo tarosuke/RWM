@@ -37,7 +37,6 @@ private:
 	//磁気センサ
 	const static int maxMagAverageRatio = 100000;
 	int magAverageRatio;
-	VQON magFront; //正面の方位
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値
 	bool magReady; //磁化情報取得完了

@@ -57,7 +57,6 @@ RIFT::RIFT() :
 	gravityAverageRatio(10),
 	gravity((const double[]){ 0.0, 0-G, 0.0 }),
 	magAverageRatio(100),
-	magFront((const double[]){ 0.0, 0.0, 1.0 }),
 	magMax((const double[]){ 0-MAXFLOAT, 0-MAXFLOAT, 0-MAXFLOAT }),
 	magMin((const double[]){ MAXFLOAT, MAXFLOAT, MAXFLOAT }),
 	magReady(false),
@@ -69,7 +68,6 @@ RIFT::RIFT() :
 	}
 
 	//過去の磁化情報があれば取得
-	settings.Fetch("magFront", &magFront);
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
 
@@ -84,7 +82,6 @@ RIFT::~RIFT(){
 	}
 
 	//磁化情報を保存
-	settings.Store("magFront", &magFront);
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
 }
@@ -203,14 +200,13 @@ void RIFT::Correction(){
 	//磁気による姿勢補正
 	if(magReady){
 		//準備ができていて、かつまだ補正が完了していない
-		VQON front(magFront); //正面(のはずの方位)
+		VQON north((const double[]){ 0, 0, 1 }); //北
 		VQON mag(magneticField);
 		mag.Rotate(direction); //絶対基準にする
 
 		//正面との差分で姿勢を補正
-		QON magDiffer(mag, front);
+		QON magDiffer(north, mag);
 		magDiffer.FilterAxis(2); //水平角以外をキャンセル
-
 		magDiffer *= GetCorrectionGain(magDiffer);
 		RotateAzimuth(magDiffer);
 		gravity.ReverseRotate(magDiffer);
@@ -279,12 +275,20 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	//キャリブレーション
 	magMax.Max(mag);
 	magMin.Min(mag);
-	VQON offset(magMax + magMin);
-	offset *= 0.5;
+	const VECTOR<3> deGain(magMax - magMin);
+	const double* const d(deGain);
 
 	if(magReady){
 		//磁化分を除去
+		VQON offset(magMax + magMin);
+		offset *= 0.5;
 		mag -= offset;
+
+		//各軸ゲイン調整
+		double* const g(mag);
+		g[0] /= d[0];
+		g[1] /= d[1];
+		g[2] /= d[2];
 		mag.Normalize();
 
 		//平均化処理
@@ -293,11 +297,9 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		magneticField += mag;
 	}else{
 		//キャリブレーション判定
-		const VECTOR<3> diff(magMax - magMin);
-		const double* d(diff);
 		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
 			magReady = true;
-			magAverageRatio = 100;
+			magAverageRatio = 100; //キャリブレーションのやり直し
 			puts("magnetic azimuth correction READY.");
 		}
 	}

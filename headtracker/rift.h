@@ -37,11 +37,9 @@ private:
 	//磁気センサ
 	const static int maxMagAverageRatio = 100000;
 	int magAverageRatio;
-	VQON magFront; //正面の方位
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値
 	bool magReady; //磁化情報取得完了
-	bool magFinished; //方位補正完了
 	VQON magneticField; //磁気の向き(機体座標系)
 
 	float temperature; // センサ表面温度[℃]
@@ -55,6 +53,10 @@ private:
 	void UpdateMagneticField(const int axis[3]);
 
 	void Correction();
+	static const int correctionGainSeed = 64;
+	double GetCorrectionGain(const COMPLEX<4>& diff) const;
+
+	void Rotate(const COMPLEX<4>&);
 };
 
 

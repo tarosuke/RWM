@@ -30,7 +30,6 @@ bool RIFTVIEW::glewValid(false);
 
 
 RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
-
 	glewValid = (GLEW_OK == glewInit());
 	if(glewValid){
 		//シェーダーコードの整形
@@ -163,6 +162,9 @@ RIFTVIEW::RIFTVIEW() : VIEW(rift), displayList(1){
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+	//RIFTでは幅が画面の半分なのでそれに合わせて高さを倍に描く
+	realHeight *= 0.5;
 }
 
 RIFTVIEW::~RIFTVIEW(){

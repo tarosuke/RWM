@@ -45,7 +45,7 @@ WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
 /////窓描画関連
 bool WINDOW::zoomable(false);
 const COMPLEX<4>* WINDOW::headDir;
-const float WINDOW::zoomedScale(0.0015);
+const float WINDOW::zoomedScale(0.0011);
 void WINDOW::DrawAll(const COMPLEX<4>& dir){
 	zoomable = true;
 	headDir = &dir;

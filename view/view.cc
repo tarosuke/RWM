@@ -24,11 +24,6 @@ VIEW::VIEW(HEADTRACKER& head_) : head(head_){
 	realWidth = defaultDotPitch * width;
 	realHeight = defaultDotPitch * height;
 	realDistance = defaultDisplayDistance;
-
-
-	//TODO:シグナルハンドラを登録
-
-	//TODO:セッションマネージャを起動(Rift画面にセッションを作られても困るので)
 }
 
 VIEW::~VIEW(){
@@ -84,14 +79,13 @@ void VIEW::Run(){
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
 		head.GetView(); //頭の姿勢、位置を反映
 		WINDOW::DrawAll(head.GetDirection()); //窓を描画
-
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		DrawObjects(externals); //externalを描画
 
 		//描画後処理
 		PostDraw();
 
-#if 1
+#if 0
 		head.ResetAzimuth(0.0005);
 #endif
 	}

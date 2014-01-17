@@ -24,11 +24,6 @@ VIEW::VIEW(HEADTRACKER& head_) : head(head_){
 	realWidth = defaultDotPitch * width;
 	realHeight = defaultDotPitch * height;
 	realDistance = defaultDisplayDistance;
-
-
-	//TODO:シグナルハンドラを登録
-
-	//TODO:セッションマネージャを起動(Rift画面にセッションを作られても困るので)
 }
 
 VIEW::~VIEW(){

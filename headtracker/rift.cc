@@ -210,9 +210,9 @@ void RIFT::Correction(){
 	Rotate(differ);
 
 	//磁気による姿勢補正
-	if(magReady){
+	if(magReady && magAverageRatio < maxMagAverageRatio){
 		//準備ができていて、かつまだ補正が完了していない
-		VQON north((const double[]){ 0, 0, 1 }); //北
+		VQON north((const double[]){ 0, 0, -1 }); //北
 		VQON mag(magneticField);
 		mag.Rotate(direction); //絶対基準にする
 

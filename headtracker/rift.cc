@@ -71,8 +71,13 @@ RIFT::RIFT() :
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
 
+	//スケジューリングポリシーを設定
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+
 	//センサデータ取得開始
-	pthread_create(&sensorThread, NULL, RIFT::_SensorThread, (void*)this);
+	pthread_create(&sensorThread, &attr, RIFT::_SensorThread, (void*)this);
 }
 
 RIFT::~RIFT(){
@@ -88,6 +93,12 @@ RIFT::~RIFT(){
 
 
 void RIFT::SensorThread(){
+	//優先度設定
+	pthread_setschedprio(
+		sensorThread,
+		sched_get_priority_max(SCHED_FIFO));
+
+	//Riftからのデータ待ち、処理
 	fd_set readset;
 
 	FD_ZERO(&readset);
@@ -117,6 +128,7 @@ void RIFT::SensorThread(){
 	}
 }
 void* RIFT::_SensorThread(void* initialData){
+	//オブジェクトを設定して監視開始
 	(*(RIFT*)initialData).SensorThread();
 	return 0;
 }

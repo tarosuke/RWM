@@ -46,6 +46,7 @@ int RIFT::OpenDevice(){
 		}
 
 		//この時点でのfdがrift
+		printf("Oculus Rift:%s.\n", name);
 		return fd;
 	}
 	return -1;
@@ -62,8 +63,7 @@ RIFT::RIFT() :
 	magReady(false),
 	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
 	if(fd < 0){
-		printf("Could not locate Rift\n");
-		printf("sutup udev: SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
+		printf("Could not locate Rift\nsetup /etc/udev/rules.d/50-oculusRift.rules as SUBSYSTEM==\"hidraw\",ATTRS{idVendor}==\"2833\",ATTRS{idProduct}==\"0001\",MODE=\"0666\"\n");
 		return;
 	}
 

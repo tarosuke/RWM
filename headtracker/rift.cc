@@ -76,6 +76,9 @@ RIFT::RIFT() :
 	pthread_attr_init(&attr);
 	pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
 
+	//デバイスを閉じないカーネルバグ対策のため最初に一発Keepalive
+	Keepalive();
+
 	//センサデータ取得開始
 	pthread_create(&sensorThread, &attr, RIFT::_SensorThread, (void*)this);
 }
@@ -83,6 +86,7 @@ RIFT::RIFT() :
 RIFT::~RIFT(){
 	if(0 <= fd){
 		pthread_cancel(sensorThread);
+		pthread_join(sensorThread, 0);
 		close(fd);
 	}
 
@@ -91,6 +95,14 @@ RIFT::~RIFT(){
 	settings.Store("magMin", &magMin);
 }
 
+void RIFT::Keepalive(){
+	char buff[5];
+	buff[0] = 8;
+	buff[1] = buff[2] = 0; //command ID
+	buff[3] = keepAliveInterval & 0xFF;
+	buff[4] = keepAliveInterval >> 8;
+	ioctl(fd, HIDIOCSFEATURE(5), buff);
+}
 
 void RIFT::SensorThread(){
 	//優先度設定
@@ -119,12 +131,7 @@ void RIFT::SensorThread(){
 		}
 
 		//KeepAliveを送信
-		char buff[5];
-		buff[0] = 8;
-		buff[1] = buff[2] = 0; //command ID
-		buff[3] = keepAliveInterval & 0xFF;
-		buff[4] = keepAliveInterval >> 8;
-		ioctl(fd, HIDIOCSFEATURE(5), buff);
+		Keepalive();
 	}
 }
 void* RIFT::_SensorThread(void* initialData){

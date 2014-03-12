@@ -57,6 +57,8 @@ private:
 	double GetCorrectionGain(const COMPLEX<4>& diff) const;
 
 	void Rotate(const COMPLEX<4>&);
+
+	void Keepalive();
 };
 
 

@@ -1,107 +1,161 @@
 /******************************************************* window handler:window
- * -DTESTの時はrootになるウインドウを開いてそれをroot扱い。
- * でなければrootを取得してそれをrootとする。
- * rootに対してXCompositRedirectSubWindowsして内容を取得
- * また、窓に対してxdamegeイベントを受け付けるよう設定。
+ * この窓はXの窓ではない。
+ * Xの窓には画面という概念があるが、この窓には窓があるだけで画面はない。
+ * また、このクラスはバッキングストレージはテクスチャとしてしか持っていない。
+ * Rect単位でしか描き換えられないので別に描画用のバッファが必要。
  */
 #pragma once
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/extensions/Xdamage.h>
 
 #include <GL/gl.h>
 #include <GL/glx.h>
 
 #include <toolbox/queue/queue.h>
 #include <toolbox/complex/complex.h>
+#include <toolbox/glpose/glpose.h>
+#include <image.h>
 
-#include <view/view.h>
 
 
-
-class XDISPLAY;
 class WINDOW{
-	WINDOW();
+	WINDOW(WINDOW&);
+	void operator=(WINDOW&);
 public:
-	WINDOW(XCreateWindowEvent& e, XDISPLAY&, bool mapState = false);
+	/** 全ての窓を描画する
+	 * @attention このメソッドは何の準備もせずにいきなり描画する。
+	 * @attention 描画先の設定が完了している事が前提。
+	 */
+	static void DrawAll(const GLPOSE&);
 
-	static void DrawAll(const COMPLEX<4>& headDir);
+	//操作
+	void Move(float h, float v); ///移動
+	void Resize(const IMAGE&, unsigned w, unsigned h); ///リサイズ
 
-	//根窓関連
-	static void AtCreate(XCreateWindowEvent&, XDISPLAY&);
-	static void AtMap(XMapEvent&);
-	static void AtDestroy(XDestroyWindowEvent&);
-	static void AtUnmap(XUnmapEvent&);
-	static void AtDamage(XEvent&);
-	static void AtKeyEvent(XEvent&);
-	static void AtMappingEvent(XMappingEvent&);
-	static void AtButtonEvent(XButtonEvent&);
-	static void AtConfigureEvent(XConfigureEvent&);
+protected:
+	/** 新規窓
+	 * 新規に窓を精製する。
+	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
+	 * なので作ってから設定する必要がある。
+	 */
+	WINDOW();
+	/** 中身付き新規窓
+	 * 初期状態はフォーカスなし、テクスチャ割り当て済み、可視
+	 * @attention h,vは左上ではなく中央
+	 * @attention サイズはinitialImageから取得する
+	 */
+	WINDOW(float h, float v, const IMAGE&);
+
+	void AssignImage(const IMAGE&); ///テクスチャ割り当て、イメージ転送
+	void UpdateImage( ///テクスチャ描き替え
+	const IMAGE&, //元イメージ
+	unsigned dx, //書き込み先座標
+	unsigned dy,
+	unsigned w, //転送サイズ
+	unsigned h);
+	void UpdateImage( ///テクスチャ描き替え
+	const IMAGE&, //元イメージ
+	unsigned sx, //元イメージ上の座標
+	unsigned sy,
+	unsigned dx, //書き込み先座標
+	unsigned dy,
+	unsigned w, //転送サイズ
+	unsigned h);
+
+	///イベントとハンドラ
+	class EVENT{
+	public:
+		enum EVENT_TYPE{
+			none,
+			//マウス関連
+			evMouseDown,
+			evMouseUp,
+			evMouseEnter,
+			evMouseMove,
+			evMouseLeave,
+			evMouseClicked,
+			//キーボード関連
+			evKeyDown,
+			evKeyRepeated,
+			evKepUp,
+			//ジョイスティック
+			evJSDown,
+			evJSUp,
+			evJSMove,
+			evJSChaged,
+		}type;
+		unsigned modifiers; //モディファイアキーの状態
+	};
+	///マウスイベント
+	class MOUSE_EVENT : public EVENT{
+	public:
+		float x; //窓内相対
+		float y;
+		float hScroll; //水平スクロール量
+		float vScroll; //垂直スクロール量
+		unsigned button; //操作されたボタン
+		unsigned buttonState; //ボタンの状態
+		unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
+		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
+	};
+	virtual void OnMouseDown(const MOUSE_EVENT&){}; //ボタンが押された
+	virtual void OnMouseUp(const MOUSE_EVENT&){}; //ボタンが放された
+	virtual void OnMouseEnter(const MOUSE_EVENT&){}; //ポインタが窓に入った
+	virtual void OnMouseMove(const MOUSE_EVENT&){}; //ポインタが窓の中を移動中
+	virtual void OnMouseLeave(const MOUSE_EVENT&){}; //ポインタが窓から出た
+	virtual void OnClick(const MOUSE_EVENT&){}; //クリックとその回数
+	///キーイベント
+	class KEY_EVENT : public EVENT{
+		unsigned charCode; //文字コード
+		unsigned keyCode; //キーコード(あれば。なければ0)
+	};
+	virtual void OnKeyDown(const KEY_EVENT&){}; //キーが押された
+	virtual void OnKeyRepeated(const KEY_EVENT&){}; //キーがオートリピートで押された
+	virtual void OnKeyUp(const KEY_EVENT&){}; //キーが放された
+	static unsigned long long keyState[];
+	virtual void OnKeyChanged(const unsigned long long){};
+	///ジョイスティック
+	class JS_EVENT : public EVENT{
+		unsigned upButton; //前回からの間に放されたボタン
+		unsigned downButton; //前回からの間に押されたボタン
+		unsigned buttonState; //現在のボタンの状況
+		unsigned movedAxis; //前回から変化があった軸
+		float axis[8]; //各軸の値(-1.0〜+1.0)
+	};
+	virtual void OnJSDown(const JS_EVENT&){};
+	virtual void OnJSUp(const JS_EVENT&){};
+	virtual void OnJSMove(const JS_EVENT&){};
+	virtual void OnJSChange(const JS_EVENT&){};
+	//描画
+	virtual void OnRedraw(){}; //サイズ変更等で再描画が必要になった時(バックストレージ前提なので全体を再描画する)
+	//コントロール
+	virtual void OnFocused(){};
+	virtual void OnUnfocused(){};
+
+	virtual ~WINDOW(); //窓の場合基本的に自殺なのでデストラクタを直接呼ばない
 
 private:
-	~WINDOW(); //自身をwindowListから削除して消滅
-	void Draw(unsigned numFormFront);
-
-	//X関連
-	XDISPLAY& display;
-	const Window wID; //窓ID
-	Damage dID; //xDamageID
+	void Draw(float xoff, float yoff, float distance);
 
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
-	static WINDOW* FindWindowByID(Display*, unsigned wID);
-	static bool zoomable; //ズーム処理する窓をひとつだけにするためのフラグ
-	static const COMPLEX<4>* headDir;
-	static const float zoomedScale; //ズームした時の大きさ[mm/px]
+	static const float scale; //窓表示スケール[m/px]
 	static WINDOW* focused;
+	static float baseDistance; //基準面の距離
 	void Focus();
 	void UnFocus();
-	void See(int x, int y);
-	static int seenX;
-	static int seenY;
 
-	//単体窓関連
+	//単体窓制御関連
 	TOOLBOX::NODE<WINDOW> node;
-	bool mapped; //tureならDrawされた時に描画する
-	unsigned tID; //窓の内容を保持するテクスチャID
+	unsigned tID; //窓の内容を保持するテクスチャID(0なら無効)
+	bool visibility; //可視状態
+	void SetVisibility(bool v){ visibility = v; };
 
-	//中心の位置というか角度
-	float horiz; //水平角(°)
-	float vert; //垂直角(°)
-	float scale; //非ズーム時の大きさ(ズーム時はピクセル基準)
+	//位置とサイズ
+	float horiz;
+	float vert;
 	float distance; //最後に描画した時の距離
-	static float baseDistance;
-	COMPLEX<4> center; //中心の向き
-
-	void Moved(int x, int y); //仮想空間側の窓だけ移動
-	void Move(int x, int y); //X側の窓も移動
-	void Resized(unsigned w, unsigned h); //仮想空間側の窓をリサイズ、テクスチャ再設定
-	void Resize(unsigned w, unsigned h); //X側の窓だけリサイズ(仮想空間側はXConfigureEventにて追随)
-
-	//ピクセル位置、サイズ(scaleを乗じたサイズで描画)
-	int vx;
-	int vy;
 	unsigned width;
 	unsigned height;
-
-	//窓生成、登録
-	void AssignTexture();
-	struct P2{
-		float x;
-		float y;
-	};
-	P2 GetLocalPosition(const COMPLEX<4>&);
-	void SeekPosition(
-		int hTo, int vTo,
-		int hStep, int vStep,
-		int gx, int gy);
-	unsigned OverLen(int s0, int l0, int s1, int l1);
-	unsigned WindowPositionPoint(int x, int y, int gx, int gy);
-
-	//窓固有のハンドラ
-	void OnDamage(XDamageNotifyEvent&);
 };
 
 

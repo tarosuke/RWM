@@ -1,15 +1,16 @@
 /******************************************************* window handler:window
  */
-#include <X11/extensions/Xcomposite.h>
-#include <X11/extensions/Xdamage.h>
-#include <X11/Xlib.h>
-
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include <GL/gl.h>
+#include <GL/glx.h>
+
+#include <toolbox/glpose/glpose.h>
 
 #include <window.h>
 #include <view/view.h>
@@ -19,12 +20,12 @@
 
 //窓までの距離
 float WINDOW::baseDistance(0.5);
+float WINDOW::motionDistance(1.0);
 
 //窓全体制御関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 WINDOW* WINDOW::focused(0);
 const float WINDOW::scale(0.0007);
-
 
 
 //窓生成
@@ -35,7 +36,7 @@ WINDOW::WINDOW() :
 }
 
 
-WINDOW(float h, float v, const IMAGE& initialImage) :
+WINDOW::WINDOW(float h, float v, const IMAGE& initialImage) :
 	node(windowList),
 	tID(0),
 	visibility(true){
@@ -46,10 +47,10 @@ WINDOW(float h, float v, const IMAGE& initialImage) :
 
 
 // テクスチャ割り当て
-void AssignImage(const IMAGE& image){
+void WINDOW::AssignImage(const IMAGE& image){
 	//テクスチャが既に割り当てられていたら入れ替えるために解放
 	if(tID){
-		glDeleteTextures(&tID);
+		glDeleteTextures(1, &tID);
 	}
 
 	//サイズ取得
@@ -62,12 +63,12 @@ void AssignImage(const IMAGE& image){
 
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	void* const image(image.GetmemoryImage());
-	if(image){
+	const void* const memImage(image.GetMemoryImage());
+	if(memImage){
 		//テクスチャへ転送
 		glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RGB, w, h, 0,
-			GL_BGRA, GL_UNSIGNED_BYTE, image);
+			GL_TEXTURE_2D, 0, GL_RGB,width, height, 0,
+			GL_BGRA, GL_UNSIGNED_BYTE, memImage);
 	}else{
 		//TODO:仮データを割り当てておく
 		assert(false);
@@ -87,7 +88,7 @@ void WINDOW::UpdateImage(
 	unsigned dx, //書き込み先座標
 	unsigned dy,
 	unsigned w, //転送サイズ
-	unsigned h{
+	unsigned h){
 	if(!tID){
 		//テクスチャなし
 		return;
@@ -95,16 +96,14 @@ void WINDOW::UpdateImage(
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glTexSubImage2D(
 		GL_TEXTURE_2D, 0,
-		e.area.x,
-		e.area.y,
+		dx,
+		dy,
 		w,
 		h,
 		GL_BGRA,
 		GL_UNSIGNED_BYTE,
-		image.GetmemoryImage());
+		image.GetMemoryImage());
 	glBindTexture(GL_TEXTURE_2D, 0);
-	XDestroyImage(wImage);
-
 }
 
 void WINDOW::UpdateImage(
@@ -114,17 +113,17 @@ void WINDOW::UpdateImage(
 	unsigned dx, //書き込み先座標
 	unsigned dy,
 	unsigned w, //転送サイズ
-	unsigned h{
+	unsigned h){
 	if(!tID){
 		//テクスチャなし
 		return;
 	}
 
 	//サブイメージ取得
-	const IMAGE subImage(image, sx, dx, w, h);
+	const IMAGE subImage(image, sx, sx, w, h);
 
 	//テクスチャアップデート
-	UpdateImage(subImage, w, h);
+	UpdateImage(subImage, dx, dy, w, h);
 }
 
 WINDOW::~WINDOW(){
@@ -137,7 +136,7 @@ WINDOW::~WINDOW(){
 
 void WINDOW::Focus(){
 	if(focused){
-		(*focused).OnUnfocus();
+		(*focused).OnUnfocused();
 	}
 	if(this != focused){
 		focused = this;
@@ -147,7 +146,7 @@ void WINDOW::Focus(){
 
 void WINDOW::UnFocus(){
 	if(this == focused){
-		OnUnfocus();
+		OnUnfocused();
 		focused = 0;
 	}
 }
@@ -170,16 +169,16 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	//描画
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float w(width * scale * 0.5);
-	const float h(height * scale * 0.5);
+	const float w2(width * scale * 0.5);
+	const float h2(height * scale * 0.5);
 	glTexCoord2f(0, 0);
-	glVertex3f(-w, h, -distance);
+	glVertex3f(-w2, h2, -distance);
 	glTexCoord2f(0, 1);
-	glVertex3f(-w, -h, -distance);
+	glVertex3f(-w2, -h2, -distance);
 	glTexCoord2f(1, 0);
-	glVertex3f(w, h, -distance);
+	glVertex3f(w2, h2, -distance);
 	glTexCoord2f(1, 1);
-	glVertex3f(v, -h, -distance);
+	glVertex3f(w2, -h2, -distance);
 	glEnd();
 
 	//後始末
@@ -187,4 +186,18 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void WINDOW::DrawAll(const GLPOSE& pose){
+	//描画中心点算出
+	VECTOR<3> front((const double[]){ 0, 0, -1 });
+	front.Rotate(pose.GetDirection());
+	const double* const v(front);
+	const float x(v[0] * motionDistance / v[2]);
+	const float y(v[1] * motionDistance / v[2]);
+
+	//窓描画
+	float dd(0.0);
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.05){
+		(*i).Draw(x, y, baseDistance + dd);
+	}
+}
 

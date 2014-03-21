@@ -6,13 +6,8 @@
  */
 #pragma once
 
-
-#include <GL/gl.h>
-#include <GL/glx.h>
-
 #include <toolbox/queue/queue.h>
 #include <toolbox/complex/complex.h>
-#include <toolbox/glpose/glpose.h>
 #include <image.h>
 
 
@@ -25,7 +20,7 @@ public:
 	 * @attention このメソッドは何の準備もせずにいきなり描画する。
 	 * @attention 描画先の設定が完了している事が前提。
 	 */
-	static void DrawAll(const GLPOSE&);
+	static void DrawAll(const class GLPOSE&);
 
 	//操作
 	void Move(float h, float v); ///移動
@@ -47,21 +42,21 @@ protected:
 
 	void AssignImage(const IMAGE&); ///テクスチャ割り当て、イメージ転送
 	void UpdateImage( ///テクスチャ描き替え
-	const IMAGE&, //元イメージ
-	unsigned dx, //書き込み先座標
-	unsigned dy,
-	unsigned w, //転送サイズ
-	unsigned h);
+		const IMAGE&, //元イメージ
+		unsigned dx, //書き込み先座標
+		unsigned dy,
+		unsigned w, //転送サイズ
+		unsigned h);
 	void UpdateImage( ///テクスチャ描き替え
-	const IMAGE&, //元イメージ
-	unsigned sx, //元イメージ上の座標
-	unsigned sy,
-	unsigned dx, //書き込み先座標
-	unsigned dy,
-	unsigned w, //転送サイズ
-	unsigned h);
+		const IMAGE&, //元イメージ
+		unsigned sx, //元イメージ上の座標
+		unsigned sy,
+		unsigned dx, //書き込み先座標
+		unsigned dy,
+		unsigned w, //転送サイズ
+		unsigned h);
 
-	///イベントとハンドラ
+	///イベントハンドラ
 	class EVENT{
 	public:
 		enum EVENT_TYPE{
@@ -97,6 +92,7 @@ protected:
 		unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
 		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
 	};
+	static void AtMouse(const MOUSE_EVENT&);
 	virtual void OnMouseDown(const MOUSE_EVENT&){}; //ボタンが押された
 	virtual void OnMouseUp(const MOUSE_EVENT&){}; //ボタンが放された
 	virtual void OnMouseEnter(const MOUSE_EVENT&){}; //ポインタが窓に入った
@@ -108,6 +104,7 @@ protected:
 		unsigned charCode; //文字コード
 		unsigned keyCode; //キーコード(あれば。なければ0)
 	};
+	static void AtKey(const KEY_EVENT&);
 	virtual void OnKeyDown(const KEY_EVENT&){}; //キーが押された
 	virtual void OnKeyRepeated(const KEY_EVENT&){}; //キーがオートリピートで押された
 	virtual void OnKeyUp(const KEY_EVENT&){}; //キーが放された
@@ -121,12 +118,14 @@ protected:
 		unsigned movedAxis; //前回から変化があった軸
 		float axis[8]; //各軸の値(-1.0〜+1.0)
 	};
+	static void AtJS(const JS_EVENT&);
 	virtual void OnJSDown(const JS_EVENT&){};
 	virtual void OnJSUp(const JS_EVENT&){};
 	virtual void OnJSMove(const JS_EVENT&){};
 	virtual void OnJSChange(const JS_EVENT&){};
 	//描画
 	virtual void OnRedraw(){}; //サイズ変更等で再描画が必要になった時(バックストレージ前提なので全体を再描画する)
+
 	//コントロール
 	virtual void OnFocused(){};
 	virtual void OnUnfocused(){};
@@ -140,7 +139,8 @@ private:
 	static TOOLBOX::QUEUE<WINDOW> windowList;
 	static const float scale; //窓表示スケール[m/px]
 	static WINDOW* focused;
-	static float baseDistance; //基準面の距離
+	static float baseDistance; //窓までの基本距離
+	static float motionDistance; //表示する中心を決めるための仮想的な距離
 	void Focus();
 	void UnFocus();
 
@@ -153,7 +153,6 @@ private:
 	//位置とサイズ
 	float horiz;
 	float vert;
-	float distance; //最後に描画した時の距離
 	unsigned width;
 	unsigned height;
 };

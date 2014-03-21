@@ -9,10 +9,10 @@ public:
 	unsigned GetHeight() const { return height; };
 	const void* GetImage(int xOff = 0, int yOff = 0) const{
 		return (void*)&((char*)image)[(yOff * width + xOff) * bpp]; };
-	const void* GetMemoryImage(){ return image; };
+	const void* GetMemoryImage() const{ return image; };
+	virtual ~IMAGE();
 protected:
 	IMAGE() : image(0){};
-	virtual ~IMAGE();
 	static const int bpp = 3;
 	void* image;
 	unsigned width;

@@ -22,6 +22,57 @@ public:
 	 */
 	static void DrawAll(const class GLPOSE&);
 
+	//イベントと一次ハンドラ
+	class EVENT{
+	public:
+		time_t timestamp;
+		enum EVENT_TYPE{
+			none,
+			//マウス関連
+			mouseDown,
+			mouseUp,
+			mouseEnter,
+			mouseMove,
+			mouseLeave,
+			mouseClicked,
+			//キーボード関連
+			keyDown,
+			keyRepeated,
+			keyUp,
+			//ジョイスティック
+			jsDown,
+			jsUp,
+			jsMove,
+			jsChaged,
+		}type;
+		unsigned modifiers; //モディファイアキーの状態
+	};
+	class MOUSE_EVENT : public EVENT{
+	public:
+		float x; //窓内相対
+		float y;
+		float hScroll; //水平スクロール量
+		float vScroll; //垂直スクロール量
+		unsigned button; //操作されたボタン
+		unsigned buttonState; //ボタンの状態
+		unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
+		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
+	};
+	class KEY_EVENT : public EVENT{
+		unsigned charCode; //文字コード
+		unsigned keyCode; //キーコード(あれば。なければ0)
+	};
+	class JS_EVENT : public EVENT{
+		unsigned upButton; //前回からの間に放されたボタン
+		unsigned downButton; //前回からの間に押されたボタン
+		unsigned buttonState; //現在のボタンの状況
+		unsigned movedAxis; //前回から変化があった軸
+		float axis[8]; //各軸の値(-1.0〜+1.0)
+	};
+	static void AtMouse(const MOUSE_EVENT&);
+	static void AtKey(const KEY_EVENT&);
+	static void AtJS(const JS_EVENT&);
+
 	//操作
 	void Move(float h, float v); ///移動
 	void Resize(const IMAGE&, unsigned w, unsigned h); ///リサイズ
@@ -33,6 +84,12 @@ protected:
 	 * なので作ってから設定する必要がある。
 	 */
 	WINDOW();
+	/** 新規窓(位置、サイズ付き)
+	 * 新規に窓を精製する。
+	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
+	 * なので作ってから設定する必要がある。
+	 */
+	WINDOW(float h, float v, int wi, int hi);
 	/** 中身付き新規窓
 	 * 初期状態はフォーカスなし、テクスチャ割り当て済み、可視
 	 * @attention h,vは左上ではなく中央
@@ -47,7 +104,7 @@ protected:
 		unsigned dy,
 		unsigned w, //転送サイズ
 		unsigned h);
-	void UpdateImage( ///テクスチャ描き替え
+	void UpdateImage( ///IMAGEの一部でテクスチャ描き替え
 		const IMAGE&, //元イメージ
 		unsigned sx, //元イメージ上の座標
 		unsigned sy,
@@ -56,77 +113,25 @@ protected:
 		unsigned w, //転送サイズ
 		unsigned h);
 
-	///イベントハンドラ
-	class EVENT{
-	public:
-		enum EVENT_TYPE{
-			none,
-			//マウス関連
-			evMouseDown,
-			evMouseUp,
-			evMouseEnter,
-			evMouseMove,
-			evMouseLeave,
-			evMouseClicked,
-			//キーボード関連
-			evKeyDown,
-			evKeyRepeated,
-			evKepUp,
-			//ジョイスティック
-			evJSDown,
-			evJSUp,
-			evJSMove,
-			evJSChaged,
-		}type;
-		unsigned modifiers; //モディファイアキーの状態
-	};
-	///マウスイベント
-	class MOUSE_EVENT : public EVENT{
-	public:
-		float x; //窓内相対
-		float y;
-		float hScroll; //水平スクロール量
-		float vScroll; //垂直スクロール量
-		unsigned button; //操作されたボタン
-		unsigned buttonState; //ボタンの状態
-		unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
-		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
-	};
-	static void AtMouse(const MOUSE_EVENT&);
+	//マウスイベント
 	virtual void OnMouseDown(const MOUSE_EVENT&){}; //ボタンが押された
 	virtual void OnMouseUp(const MOUSE_EVENT&){}; //ボタンが放された
 	virtual void OnMouseEnter(const MOUSE_EVENT&){}; //ポインタが窓に入った
 	virtual void OnMouseMove(const MOUSE_EVENT&){}; //ポインタが窓の中を移動中
 	virtual void OnMouseLeave(const MOUSE_EVENT&){}; //ポインタが窓から出た
 	virtual void OnClick(const MOUSE_EVENT&){}; //クリックとその回数
-	///キーイベント
-	class KEY_EVENT : public EVENT{
-		unsigned charCode; //文字コード
-		unsigned keyCode; //キーコード(あれば。なければ0)
-	};
-	static void AtKey(const KEY_EVENT&);
+	//キーイベント
 	virtual void OnKeyDown(const KEY_EVENT&){}; //キーが押された
-	virtual void OnKeyRepeated(const KEY_EVENT&){}; //キーがオートリピートで押された
 	virtual void OnKeyUp(const KEY_EVENT&){}; //キーが放された
 	static unsigned long long keyState[];
 	virtual void OnKeyChanged(const unsigned long long){};
-	///ジョイスティック
-	class JS_EVENT : public EVENT{
-		unsigned upButton; //前回からの間に放されたボタン
-		unsigned downButton; //前回からの間に押されたボタン
-		unsigned buttonState; //現在のボタンの状況
-		unsigned movedAxis; //前回から変化があった軸
-		float axis[8]; //各軸の値(-1.0〜+1.0)
-	};
-	static void AtJS(const JS_EVENT&);
+	//ジョイスティック
 	virtual void OnJSDown(const JS_EVENT&){};
 	virtual void OnJSUp(const JS_EVENT&){};
 	virtual void OnJSMove(const JS_EVENT&){};
 	virtual void OnJSChange(const JS_EVENT&){};
-	//描画
-	virtual void OnRedraw(){}; //サイズ変更等で再描画が必要になった時(バックストレージ前提なので全体を再描画する)
-
 	//コントロール
+	virtual void OnResize(unsigned w, unsigned h){};
 	virtual void OnFocused(){};
 	virtual void OnUnfocused(){};
 
@@ -155,6 +160,13 @@ private:
 	float vert;
 	unsigned width;
 	unsigned height;
+
+	//見ている先
+	static WINDOW* lookingWindow;
+	static struct POINT{
+		float x;
+		float y;
+	}lookingPoint;
 };
 
 

@@ -36,6 +36,16 @@ WINDOW::WINDOW() :
 }
 
 
+WINDOW::WINDOW(float h, float v, int wi, int hi) :
+	node(windowList),
+	tID(0),
+	visibility(false),
+	horiz(h),
+	vert(v),
+	width(wi),
+	height(hi){
+}
+
 WINDOW::WINDOW(float h, float v, const IMAGE& initialImage) :
 	node(windowList),
 	tID(0),
@@ -186,6 +196,8 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+WINDOW* WINDOW::lookingWindow;
+WINDOW::POINT WINDOW::lookingPoint;
 void WINDOW::DrawAll(const GLPOSE& pose){
 	//描画中心点算出
 	VECTOR<3> front((const double[]){ 0, 0, -1 });
@@ -195,9 +207,39 @@ void WINDOW::DrawAll(const GLPOSE& pose){
 	const float y(v[1] * motionDistance / v[2]);
 
 	//窓描画
+	lookingWindow = 0;
 	float dd(0.0);
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.05){
 		(*i).Draw(x, y, baseDistance + dd);
 	}
 }
+
+
+//イベントの一次ハンドラ
+void WINDOW::AtMouse(const MOUSE_EVENT& e){
+	//イベント送信対象
+}
+
+void WINDOW::AtKey(const KEY_EVENT& e){
+	if(!focused){
+		//イベントを送る先がない
+		return;
+	}
+	switch(e.type){
+	case EVENT::keyDown :
+	case EVENT::keyRepeated :
+		(*focused).OnKeyDown(e);
+		break;
+	case EVENT::keyUp :
+		(*focused).OnKeyUp(e);
+		break;
+	default:
+		break;
+	}
+}
+
+void WINDOW::AtJS(const JS_EVENT& e){
+}
+
+
 

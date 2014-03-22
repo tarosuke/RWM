@@ -1,9 +1,4 @@
-#if 0
 /******************************************************* window handler:window
- * -DTESTの時はrootになるウインドウを開いてそれをroot扱い。
- * でなければrootを取得してそれをrootとする。
- * rootに対してXCompositRedirectSubWindowsして内容を取得
- * また、窓に対してxdamegeイベントを受け付けるよう設定。
  */
 #include <X11/extensions/Xcomposite.h>
 #include <X11/extensions/Xdamage.h>
@@ -16,121 +11,60 @@
 #include <string.h>
 #include <math.h>
 
-#include <window.h>
-#include <view/view.h>
-#include <toolbox/cyclic/cyclic.h>
+#include <xWindow.h>
+#include <xDisplay.h>
 
-
-
-//窓までの距離
-float WINDOW::baseDistance(0.8);
 
 //窓全体関連
-TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
-WINDOW* WINDOW::focused(0);
+TOOLBOX::QUEUE<XWINDOW> XWINDOW::xWindowList;
 
 
 
-//窓IDからWINDOWのインスタンスを探す
-WINDOW* WINDOW::FindWindowByID(Display* display, unsigned wID){
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
-		WINDOW& w(*i.Owner());
-		if(display == w.display.XDisplay() && wID == w.wID){
-			return &w;
+XWINDOW::XWINDOW(
+	float x,
+	float y,
+	int w,
+	int h,
+	Window window,
+	const Display* d) :
+	WINDOW(x, y, w, h),
+	display(d),
+	wID(w),
+	xNode(xWindowList){}
+
+
+
+
+//窓IDからXWINDOWのインスタンスを探す
+XWINDOW* XWINDOW::FindWindowByID(const Display* d, Window w){
+	for(TOOLBOX::QUEUE<XWINDOW>::ITOR i(xWindowList); i; i++){
+		if(d == (*i).display && w == (*i).wID){
+			return i;
 		}
 	}
 	return 0;
 }
 
 
-/////窓描画関連
-bool WINDOW::zoomable(false);
-const COMPLEX<4>* WINDOW::headDir;
-const float WINDOW::zoomedScale(0.0011);
-void WINDOW::DrawAll(const COMPLEX<4>& dir){
-	zoomable = true;
-	headDir = &dir;
-	unsigned n(0);
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
-		if((*i).mapped){
-			(*i).Draw(n++);
-		}
-	}
-}
-
-void WINDOW::Draw(unsigned nff){
-	//ズーム処理
-	float s(scale);
-	P2 offset = { 0, 0 };
-	if(zoomable){
-		const P2 center = GetLocalPosition(*headDir);
-		if(0 <= center.x && center.x < width &&
-			0 <= center.y && center.y < height){
-			//フォーカス取得、注目
-			Focus();
-		See(center.x, center.y);
-
-		//ズーム時パラメタ設定
-		zoomable = false;
-		if(scale < zoomedScale){
-			//拡大率設定
-			s = zoomedScale;
-
-			//オフセット算出
-			const float zr(zoomedScale - scale);
-			const float hw(width * 0.5f);
-			const float hh(height * 0.5f);
-			const float dh(hw - center.x);
-			const float dv(center.y - hh);
-			offset.x = dh * zr;
-			offset.y = dv * zr;
-		}
-			}
-	}
-
-	//窓までの距離
-	distance = baseDistance + 0.03 * nff;
-
-	//窓描画
-	glPushMatrix();
-	glRotatef(-horiz * 180 / M_PI, 0, 1, 0);
-	glRotatef(-vert * 180 / M_PI, 1, 0, 0);
-
-	glBindTexture(GL_TEXTURE_2D, tID);
-	glBegin(GL_TRIANGLE_STRIP);
-	const float w(s * width * 0.5);
-	const float h(s * height * 0.5);
-	const float l(-w + offset.x);
-	const float r(w + offset.x);
-	const float t(-h + offset.y);
-	const float b(h + offset.y);
-	glTexCoord2f(0, 0);
-	glVertex3f(l, b, -distance);
-	glTexCoord2f(0, 1);
-	glVertex3f(l, t, -distance);
-	glTexCoord2f(1, 0);
-	glVertex3f(r, b, -distance);
-	glTexCoord2f(1, 1);
-	glVertex3f(r, t, -distance);
-	glEnd();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	//必要ならマウスカーソル描画
-	if(focused == this){
-	}
-}
-
-WINDOW::~WINDOW(){
-	UnFocus();
-	node.Detach();
-	if(tID){
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDeleteTextures(1, &tID);
-	}
-}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 
 //////イベント処理関連
 void WINDOW::AtCreate(XCreateWindowEvent& e, XDISPLAY& xDisplay){

@@ -34,6 +34,6 @@ IMAGE::IMAGE(const IMAGE& org, int left, int top, int w, int h) : image(0){
 	Allocate(w, h);
 
 	for(int n(0); n < h; ++n){
-		memcpy(GetImage(0, n), org.GetImage(left, top + n), bpp * width);
+		memcpy(GetImageMem(0, n), org.GetImage(left, top + n), bpp * width);
 	}
 }

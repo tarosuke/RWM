@@ -8,7 +8,7 @@
 #include <assert.h>
 
 #include "xDisplay.h"
-#include "window.h"
+#include <xWindow.h>
 
 
 
@@ -128,20 +128,7 @@ void XDISPLAY::Setup(){
 	if(!!wl){
 		Window* w(wl);
 		for(unsigned n(0); n < num; n++, w++){
-			XWindowAttributes attr;
-			XGetWindowAttributes(xDisplay, *w, &attr);
-			XCreateWindowEvent e;
-			e.type = CreateNotify;
-			e.display = xDisplay;
-			e.parent = rootWindowID;
-			e.window = *w;
-			e.x = attr.x;
-			e.y = attr.y;
-			e.width = attr.width;
-			e.height = attr.height;
-			e.border_width = attr.border_width;
-			e.override_redirect = attr.override_redirect;
-			new WINDOW(e, *this, attr.map_state == IsViewable);
+			XWINDOW::AtXCreate(xDisplay, *w);
 		}
 		XFree(wl);
 	}
@@ -195,6 +182,7 @@ void XDISPLAY::EventHandler(){
 	XEvent e;
 	while(XPending(xDisplay)){
 		XNextEvent(xDisplay, &e);
+#if 0
 		switch(e.type){
 			case CreateNotify:
 				if(e.xcreatewindow.window != rootWindowID &&
@@ -242,6 +230,7 @@ void XDISPLAY::EventHandler(){
 				}
 				break;
 		}
+#endif
 	}
 }
 

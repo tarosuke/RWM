@@ -198,10 +198,10 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 
 WINDOW* WINDOW::lookingWindow;
 WINDOW::POINT WINDOW::lookingPoint;
-void WINDOW::DrawAll(const GLPOSE& pose){
+void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	//描画中心点算出
 	VECTOR<3> front((const double[]){ 0, 0, -1 });
-	front.Rotate(pose.GetDirection());
+	front.Rotate(pose);
 	const double* const v(front);
 	const float x(v[0] * motionDistance / v[2]);
 	const float y(v[1] * motionDistance / v[2]);

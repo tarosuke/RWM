@@ -20,7 +20,7 @@ public:
 	 * @attention このメソッドは何の準備もせずにいきなり描画する。
 	 * @attention 描画先の設定が完了している事が前提。
 	 */
-	static void DrawAll(const class GLPOSE&);
+	static void DrawAll(const COMPLEX<4>&);
 
 	//イベントと一次ハンドラ
 	class EVENT{

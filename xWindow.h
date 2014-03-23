@@ -24,6 +24,7 @@ public:
 
 	//X用イベントハンドラ
 	static void AtXCreate(const XCreateWindowEvent&);
+	static void AtXCreate(const Display*, Window);
 	static void AtXDispose();
 
 private:

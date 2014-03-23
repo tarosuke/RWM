@@ -206,6 +206,19 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	const float x(v[0] * motionDistance / v[2]);
 	const float y(v[1] * motionDistance / v[2]);
 
+#if 1
+	//動作マーカー
+	glPointSize(5);
+	glColor4f(1.0f,1.0f,1.0f,1.0f);
+	for(float vv(-10); vv <= 10; vv += 0.5){
+		for(float hh(-10); hh <= 10; hh += 0.5){
+			glBegin(GL_POINTS);
+			glVertex3f(hh + x,vv + y, -baseDistance);
+			glEnd();
+		}
+	}
+#endif
+
 	//窓描画
 	lookingWindow = 0;
 	float dd(0.0);

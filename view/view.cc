@@ -76,9 +76,9 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
+		WINDOW::DrawAll(head.GetDirection()); //窓を描画
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
 		head.GetView(); //頭の姿勢、位置を反映
-		WINDOW::DrawAll(head.GetDirection()); //窓を描画
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		DrawObjects(externals); //externalを描画
 

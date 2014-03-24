@@ -29,8 +29,12 @@ XWINDOW::XWINDOW(
 	const Display* d) :
 	WINDOW(x, y, w, h),
 	display(d),
-	wID(w),
-	xNode(xWindowList){}
+	wID(window),
+	xNode(*this){
+	//X窓リストへ登録
+	xWindowList.Insert(xNode);
+puts("register X.");
+}
 
 
 
@@ -59,12 +63,21 @@ void XWINDOW::AtXCreate(const Display* d, Window w){
 	}
 
 	//新規窓登録
+printf("AtXCreate1.\n");
 	XWindowAttributes attr;
 	XGetWindowAttributes(const_cast<Display*>(d), w, &attr);
-	new XWINDOW(attr.x, attr.y, attr.width, attr.height, w, d);
+	XWINDOW* const nxw(new XWINDOW(attr.x, attr.y, attr.width, attr.height, w, d));
+	assert(nxw);
+
+	//マップされていたらテクスチャ貼り付け
+	if(IsUnmapped != attr.map_state){
+		(*nxw).AssignXTexture();
+puts("Allocate texture.");
+	}
 }
 
 void XWINDOW::AtXCreate(const XCreateWindowEvent& e){
+printf("AtXCreate2.\n");
 	const XWINDOW* const w(FindWindowByID(e.display, e.window));
 	if(!w){
 		//未登録窓ならインスタンス生成
@@ -74,8 +87,23 @@ void XWINDOW::AtXCreate(const XCreateWindowEvent& e){
 
 
 
+void XWINDOW::AssignXTexture(){
+	//窓取得
+	XImage* const wImage(XGetImage(
+		const_cast<Display*>(display),
+		wID,
+		0, 0, width, height,
+		AllPlanes, ZPixmap));
+	assert(wImage);
+	assert((*wImage).data);
 
+	//テクスチャの割り当て
+	AssignImage((void*)(*wImage).data, width, height);
+	XDestroyImage(wImage);
 
+	//窓を可視に設定
+	SetVisibility(true);
+}
 
 
 

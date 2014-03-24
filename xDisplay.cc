@@ -182,15 +182,14 @@ void XDISPLAY::EventHandler(){
 	XEvent e;
 	while(XPending(xDisplay)){
 		XNextEvent(xDisplay, &e);
-#if 0
 		switch(e.type){
-			case CreateNotify:
-				if(e.xcreatewindow.window != rootWindowID &&
-				   e.xcreatewindow.parent == rootWindowID){
-					WINDOW::AtCreate(
-						e.xcreatewindow, *this);
-				}
-				break;
+		case CreateNotify:
+			if(e.xcreatewindow.window != rootWindowID &&
+				e.xcreatewindow.parent == rootWindowID){
+				XWINDOW::AtXCreate(e.xcreatewindow);
+			}
+			break;
+#if 0
 			case MapNotify:
 				WINDOW::AtMap(e.xmap);
 				break;
@@ -221,16 +220,18 @@ void XDISPLAY::EventHandler(){
 			case ButtonRelease:
 				WINDOW::AtButtonEvent(e.xbutton);
 				break;
-			default:
-				if(e.type == damageBase + XDamageNotify){
-					//XDamageのイベント
-					WINDOW::AtDamage(e);
-				}else{
-					//その他のイベント(裏画面へ転送)
-				}
-				break;
-		}
 #endif
+		default:
+#if 0
+			if(e.type == damageBase + XDamageNotify){
+				//XDamageのイベント
+				WINDOW::AtDamage(e);
+			}else{
+				//その他のイベント(裏画面へ転送)
+			}
+#endif
+			break;
+		}
 	}
 }
 

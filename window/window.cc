@@ -30,42 +30,52 @@ const float WINDOW::scale(0.0007);
 
 //窓生成
 WINDOW::WINDOW() :
-	node(windowList),
+	node(*this),
 	tID(0),
 	visibility(false){
+	//窓リストへ登録
+	windowList.Insert(node);
 }
 
 
 WINDOW::WINDOW(float h, float v, int wi, int hi) :
-	node(windowList),
-	tID(0),
-	visibility(false),
 	horiz(h),
 	vert(v),
 	width(wi),
-	height(hi){
+	height(hi),
+	node(*this),
+	tID(0),
+	visibility(false){
+	//窓リストへ登録
+	windowList.Insert(node);
 }
 
 WINDOW::WINDOW(float h, float v, const IMAGE& initialImage) :
-	node(windowList),
+	node(*this),
 	tID(0),
 	visibility(true){
 
 	//テクスチャ割り当て
 	AssignImage(initialImage);
+
+	//窓リストへ登録
+	windowList.Insert(node);
 }
 
 
 // テクスチャ割り当て
 void WINDOW::AssignImage(const IMAGE& image){
+	AssignImage(image.GetMemoryImage(), image.GetWidth(), image.GetHeight());
+}
+void WINDOW::AssignImage(const void* bitmap, unsigned w, unsigned h){
 	//テクスチャが既に割り当てられていたら入れ替えるために解放
 	if(tID){
 		glDeleteTextures(1, &tID);
 	}
 
 	//サイズ取得
-	width = image.GetWidth();
-	height = image.GetHeight();
+	width = w;
+	height = h;
 
 	//テクスチャ割り当て
 	glGenTextures(1, &tID);
@@ -73,7 +83,7 @@ void WINDOW::AssignImage(const IMAGE& image){
 
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
-	const void* const memImage(image.GetMemoryImage());
+	const void* const memImage(bitmap);
 	if(memImage){
 		//テクスチャへ転送
 		glTexImage2D(
@@ -173,7 +183,7 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 
 	//向きと位置を設定
 	glPushMatrix();
-	glRotatef(-(h / distance) * 180 / M_PI, 0, 1, 0);
+	glRotatef((h / distance) * 180 / M_PI, 0, 1, 0);
 	glRotatef(-(v / distance) * 180 / M_PI, 1, 0, 0);
 
 	//描画
@@ -223,6 +233,7 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	lookingWindow = 0;
 	float dd(0.0);
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.05){
+// printf("window:%p.\n", (void*)i);
 		(*i).Draw(x, y, baseDistance + dd);
 	}
 }

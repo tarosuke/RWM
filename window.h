@@ -98,6 +98,7 @@ protected:
 	WINDOW(float h, float v, const IMAGE&);
 
 	void AssignImage(const IMAGE&); ///テクスチャ割り当て、イメージ転送
+	void AssignImage(const void*, unsigned w, unsigned h);
 	void UpdateImage( ///テクスチャ描き替え
 		const IMAGE&, //元イメージ
 		unsigned dx, //書き込み先座標
@@ -137,6 +138,14 @@ protected:
 
 	virtual ~WINDOW(); //窓の場合基本的に自殺なのでデストラクタを直接呼ばない
 
+	//位置とサイズ
+	float horiz;
+	float vert;
+	unsigned width;
+	unsigned height;
+
+	void SetVisibility(bool v){ visibility = v; };
+
 private:
 	void Draw(float xoff, float yoff, float distance);
 
@@ -153,13 +162,6 @@ private:
 	TOOLBOX::NODE<WINDOW> node;
 	unsigned tID; //窓の内容を保持するテクスチャID(0なら無効)
 	bool visibility; //可視状態
-	void SetVisibility(bool v){ visibility = v; };
-
-	//位置とサイズ
-	float horiz;
-	float vert;
-	unsigned width;
-	unsigned height;
 
 	//見ている先
 	static WINDOW* lookingWindow;

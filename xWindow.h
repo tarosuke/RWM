@@ -42,7 +42,7 @@ private:
 	//単体窓関連
 	TOOLBOX::NODE<XWINDOW> xNode; //X窓リストのノード
 
-
+	void AssignXTexture();
 
 
 

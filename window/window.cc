@@ -20,7 +20,7 @@
 
 //窓までの距離
 float WINDOW::baseDistance(0.5);
-float WINDOW::motionDistance(1.0);
+float WINDOW::motionDistance(2.0);
 
 //窓全体制御関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
@@ -178,13 +178,21 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	}
 
 	//描画位置算出
-	const float h(horiz - xoff);
-	const float v(vert - yoff);
+	const float h(horiz * scale - xoff);
+	const float v(vert * scale - yoff);
+	if(M_PI*0.5 <= h*h + v*v){
+		//エイリアスやどのみち見えない領域は描画しない
+		return;
+	}
+
+	//窓の向き＆表示位置計算
+	const float ha((h / distance) * 180 / M_PI);
+	const float va(-(v / distance) * 180 / M_PI);
 
 	//向きと位置を設定
 	glPushMatrix();
-	glRotatef((h / distance) * 180 / M_PI, 0, 1, 0);
-	glRotatef(-(v / distance) * 180 / M_PI, 1, 0, 0);
+	glRotatef(ha, 0, 1, 0);
+	glRotatef(va, 1, 0, 0);
 
 	//描画
 	glBindTexture(GL_TEXTURE_2D, tID);
@@ -210,29 +218,20 @@ WINDOW* WINDOW::lookingWindow;
 WINDOW::POINT WINDOW::lookingPoint;
 void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	//描画中心点算出
-	VECTOR<3> front((const double[]){ 0, 0, -1 });
+	VECTOR<3> front((const double[]){ 0, 0, 1 });
 	front.Rotate(pose);
 	const double* const v(front);
+	if(v[2] <= 0){
+		//後ろ向き
+		return;
+	}
 	const float x(v[0] * motionDistance / v[2]);
 	const float y(v[1] * motionDistance / v[2]);
-
-#if 1
-	//動作マーカー
-	glPointSize(5);
-	glColor4f(1.0f,1.0f,1.0f,1.0f);
-	for(float vv(-10); vv <= 10; vv += 0.5){
-		for(float hh(-10); hh <= 10; hh += 0.5){
-			glBegin(GL_POINTS);
-			glVertex3f(hh + x,vv + y, -baseDistance);
-			glEnd();
-		}
-	}
-#endif
 
 	//窓描画
 	lookingWindow = 0;
 	float dd(0.0);
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.05){
+	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.02){
 // printf("window:%p.\n", (void*)i);
 		(*i).Draw(x, y, baseDistance + dd);
 	}

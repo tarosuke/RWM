@@ -25,7 +25,10 @@ public:
 	//X用イベントハンドラ
 	static void AtXCreate(const XCreateWindowEvent&);
 	static void AtXCreate(const Display*, Window);
-	static void AtXDispose();
+	static void AtXDestroy(const XDestroyWindowEvent&);
+	static void AtXMap(const XMapEvent&);
+	static void AtXUnmap(const XUnmapEvent&);
+
 
 private:
 	~XWINDOW(){}; //Xのメッセージに追従し、外部からは呼ばれないのでprivate

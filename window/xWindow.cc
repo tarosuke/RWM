@@ -33,7 +33,6 @@ XWINDOW::XWINDOW(
 	xNode(*this){
 	//X窓リストへ登録
 	xWindowList.Insert(xNode);
-puts("register X.");
 }
 
 
@@ -63,7 +62,6 @@ void XWINDOW::AtXCreate(const Display* d, Window w){
 	}
 
 	//新規窓登録
-printf("AtXCreate1.\n");
 	XWindowAttributes attr;
 	XGetWindowAttributes(const_cast<Display*>(d), w, &attr);
 	XWINDOW* const nxw(new XWINDOW(attr.x, attr.y, attr.width, attr.height, w, d));
@@ -72,12 +70,11 @@ printf("AtXCreate1.\n");
 	//マップされていたらテクスチャ貼り付け
 	if(IsUnmapped != attr.map_state){
 		(*nxw).AssignXTexture();
-puts("Allocate texture.");
 	}
 }
 
 void XWINDOW::AtXCreate(const XCreateWindowEvent& e){
-printf("AtXCreate2.\n");
+printf("AtXCreate2 %lx (%d %d).\n", e.window, e.width, e.height);
 	const XWINDOW* const w(FindWindowByID(e.display, e.window));
 	if(!w){
 		//未登録窓ならインスタンス生成
@@ -85,6 +82,36 @@ printf("AtXCreate2.\n");
 	}
 }
 
+void XWINDOW::AtXDestroy(const XDestroyWindowEvent& e){
+	XWINDOW* const xw(FindWindowByID(e.display, e.window));
+	if(!xw){
+		//そんな奴は知らん
+		return;
+	}
+	delete xw;
+	printf("AtXDestroy.\n");
+}
+
+void XWINDOW::AtXMap(const XMapEvent& e){
+	XWINDOW* const xw(FindWindowByID(e.display, e.window));
+	if(!xw){
+		//そんな奴は知らん
+		return;
+	}
+	(*xw).AssignXTexture();
+	(*xw).SetVisibility(true);
+	printf("AtXMap %lx (%d %d).\n", e.window, (*xw).width, (*xw).height);
+}
+
+void XWINDOW::AtXUnmap(const XUnmapEvent& e){
+	XWINDOW* const xw(FindWindowByID(e.display, e.window));
+	if(!xw){
+		//そんな奴は知らん
+		return;
+	}
+	(*xw).SetVisibility(false);
+	printf("AtXUnmap.\n");
+}
 
 
 void XWINDOW::AssignXTexture(){

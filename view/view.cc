@@ -78,7 +78,23 @@ void VIEW::Run(){
 		//各段階描画
 		WINDOW::DrawAll(head.GetDirection()); //窓を描画
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
-		head.GetView(); //頭の姿勢、位置を反映
+
+//		head.GetView(); //頭の姿勢、位置を反映
+
+#if 1
+		//動作確認マーカー
+		glPointSize(50);
+		for(float vv(-10); vv <= 10; vv += 0.5){
+			for(float hh(-10); hh <= 10; hh += 0.5){
+				for(float z(-10); z <= 10; z += 0.5){
+					glBegin(GL_POINTS);
+					glVertex3f(hh + x,vv + y, z);
+					glEnd();
+				}
+			}
+		}
+#endif
+
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		DrawObjects(externals); //externalを描画
 

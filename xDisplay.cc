@@ -189,16 +189,16 @@ void XDISPLAY::EventHandler(){
 				XWINDOW::AtXCreate(e.xcreatewindow);
 			}
 			break;
-#if 0
 			case MapNotify:
-				WINDOW::AtMap(e.xmap);
+				XWINDOW::AtXMap(e.xmap);
 				break;
 			case DestroyNotify:
-				WINDOW::AtDestroy(e.xdestroywindow);
+				XWINDOW::AtXDestroy(e.xdestroywindow);
 				break;
 			case UnmapNotify:
-				WINDOW::AtUnmap(e.xunmap);
+				XWINDOW::AtXUnmap(e.xunmap);
 				break;
+#if 0
 			case ConfigureNotify:
 				WINDOW::AtConfigureEvent(e.xconfigure);
 				break;

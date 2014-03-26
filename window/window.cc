@@ -178,7 +178,7 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	}
 
 	//描画位置算出
-	const float h(horiz * scale - xoff);
+	const float h(horiz * scale + xoff);
 	const float v(vert * scale - yoff);
 	if(M_PI*0.5 <= h*h + v*v){
 		//エイリアスやどのみち見えない領域は描画しない
@@ -186,7 +186,7 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	}
 
 	//窓の向き＆表示位置計算
-	const float ha((h / distance) * 180 / M_PI);
+	const float ha(-(h / distance) * 180 / M_PI);
 	const float va(-(v / distance) * 180 / M_PI);
 
 	//向きと位置を設定

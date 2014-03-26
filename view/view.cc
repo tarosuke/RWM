@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "view.h"
 #include <window.h>
@@ -79,16 +80,20 @@ void VIEW::Run(){
 		WINDOW::DrawAll(head.GetDirection()); //窓を描画
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
 
-//		head.GetView(); //頭の姿勢、位置を反映
+		head.GetView(); //頭の姿勢、位置を反映
 
 #if 1
 		//動作確認マーカー
-		glPointSize(50);
-		for(float vv(-10); vv <= 10; vv += 0.5){
-			for(float hh(-10); hh <= 10; hh += 0.5){
-				for(float z(-10); z <= 10; z += 0.5){
+		for(float z(-2); z <= 2; z += 0.5){
+			for(float y(-2); y <= 2; y += 0.5){
+				for(float x(-2); x <= 2; x += 0.5){
+					float d(sqrt(x*x + y*y + x*x));
+					if(d < 0.1){
+						continue;
+					}
+					glPointSize(3 / d);
 					glBegin(GL_POINTS);
-					glVertex3f(hh + x,vv + y, z);
+					glVertex3f(x, y, z);
 					glEnd();
 				}
 			}

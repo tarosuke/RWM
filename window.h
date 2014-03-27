@@ -100,11 +100,15 @@ protected:
 	void AssignImage(const IMAGE&); ///テクスチャ割り当て、イメージ転送
 	void AssignImage(const void*, unsigned w, unsigned h);
 	void UpdateImage( ///テクスチャ描き替え
-		const IMAGE&, //元イメージ
+		const void*, //元イメージ
 		unsigned dx, //書き込み先座標
 		unsigned dy,
 		unsigned w, //転送サイズ
 		unsigned h);
+	void UpdateImage( ///テクスチャ描き替え
+		const IMAGE&, //元イメージ
+		unsigned dx, //書き込み先座標
+		unsigned dy);
 	void UpdateImage( ///IMAGEの一部でテクスチャ描き替え
 		const IMAGE&, //元イメージ
 		unsigned sx, //元イメージ上の座標

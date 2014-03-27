@@ -25,7 +25,7 @@ float WINDOW::motionDistance(2.0);
 //窓全体制御関連
 TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
 WINDOW* WINDOW::focused(0);
-const float WINDOW::scale(0.0007);
+const float WINDOW::scale(0.0011);
 
 
 //窓生成
@@ -68,6 +68,8 @@ void WINDOW::AssignImage(const IMAGE& image){
 	AssignImage(image.GetMemoryImage(), image.GetWidth(), image.GetHeight());
 }
 void WINDOW::AssignImage(const void* bitmap, unsigned w, unsigned h){
+	assert(bitmap);
+
 	//テクスチャが既に割り当てられていたら入れ替えるために解放
 	if(tID){
 		glDeleteTextures(1, &tID);
@@ -106,6 +108,17 @@ void WINDOW::AssignImage(const void* bitmap, unsigned w, unsigned h){
 void WINDOW::UpdateImage(
 	const IMAGE& image, //元イメージ
 	unsigned dx, //書き込み先座標
+	unsigned dy){
+	UpdateImage(
+		image.GetMemoryImage(),
+		dx, dy,
+		image.GetWidth(),
+		image.GetHeight());
+}
+
+void WINDOW::UpdateImage(
+	const void* bitmap, //元イメージ
+	unsigned dx, //書き込み先座標
 	unsigned dy,
 	unsigned w, //転送サイズ
 	unsigned h){
@@ -122,7 +135,7 @@ void WINDOW::UpdateImage(
 		h,
 		GL_BGRA,
 		GL_UNSIGNED_BYTE,
-		image.GetMemoryImage());
+		bitmap);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -143,7 +156,7 @@ void WINDOW::UpdateImage(
 	const IMAGE subImage(image, sx, sx, w, h);
 
 	//テクスチャアップデート
-	UpdateImage(subImage, dx, dy, w, h);
+	UpdateImage(subImage, dx, dy);
 }
 
 WINDOW::~WINDOW(){

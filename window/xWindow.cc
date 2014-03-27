@@ -33,6 +33,10 @@ XWINDOW::XWINDOW(
 	xNode(*this){
 	//X窓リストへ登録
 	xWindowList.Insert(xNode);
+
+	//XDamageイベントを受け取る設定
+	XSelectInput(const_cast<Display*>(display), wID, PropertyChangeMask);
+	dID = XDamageCreate(const_cast<Display*>(display), wID, XDamageReportNonEmpty);
 }
 
 
@@ -74,7 +78,6 @@ void XWINDOW::AtXCreate(const Display* d, Window w){
 }
 
 void XWINDOW::AtXCreate(const XCreateWindowEvent& e){
-printf("AtXCreate2 %lx (%d %d).\n", e.window, e.width, e.height);
 	const XWINDOW* const w(FindWindowByID(e.display, e.window));
 	if(!w){
 		//未登録窓ならインスタンス生成
@@ -89,7 +92,6 @@ void XWINDOW::AtXDestroy(const XDestroyWindowEvent& e){
 		return;
 	}
 	delete xw;
-	printf("AtXDestroy.\n");
 }
 
 void XWINDOW::AtXMap(const XMapEvent& e){
@@ -100,7 +102,6 @@ void XWINDOW::AtXMap(const XMapEvent& e){
 	}
 	(*xw).AssignXTexture();
 	(*xw).SetVisibility(true);
-	printf("AtXMap %lx (%d %d).\n", e.window, (*xw).width, (*xw).height);
 }
 
 void XWINDOW::AtXUnmap(const XUnmapEvent& e){
@@ -110,7 +111,6 @@ void XWINDOW::AtXUnmap(const XUnmapEvent& e){
 		return;
 	}
 	(*xw).SetVisibility(false);
-	printf("AtXUnmap.\n");
 }
 
 
@@ -121,19 +121,59 @@ void XWINDOW::AssignXTexture(){
 		wID,
 		0, 0, width, height,
 		AllPlanes, ZPixmap));
-	assert(wImage);
-	assert((*wImage).data);
-
-	//テクスチャの割り当て
-	AssignImage((void*)(*wImage).data, width, height);
-	XDestroyImage(wImage);
+	if(wImage && (*wImage).data){
+		//テクスチャの割り当て
+		AssignImage((void*)(*wImage).data, width, height);
+		XDestroyImage(wImage);
+	}else{
+		//取得できなかったけど後でdamageで送られてくるので割り当てておく
+		void* dummyData(malloc(width * height * 4));
+		AssignImage(dummyData, width, height);
+		free(dummyData);
+	}
 
 	//窓を可視に設定
 	SetVisibility(true);
 }
 
 
+void XWINDOW::AtXDamage(const XEvent& ev){
+	XDamageNotifyEvent& e(*(XDamageNotifyEvent*)&ev);
+	//知っている窓なら変化分を反映
+	XWINDOW* const w(XWINDOW::FindWindowByID(e.display, e.drawable));
+	if(w){
+		(*w).OnDamage(e);
+	}
+}
 
+void XWINDOW::OnDamage(XDamageNotifyEvent& e){
+	//変化分を取得したと通知
+	XDamageSubtract(const_cast<Display*>(display), e.damage, None, None);
+
+	//変化分をwImageへ取得
+	XImage* const wImage(XGetImage(
+		const_cast<Display*>(display),
+		wID,
+		e.area.x,
+		e.area.y,
+		e.area.width,
+		e.area.height,
+		AllPlanes,
+		ZPixmap));
+
+	if(wImage){
+		//変化分をテクスチャに反映
+		UpdateImage(
+			(*wImage).data,
+			e.area.x,
+			e.area.y,
+			e.area.width,
+			e.area.height);
+		XDestroyImage(wImage);
+	}else{
+		puts("falied to capture image.");
+	}
+}
 
 
 

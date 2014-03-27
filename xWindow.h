@@ -28,7 +28,7 @@ public:
 	static void AtXDestroy(const XDestroyWindowEvent&);
 	static void AtXMap(const XMapEvent&);
 	static void AtXUnmap(const XUnmapEvent&);
-
+	static void AtXDamage(const XEvent&);
 
 private:
 	~XWINDOW(){}; //Xのメッセージに追従し、外部からは呼ばれないのでprivate

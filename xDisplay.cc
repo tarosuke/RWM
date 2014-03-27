@@ -222,14 +222,12 @@ void XDISPLAY::EventHandler(){
 				break;
 #endif
 		default:
-#if 0
 			if(e.type == damageBase + XDamageNotify){
 				//XDamageのイベント
-				WINDOW::AtDamage(e);
+				XWINDOW::AtXDamage(e);
 			}else{
 				//その他のイベント(裏画面へ転送)
 			}
-#endif
 			break;
 		}
 	}

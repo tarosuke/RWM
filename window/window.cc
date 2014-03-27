@@ -188,11 +188,11 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	//窓の向き＆表示位置計算
 	const float ha(-(h / distance) * 180 / M_PI);
 	const float va(-(v / distance) * 180 / M_PI);
+	const float d(sqrt(ha*ha + va*va));
 
 	//向きと位置を設定
 	glPushMatrix();
-	glRotatef(ha, 0, 1, 0);
-	glRotatef(va, 1, 0, 0);
+	glRotatef(d, va, ha, 0);
 
 	//描画
 	glBindTexture(GL_TEXTURE_2D, tID);

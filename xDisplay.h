@@ -39,6 +39,8 @@ protected:
 	Window rootWindowID;
 	unsigned width;
 	unsigned height;
+	unsigned hCenter;
+	unsigned vCenter;
 	static int XErrorHandler(Display*, XErrorEvent*);
 	pthread_t evThread;
 	GLXContext glxContext;

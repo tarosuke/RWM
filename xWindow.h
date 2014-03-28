@@ -23,8 +23,8 @@ public:
 	XWINDOW(float x, float y, int w, int h, Window, const Display*);
 
 	//X用イベントハンドラ
-	static void AtXCreate(const XCreateWindowEvent&);
-	static void AtXCreate(const Display*, Window);
+	static void AtXCreate(const XCreateWindowEvent&, unsigned, unsigned);
+	static void AtXCreate(const Display*, Window, unsigned, unsigned);
 	static void AtXDestroy(const XDestroyWindowEvent&);
 	static void AtXMap(const XMapEvent&);
 	static void AtXUnmap(const XUnmapEvent&);

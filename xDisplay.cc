@@ -119,6 +119,10 @@ void XDISPLAY::Setup(){
 	XFlush( xDisplay );
 	XSync(xDisplay, false);
 
+	//根窓中央を計算
+	hCenter = width /2;
+	vCenter = height /2;
+
 	//既存窓取得
 	Window r;
 	Window p;
@@ -128,7 +132,7 @@ void XDISPLAY::Setup(){
 	if(!!wl){
 		Window* w(wl);
 		for(unsigned n(0); n < num; n++, w++){
-			XWINDOW::AtXCreate(xDisplay, *w);
+			XWINDOW::AtXCreate(xDisplay, *w, hCenter, vCenter);
 		}
 		XFree(wl);
 	}
@@ -186,40 +190,37 @@ void XDISPLAY::EventHandler(){
 		case CreateNotify:
 			if(e.xcreatewindow.window != rootWindowID &&
 				e.xcreatewindow.parent == rootWindowID){
-				XWINDOW::AtXCreate(e.xcreatewindow);
+				XWINDOW::AtXCreate(e.xcreatewindow, hCenter, vCenter);
 			}
 			break;
-			case MapNotify:
-				XWINDOW::AtXMap(e.xmap);
-				break;
-			case DestroyNotify:
-				XWINDOW::AtXDestroy(e.xdestroywindow);
-				break;
-			case UnmapNotify:
-				XWINDOW::AtXUnmap(e.xunmap);
-				break;
+		case MapNotify:
+			XWINDOW::AtXMap(e.xmap);
+			break;
+		case DestroyNotify:
+			XWINDOW::AtXDestroy(e.xdestroywindow);
+			break;
+		case UnmapNotify:
+			XWINDOW::AtXUnmap(e.xunmap);
+			break;
 #if 0
-			case ConfigureNotify:
-				WINDOW::AtConfigureEvent(e.xconfigure);
-				break;
-			case KeyPress:
-#if 0
-				TestWindow();
-#endif
-			case KeyRelease:
-				WINDOW::AtKeyEvent(e);
-				break;
-			case MappingNotify:
+		case ConfigureNotify:
+			WINDOW::AtConfigureEvent(e.xconfigure);
+			break;
+		case KeyPress:
+		case KeyRelease:
+			WINDOW::AtKeyEvent(e);
+			break;
+		case MappingNotify:
 #if 1
-				XRefreshKeyboardMapping(&e.xmapping);
+			XRefreshKeyboardMapping(&e.xmapping);
 #else
-				WINDOW::AtMappingEvent(e.xmapping);
+			WINDOW::AtMappingEvent(e.xmapping);
 #endif
-				break;
-			case ButtonPress:
-			case ButtonRelease:
-				WINDOW::AtButtonEvent(e.xbutton);
-				break;
+			break;
+		case ButtonPress:
+		case ButtonRelease:
+			WINDOW::AtButtonEvent(e.xbutton);
+			break;
 #endif
 		default:
 			if(e.type == damageBase + XDamageNotify){
@@ -232,46 +233,6 @@ void XDISPLAY::EventHandler(){
 		}
 	}
 }
-
-
-#ifdef TEST
-void XDISPLAY::TestWindow(){
-	if(testWindow < 0){
-		testWindow = XCreateSimpleWindow(
-			xDisplay,
-			rootWindowID,
-			320,
-			0,
-			640,
-			800,
-			0,
-			WhitePixel(xDisplay, 0),
-			0x3C4048);
-		XMapWindow(xDisplay, testWindow);
-		//描画テスト
-		GC gc(XCreateGC(xDisplay, testWindow, 0, 0));
-		XSetForeground(xDisplay, gc, 0x00ff0000);
-		XFillRectangle(xDisplay, testWindow, gc, 100, 10, 200, 400);
-		XSetForeground(xDisplay, gc, 0x000000ff);
-		XFillArc(xDisplay, testWindow, gc, 300, 400, 400, 400, 0, 360 * 64);
-		XSetForeground(xDisplay, gc, 0xD2DEF0);
-		XSetFont(xDisplay, gc, XLoadFont(xDisplay,
-			"-*-*-*-*-*-*-24-*-*-*-*-*-iso8859-*"));
-		const char* const str("Testwindow appers!");
-		XDrawString(
-			xDisplay,
-			testWindow,
-			gc,
-			200, 600,
-			str, strlen(str));
-		XFreeGC(xDisplay, gc);
-	}else{
-		XUnmapWindow(xDisplay, testWindow);
-		XDestroyWindow(xDisplay, testWindow);
-		testWindow = -1;
-	}
-}
-#endif
 
 
 

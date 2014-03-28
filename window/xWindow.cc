@@ -58,7 +58,7 @@ XWINDOW* XWINDOW::FindWindowByID(const Display* d, Window w){
 
 
 ///既存窓登録用
-void XWINDOW::AtXCreate(const Display* d, Window w){
+void XWINDOW::AtXCreate(const Display* d, Window w, unsigned hc, unsigned vc){
 	const XWINDOW* const xw(FindWindowByID(d, w));
 	if(xw){
 		//登録済なので終了
@@ -68,20 +68,29 @@ void XWINDOW::AtXCreate(const Display* d, Window w){
 	//新規窓登録
 	XWindowAttributes attr;
 	XGetWindowAttributes(const_cast<Display*>(d), w, &attr);
-	XWINDOW* const nxw(new XWINDOW(attr.x, attr.y, attr.width, attr.height, w, d));
+	XWINDOW* const nxw(new XWINDOW(
+		(float)attr.x - hc,
+		(float)attr.y - vc,
+		attr.width,
+		attr.height, w, d));
 	assert(nxw);
 
 	//マップされていたらテクスチャ貼り付け
 	if(IsUnmapped != attr.map_state){
 		(*nxw).AssignXTexture();
 	}
+
 }
 
-void XWINDOW::AtXCreate(const XCreateWindowEvent& e){
+void XWINDOW::AtXCreate(const XCreateWindowEvent& e, unsigned hc, unsigned vc){
 	const XWINDOW* const w(FindWindowByID(e.display, e.window));
 	if(!w){
 		//未登録窓ならインスタンス生成
-		new XWINDOW(e.x, e.y, e.width, e.height, e.window, e.display);
+		new XWINDOW(
+			(float)e.x - hc,
+			(float)e.y - vc,
+			e.width, e.height,
+			e.window, e.display);
 	}
 }
 

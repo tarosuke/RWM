@@ -13,6 +13,7 @@
 
 #include <xWindow.h>
 #include <xDisplay.h>
+#include <view/view.h>
 
 
 //窓全体関連
@@ -186,52 +187,62 @@ void XWINDOW::OnDamage(XDamageNotifyEvent& e){
 
 
 
+void XWINDOW::AtXKey(const XKeyEvent& e){
+	const unsigned testState(ShiftMask | ControlMask);
+	if(e.type == KeyRelease &&
+	  (e.state & testState) == testState &&
+	   e.keycode == 0x16){
+		VIEW::Quit();
+		return;
+	}
+
+	//イベント変換
+	KEY_EVENT ev;
+	ev.type = e.type == KeyPress ? EVENT::keyDown : EVENT::keyUp;
+	ev.modifiers = e.state & ShiftMask ? EVENT::ShiftKey : 0;
+	ev.modifiers |= e.state & ControlMask ? EVENT::CtrlKey : 0;
+	ev.modifiers |= e.state & Mod1Mask ? EVENT::AltKey : 0;
+	ev.keyCode = e.keycode;
+	ev.charCode = XLookupKeysym(
+		const_cast<XKeyEvent*>(&e),
+		e.state & ShiftMask ? 1 : 0);
+
+	//イベント回送
+	AtKey(ev);
+}
+
+
+void XWINDOW::OnKeyDown(const KEY_EVENT& e){
+	XKeyEvent xe;
+	xe.type = KeyPress;
+	xe.display = const_cast<Display*>(display);
+	xe.window = wID;
+	xe.state =
+		(e.modifiers & EVENT::ShiftKey ? ShiftMask : 0) |
+		(e.modifiers & EVENT::CtrlKey ? ControlMask : 0) |
+		(e.modifiers & EVENT::AltKey ? Mod1Mask : 0);
+		xe.keycode = e.keyCode;
+	xe.send_event = 0;
+	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
+}
+void XWINDOW::OnKeyUp(const KEY_EVENT& e){
+	XKeyEvent xe;
+	xe.type = KeyRelease;
+	xe.display = const_cast<Display*>(display);
+	xe.window = wID;
+	xe.state =
+	(e.modifiers & EVENT::ShiftKey ? ShiftMask : 0) |
+	(e.modifiers & EVENT::CtrlKey ? ControlMask : 0) |
+	(e.modifiers & EVENT::AltKey ? Mod1Mask : 0);
+	xe.keycode = e.keyCode;
+	xe.send_event = 0;
+	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
+}
+
+
 
 #if 0
 
-//////イベント処理関連
-void WINDOW::AtCreate(XCreateWindowEvent& e, XDISPLAY& xDisplay){
-	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
-	if(!w && !e.override_redirect){
-		//追随して生成
-		new WINDOW(e, xDisplay);
-	}
-}
-
-void WINDOW::AtMap(XMapEvent& e){
-	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
-	if(w){
-		//テクスチャ割り当て、初期画像設定
-		(*w).AssignTexture();
-		//map状態をXの窓に追随(trueなので以後Drawする)
-		(*w).mapped = true;
-	}
-}
-void WINDOW::AtDestroy(XDestroyWindowEvent& e){
-	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
-	if(w){
-		//外部でDestroyされたウインドウに同期する
-		delete w;
-	}
-}
-void WINDOW::AtUnmap(XUnmapEvent& e){
-	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.window));
-	if(w){
-		//map状態をXの窓に追随(falseなので以後Drawしなくなる)
-		if(focused == w){
-			focused = w;
-		}
-		(*w).mapped = false;
-	}
-}
-void WINDOW::AtDamage(XEvent& ev){
-	XDamageNotifyEvent& e(*(XDamageNotifyEvent*)&ev);
-	//知っている窓なら変化分を反映
-	WINDOW* const w(WINDOW::FindWindowByID(e.display, e.drawable));
-	if(w){
-		(*w).OnDamage(e);
-	}
-}
 
 void WINDOW::AtKeyEvent(XEvent& e){
 	XKeyEvent& ke(e.xkey);

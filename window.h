@@ -45,6 +45,9 @@ public:
 			jsMove,
 			jsChaged,
 		}type;
+		static const unsigned ShiftKey = 1;
+		static const unsigned CtrlKey = 2;
+		static const unsigned AltKey = 4;
 		unsigned modifiers; //モディファイアキーの状態
 	};
 	class MOUSE_EVENT : public EVENT{
@@ -59,6 +62,7 @@ public:
 		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
 	};
 	class KEY_EVENT : public EVENT{
+	public:
 		unsigned charCode; //文字コード
 		unsigned keyCode; //キーコード(あれば。なければ0)
 	};
@@ -148,7 +152,7 @@ protected:
 	unsigned width;
 	unsigned height;
 
-	void SetVisibility(bool v){ visibility = v; };
+	void SetVisibility(bool v){ visibility = v; if(v){ Focus(); } };
 
 private:
 	void Draw(float xoff, float yoff, float distance);

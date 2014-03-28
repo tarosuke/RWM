@@ -60,6 +60,9 @@ WINDOW::WINDOW(float h, float v, const IMAGE& initialImage) :
 
 	//窓リストへ登録
 	windowList.Insert(node);
+
+	//フォーカスを得る
+	Focus();
 }
 
 

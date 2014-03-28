@@ -202,13 +202,17 @@ void XDISPLAY::EventHandler(){
 		case UnmapNotify:
 			XWINDOW::AtXUnmap(e.xunmap);
 			break;
+		case KeyPress:
+		case KeyRelease:
+			XWINDOW::AtXKey(e.xkey);
+			break;
+// 		case ButtonPress:
+// 		case ButtonRelease:
+// 			WINDOW::AtButtonEvent(e.xbutton);
+// 			break;
 #if 0
 		case ConfigureNotify:
 			WINDOW::AtConfigureEvent(e.xconfigure);
-			break;
-		case KeyPress:
-		case KeyRelease:
-			WINDOW::AtKeyEvent(e);
 			break;
 		case MappingNotify:
 #if 1
@@ -216,10 +220,6 @@ void XDISPLAY::EventHandler(){
 #else
 			WINDOW::AtMappingEvent(e.xmapping);
 #endif
-			break;
-		case ButtonPress:
-		case ButtonRelease:
-			WINDOW::AtButtonEvent(e.xbutton);
 			break;
 #endif
 		default:

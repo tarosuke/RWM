@@ -29,6 +29,7 @@ public:
 	static void AtXMap(const XMapEvent&);
 	static void AtXUnmap(const XUnmapEvent&);
 	static void AtXDamage(const XEvent&);
+	static void AtXKey(const XKeyEvent&);
 
 private:
 	~XWINDOW(){}; //Xのメッセージに追従し、外部からは呼ばれないのでprivate
@@ -59,5 +60,7 @@ private:
 
 	//窓固有のハンドラ
 	void OnDamage(XDamageNotifyEvent&);
+	void OnKeyDown(const KEY_EVENT&);
+	void OnKeyUp(const KEY_EVENT&);
 };
 

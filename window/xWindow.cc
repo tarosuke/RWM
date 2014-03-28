@@ -69,8 +69,8 @@ void XWINDOW::AtXCreate(const Display* d, Window w, unsigned hc, unsigned vc){
 	XWindowAttributes attr;
 	XGetWindowAttributes(const_cast<Display*>(d), w, &attr);
 	XWINDOW* const nxw(new XWINDOW(
-		(float)attr.x - hc,
-		(float)attr.y - vc,
+		(float)attr.x - hc + attr.width / 2,
+		(float)attr.y - vc + attr.height / 2,
 		attr.width,
 		attr.height, w, d));
 	assert(nxw);
@@ -87,8 +87,8 @@ void XWINDOW::AtXCreate(const XCreateWindowEvent& e, unsigned hc, unsigned vc){
 	if(!w){
 		//未登録窓ならインスタンス生成
 		new XWINDOW(
-			(float)e.x - hc,
-			(float)e.y - vc,
+			(float)e.x - hc + e.width / 2,
+			(float)e.y - vc + e.width / 2,
 			e.width, e.height,
 			e.window, e.display);
 	}

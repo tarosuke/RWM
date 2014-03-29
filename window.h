@@ -1,107 +1,183 @@
 /******************************************************* window handler:window
- * -DTESTの時はrootになるウインドウを開いてそれをroot扱い。
- * でなければrootを取得してそれをrootとする。
- * rootに対してXCompositRedirectSubWindowsして内容を取得
- * また、窓に対してxdamegeイベントを受け付けるよう設定。
+ * この窓はXの窓ではない。
+ * Xの窓には画面という概念があるが、この窓には窓があるだけで画面はない。
+ * また、このクラスはバッキングストレージはテクスチャとしてしか持っていない。
+ * Rect単位でしか描き換えられないので別に描画用のバッファが必要。
  */
 #pragma once
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/extensions/Xdamage.h>
-
-#include <GL/gl.h>
-#include <GL/glx.h>
-
 #include <toolbox/queue/queue.h>
 #include <toolbox/complex/complex.h>
-
-#include <view/view.h>
-
+#include <image.h>
 
 
-class XDISPLAY;
+
 class WINDOW{
-	WINDOW();
+	WINDOW(WINDOW&);
+	void operator=(WINDOW&);
 public:
-	WINDOW(XCreateWindowEvent& e, XDISPLAY&, bool mapState = false);
+	/** 全ての窓を描画する
+	 * @attention このメソッドは何の準備もせずにいきなり描画する。
+	 * @attention 描画先の設定が完了している事が前提。
+	 */
+	static void DrawAll(const COMPLEX<4>&);
 
-	static void DrawAll(const COMPLEX<4>& headDir);
+	//イベントと一次ハンドラ
+	class EVENT{
+	public:
+		time_t timestamp;
+		enum EVENT_TYPE{
+			none,
+			//マウス関連
+			mouseDown,
+			mouseUp,
+			mouseEnter,
+			mouseMove,
+			mouseLeave,
+			mouseClicked,
+			//キーボード関連
+			keyDown,
+			keyRepeated,
+			keyUp,
+			//ジョイスティック
+			jsDown,
+			jsUp,
+			jsMove,
+			jsChaged,
+		}type;
+		static const unsigned ShiftKey = 1;
+		static const unsigned CtrlKey = 2;
+		static const unsigned AltKey = 4;
+		unsigned modifiers; //モディファイアキーの状態
+	};
+	class MOUSE_EVENT : public EVENT{
+	public:
+		float x; //窓内相対
+		float y;
+		float hScroll; //水平スクロール量
+		float vScroll; //垂直スクロール量
+		unsigned button; //操作されたボタン
+		unsigned buttonState; //ボタンの状態
+		unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
+		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
+	};
+	class KEY_EVENT : public EVENT{
+	public:
+		unsigned charCode; //文字コード
+		unsigned keyCode; //キーコード(あれば。なければ0)
+	};
+	class JS_EVENT : public EVENT{
+		unsigned upButton; //前回からの間に放されたボタン
+		unsigned downButton; //前回からの間に押されたボタン
+		unsigned buttonState; //現在のボタンの状況
+		unsigned movedAxis; //前回から変化があった軸
+		float axis[8]; //各軸の値(-1.0〜+1.0)
+	};
+	static void AtMouse(const MOUSE_EVENT&);
+	static void AtKey(const KEY_EVENT&);
+	static void AtJS(const JS_EVENT&);
 
-	//根窓関連
-	static void AtCreate(XCreateWindowEvent&, XDISPLAY&);
-	static void AtMap(XMapEvent&);
-	static void AtDestroy(XDestroyWindowEvent&);
-	static void AtUnmap(XUnmapEvent&);
-	static void AtDamage(XEvent&);
-	static void AtKeyEvent(XEvent&);
-	static void AtMappingEvent(XMappingEvent&);
-	static void AtButtonEvent(XButtonEvent&);
-	static void AtConfigureEvent(XConfigureEvent&);
+	//操作
+	void Move(float h, float v); ///移動
+	void Resize(unsigned w, unsigned h); ///リサイズ
 
-private:
-	~WINDOW(); //自身をwindowListから削除して消滅
-	void Draw(unsigned numFormFront);
+protected:
+	/** 新規窓
+	 * 新規に窓を精製する。
+	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
+	 * なので作ってから設定する必要がある。
+	 */
+	WINDOW();
+	/** 新規窓(位置、サイズ付き)
+	 * 新規に窓を精製する。
+	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
+	 * なので作ってから設定する必要がある。
+	 */
+	WINDOW(float h, float v, int wi, int hi);
+	/** 中身付き新規窓
+	 * 初期状態はフォーカスなし、テクスチャ割り当て済み、可視
+	 * @attention h,vは左上ではなく中央
+	 * @attention サイズはinitialImageから取得する
+	 */
+	WINDOW(float h, float v, const IMAGE&);
 
-	//X関連
-	XDISPLAY& display;
-	const Window wID; //窓ID
-	Damage dID; //xDamageID
+	void AssignImage(const IMAGE&); ///テクスチャ割り当て、イメージ転送
+	void AssignImage(const void*, unsigned w, unsigned h);
+	void UpdateImage( ///テクスチャ描き替え
+		const void*, //元イメージ
+		unsigned dx, //書き込み先座標
+		unsigned dy,
+		unsigned w, //転送サイズ
+		unsigned h);
+	void UpdateImage( ///テクスチャ描き替え
+		const IMAGE&, //元イメージ
+		unsigned dx, //書き込み先座標
+		unsigned dy);
+	void UpdateImage( ///IMAGEの一部でテクスチャ描き替え
+		const IMAGE&, //元イメージ
+		unsigned sx, //元イメージ上の座標
+		unsigned sy,
+		unsigned dx, //書き込み先座標
+		unsigned dy,
+		unsigned w, //転送サイズ
+		unsigned h);
 
-	//窓全体関連
-	static TOOLBOX::QUEUE<WINDOW> windowList;
-	static WINDOW* FindWindowByID(Display*, unsigned wID);
-	static bool zoomable; //ズーム処理する窓をひとつだけにするためのフラグ
-	static const COMPLEX<4>* headDir;
-	static const float zoomedScale; //ズームした時の大きさ[mm/px]
-	static WINDOW* focused;
-	void Focus();
-	void UnFocus();
-	void See(int x, int y);
-	static int seenX;
-	static int seenY;
+	//マウスイベント
+	virtual void OnMouseDown(const MOUSE_EVENT&){}; //ボタンが押された
+	virtual void OnMouseUp(const MOUSE_EVENT&){}; //ボタンが放された
+	virtual void OnMouseEnter(const MOUSE_EVENT&){}; //ポインタが窓に入った
+	virtual void OnMouseMove(const MOUSE_EVENT&){}; //ポインタが窓の中を移動中
+	virtual void OnMouseLeave(const MOUSE_EVENT&){}; //ポインタが窓から出た
+	virtual void OnClick(const MOUSE_EVENT&){}; //クリックとその回数
+	//キーイベント
+	virtual void OnKeyDown(const KEY_EVENT&){}; //キーが押された
+	virtual void OnKeyUp(const KEY_EVENT&){}; //キーが放された
+	static unsigned long long keyState[];
+	virtual void OnKeyChanged(const unsigned long long){};
+	//ジョイスティック
+	virtual void OnJSDown(const JS_EVENT&){};
+	virtual void OnJSUp(const JS_EVENT&){};
+	virtual void OnJSMove(const JS_EVENT&){};
+	virtual void OnJSChange(const JS_EVENT&){};
+	//コントロール
+	virtual void OnResize(unsigned w, unsigned h){};
+	virtual void OnFocused(){};
+	virtual void OnUnfocused(){};
 
-	//単体窓関連
-	TOOLBOX::NODE<WINDOW> node;
-	bool mapped; //tureならDrawされた時に描画する
-	unsigned tID; //窓の内容を保持するテクスチャID
+	virtual ~WINDOW(); //窓の場合基本的に自殺なのでデストラクタを直接呼ばない
 
-	//中心の位置というか角度
-	float horiz; //水平角(°)
-	float vert; //垂直角(°)
-	float scale; //非ズーム時の大きさ(ズーム時はピクセル基準)
-	float distance; //最後に描画した時の距離
-	static float baseDistance;
-	COMPLEX<4> center; //中心の向き
-
-	void Moved(int x, int y); //仮想空間側の窓だけ移動
-	void Move(int x, int y); //X側の窓も移動
-	void Resized(unsigned w, unsigned h); //仮想空間側の窓をリサイズ、テクスチャ再設定
-	void Resize(unsigned w, unsigned h); //X側の窓だけリサイズ(仮想空間側はXConfigureEventにて追随)
-
-	//ピクセル位置、サイズ(scaleを乗じたサイズで描画)
-	int vx;
-	int vy;
+	//位置とサイズ
+	float horiz;
+	float vert;
 	unsigned width;
 	unsigned height;
 
-	//窓生成、登録
-	void AssignTexture();
-	struct P2{
+	void SetVisibility(bool v){ visibility = v; if(v){ Focus(); } };
+	bool IsVisible(){ return visibility; };
+
+private:
+	void Draw(float xoff, float yoff, float distance);
+
+	//窓全体関連
+	static TOOLBOX::QUEUE<WINDOW> windowList;
+	static const float scale; //窓表示スケール[m/px]
+	static WINDOW* focused;
+	static float baseDistance; //窓までの基本距離
+	static float motionDistance; //表示する中心を決めるための仮想的な距離
+	void Focus();
+	void UnFocus();
+
+	//単体窓制御関連
+	TOOLBOX::NODE<WINDOW> node;
+	unsigned tID; //窓の内容を保持するテクスチャID(0なら無効)
+	bool visibility; //可視状態
+
+	//見ている先
+	static WINDOW* lookingWindow;
+	static struct POINT{
 		float x;
 		float y;
-	};
-	P2 GetLocalPosition(const COMPLEX<4>&);
-	void SeekPosition(
-		int hTo, int vTo,
-		int hStep, int vStep,
-		int gx, int gy);
-	unsigned OverLen(int s0, int l0, int s1, int l1);
-	unsigned WindowPositionPoint(int x, int y, int gx, int gy);
-
-	//窓固有のハンドラ
-	void OnDamage(XDamageNotifyEvent&);
+	}lookingPoint;
 };
 
 

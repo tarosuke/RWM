@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "image.h"
 
@@ -25,5 +26,14 @@ void IMAGE::Deallocate(){
 	if(image){
 		free(image);
 		image = 0;
+	}
+}
+
+
+IMAGE::IMAGE(const IMAGE& org, int left, int top, int w, int h) : image(0){
+	Allocate(w, h);
+
+	for(int n(0); n < h; ++n){
+		memcpy(GetImageMem(0, n), org.GetImage(left, top + n), bpp * width);
 	}
 }

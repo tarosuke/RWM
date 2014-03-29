@@ -27,7 +27,7 @@ public:
 	//WINDOWのためのアクセサ
 	int Width(){ return width; };
 	int Height(){ return height; };
-	Display* XDisplay(){ return xDisplay; };
+	Display* XDisplay() const{ return xDisplay; };
 	Window Root(){ return rootWindowID; };
 protected:
 	XDISPLAY(Display*);
@@ -39,6 +39,8 @@ protected:
 	Window rootWindowID;
 	unsigned width;
 	unsigned height;
+	unsigned hCenter;
+	unsigned vCenter;
 	static int XErrorHandler(Display*, XErrorEvent*);
 	pthread_t evThread;
 	GLXContext glxContext;

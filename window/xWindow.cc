@@ -75,6 +75,10 @@ void XWINDOW::AtXCreate(const Display* d, Window w, unsigned hc, unsigned vc){
 		attr.width,
 		attr.height, w, d));
 	assert(nxw);
+	(*nxw).vx = attr.x;
+	(*nxw).vy = attr.y;
+	(*nxw).xCenter = hc;
+	(*nxw).yCenter = vc;
 
 	//マップされていたらテクスチャ貼り付け
 	if(IsUnmapped != attr.map_state){
@@ -87,11 +91,15 @@ void XWINDOW::AtXCreate(const XCreateWindowEvent& e, unsigned hc, unsigned vc){
 	const XWINDOW* const w(FindWindowByID(e.display, e.window));
 	if(!w){
 		//未登録窓ならインスタンス生成
-		new XWINDOW(
+		XWINDOW* const nxw(new XWINDOW(
 			(float)e.x - hc + e.width / 2,
-			(float)e.y - vc + e.width / 2,
+			(float)e.y - vc + e.height / 2,
 			e.width, e.height,
-			e.window, e.display);
+			e.window, e.display));
+		(*nxw).vx = e.x;
+		(*nxw).vy = e.y;
+		(*nxw).xCenter = hc;
+		(*nxw).yCenter = vc;
 	}
 }
 
@@ -237,6 +245,36 @@ void XWINDOW::OnKeyUp(const KEY_EVENT& e){
 	xe.keycode = e.keyCode;
 	xe.send_event = 0;
 	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
+}
+
+
+void XWINDOW::AtXConfigure(const XConfigureEvent& e){
+	XWINDOW* wp(FindWindowByID(e.display, e.window));
+	if(wp){
+		XWINDOW& w(*wp);
+		if(w.vx != e.x || w.vy != e.y){
+			//移動を検出
+			w.OnMoved(e.x, e.y);
+		}
+		if(w.width != (unsigned)e.width ||
+			w.height != (unsigned)e.height){
+			//リサイズを検出
+			w.OnResized(e.width, e.height);
+		}
+	}
+}
+
+void XWINDOW::OnMoved(int x, int y){
+	vx = x;
+	vy = y;
+	Move((float)x - xCenter + width / 2, (float)y - yCenter + height / 2);
+}
+
+void XWINDOW::OnResized(unsigned w, unsigned h){
+	Resize(w, h);
+	if(IsVisible()){
+		AssignXTexture();
+	}
 }
 
 

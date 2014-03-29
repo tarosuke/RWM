@@ -248,7 +248,6 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	lookingWindow = 0;
 	float dd(0.0);
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.02){
-// printf("window:%p.\n", (void*)i);
 		(*i).Draw(x, y, baseDistance + dd);
 	}
 }
@@ -280,5 +279,17 @@ void WINDOW::AtKey(const KEY_EVENT& e){
 void WINDOW::AtJS(const JS_EVENT& e){
 }
 
+
+
+
+void WINDOW::Move(float h, float v){
+	horiz = h;
+	vert = v;
+}
+
+void WINDOW::Resize(unsigned w, unsigned h){
+	width = w;
+	height = h;
+}
 
 

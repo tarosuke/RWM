@@ -79,7 +79,7 @@ public:
 
 	//操作
 	void Move(float h, float v); ///移動
-	void Resize(const IMAGE&, unsigned w, unsigned h); ///リサイズ
+	void Resize(unsigned w, unsigned h); ///リサイズ
 
 protected:
 	/** 新規窓
@@ -153,6 +153,7 @@ protected:
 	unsigned height;
 
 	void SetVisibility(bool v){ visibility = v; if(v){ Focus(); } };
+	bool IsVisible(){ return visibility; };
 
 private:
 	void Draw(float xoff, float yoff, float distance);

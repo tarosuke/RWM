@@ -206,14 +206,16 @@ void XDISPLAY::EventHandler(){
 		case KeyRelease:
 			XWINDOW::AtXKey(e.xkey);
 			break;
-// 		case ButtonPress:
-// 		case ButtonRelease:
-// 			WINDOW::AtButtonEvent(e.xbutton);
-// 			break;
 #if 0
-		case ConfigureNotify:
-			WINDOW::AtConfigureEvent(e.xconfigure);
+		case ButtonPress:
+		case ButtonRelease:
+			WINDOW::AtButtonEvent(e.xbutton);
 			break;
+#endif
+		case ConfigureNotify:
+			XWINDOW::AtXConfigure(e.xconfigure);
+			break;
+#if 0
 		case MappingNotify:
 #if 1
 			XRefreshKeyboardMapping(&e.xmapping);

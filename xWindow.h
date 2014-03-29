@@ -30,6 +30,7 @@ public:
 	static void AtXUnmap(const XUnmapEvent&);
 	static void AtXDamage(const XEvent&);
 	static void AtXKey(const XKeyEvent&);
+	static void AtXConfigure(const XConfigureEvent&);
 
 private:
 	~XWINDOW(){}; //Xのメッセージに追従し、外部からは呼ばれないのでprivate
@@ -38,6 +39,12 @@ private:
 	const Display* const display;
 	const Window wID; //窓ID
 	Damage dID; //xDamageID
+
+	//X側の位置メモ
+	int vx;
+	int vy;
+	int xCenter;
+	int yCenter;
 
 	//窓全体関連
 	static TOOLBOX::QUEUE<XWINDOW> xWindowList; //X窓リスト
@@ -50,13 +57,9 @@ private:
 
 
 
-
-	void Moved(int x, int y); //仮想空間側の窓だけ移動
-	void Move(int x, int y); //X側の窓も移動
-	void Resized(unsigned w, unsigned h); //仮想空間側の窓をリサイズ、テクスチャ再設定
-	void Resize(unsigned w, unsigned h); //X側の窓だけリサイズ(仮想空間側はXConfigureEventにて追随)
-
-	//窓生成、登録
+	//内部イベントハンドラ
+	void OnMoved(int x, int y); //X側で窓が移動した
+	void OnResized(unsigned w, unsigned h); //X側でリサイズされた
 
 	//窓固有のハンドラ
 	void OnDamage(XDamageNotifyEvent&);

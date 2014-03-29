@@ -60,6 +60,7 @@ RIFT::RIFT() :
 	magAverageRatio(100),
 	magMax((const double[]){ 0-MAXFLOAT, 0-MAXFLOAT, 0-MAXFLOAT }),
 	magMin((const double[]){ MAXFLOAT, MAXFLOAT, MAXFLOAT }),
+	magFront((const double[]){ 0, 0, 1 }),
 	magReady(false),
 	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
 	if(fd < 0){
@@ -70,6 +71,7 @@ RIFT::RIFT() :
 	//過去の磁化情報があれば取得
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
+	settings.Fetch("magFront", &magFront);
 
 	//スケジューリングポリシーを設定
 	pthread_attr_t attr;
@@ -93,6 +95,7 @@ RIFT::~RIFT(){
 	//磁化情報を保存
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
+//	settings.Store("magFront", &magFront);
 }
 
 void RIFT::Keepalive(){
@@ -219,12 +222,11 @@ void RIFT::Correction(){
 	//磁気による姿勢補正
 	if(magReady && magAverageRatio < maxMagAverageRatio){
 		//準備ができていて、かつまだ補正が完了していない
-		VQON north((const double[]){ 0, 0, -1 }); //北
 		VQON mag(magneticField);
 		mag.Rotate(direction); //絶対基準にする
 
 		//正面との差分で姿勢を補正
-		QON magDiffer(north, mag);
+		QON magDiffer(magFront, mag);
 		magDiffer.FilterAxis(2); //水平角以外をキャンセル
 		magDiffer *= GetCorrectionGain(magDiffer);
 		RotateAzimuth(magDiffer);

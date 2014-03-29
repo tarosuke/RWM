@@ -39,6 +39,7 @@ private:
 	int magAverageRatio;
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値
+	VQON magFront; //正面にする方位
 	bool magReady; //磁化情報取得完了
 	VQON magneticField; //磁気の向き(機体座標系)
 

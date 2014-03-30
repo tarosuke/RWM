@@ -202,14 +202,17 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	}
 
 	//窓の向き＆表示位置計算
+	glPushMatrix();
+#if 0
 	const float ha(-(h / distance) * 180 / M_PI);
 	const float va(-(v / distance) * 180 / M_PI);
 	const float d(sqrt(ha*ha + va*va));
 
 	//向きと位置を設定
-	glPushMatrix();
 	glRotatef(d, va, ha, 0);
-
+#else
+	glTranslatef(h, -v, 0);
+#endif
 	//描画
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);

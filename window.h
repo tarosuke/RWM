@@ -156,7 +156,7 @@ protected:
 	bool IsVisible(){ return visibility; };
 
 private:
-	void Draw(float xoff, float yoff, float distance);
+	void Draw(float distance);
 
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
@@ -174,10 +174,12 @@ private:
 
 	//見ている先
 	static WINDOW* lookingWindow;
-	static struct POINT{
+	struct POINT{
 		float x;
 		float y;
-	}lookingPoint;
+	};
+	static POINT lookingPoint;
+	POINT localLookingPoint;
 };
 
 

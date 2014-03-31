@@ -187,18 +187,27 @@ void WINDOW::UnFocus(){
 	}
 }
 
-void WINDOW::Draw(float xoff, float yoff, float distance){
+void WINDOW::Draw(float distance){
 	//可視設定チェック
 	if(!visibility){
 		return;
 	}
 
 	//描画位置算出
-	const float h(horiz * scale + xoff);
-	const float v(vert * scale - yoff);
+	const float h(horiz * scale + lookingPoint.x);
+	const float v(vert * scale - lookingPoint.y);
 	if(M_PI*0.5 <= h*h + v*v){
 		//エイリアスやどのみち見えない領域は描画しない
 		return;
+	}
+
+	//最初に視野の中心がかかった窓を見てることにする
+	const float w2(width * scale * 0.5);
+	const float h2(height * scale * 0.5);
+	if(!lookingWindow && (-w2 <= h && h < w2) && (-h2 <= v && v < h2)){
+		lookingWindow = this;
+		localLookingPoint.x = (-h + w2) / scale;
+		localLookingPoint.y = (-v + h2) / scale;
 	}
 
 	//窓の向き＆表示位置計算
@@ -216,8 +225,6 @@ void WINDOW::Draw(float xoff, float yoff, float distance){
 	//描画
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);
-	const float w2(width * scale * 0.5);
-	const float h2(height * scale * 0.5);
 	glTexCoord2f(0, 0);
 	glVertex3f(-w2, h2, -distance);
 	glTexCoord2f(0, 1);
@@ -244,14 +251,15 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 		//後ろ向き
 		return;
 	}
-	const float x(v[0] * motionDistance / v[2]);
-	const float y(v[1] * motionDistance / v[2]);
+	lookingPoint.x = v[0] * motionDistance / v[2];
+	lookingPoint.y = v[1] * motionDistance / v[2];
 
 	//窓描画
 	lookingWindow = 0;
 	float dd(0.0);
+	lookingWindow = 0;
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.02){
-		(*i).Draw(x, y, baseDistance + dd);
+		(*i).Draw(baseDistance + dd);
 	}
 }
 

@@ -220,7 +220,7 @@ void RIFT::Correction(){
 	Rotate(differ);
 
 	//磁気による姿勢補正
-	if(magReady && magAverageRatio < maxMagAverageRatio){
+	if(magReady){
 		//準備ができていて、かつまだ補正が完了していない
 		VQON mag(magneticField);
 		mag.Rotate(direction); //絶対基準にする
@@ -294,8 +294,11 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	VQON mag(axis);
 
 	//キャリブレーション
-	magMax.Max(mag);
-	magMin.Min(mag);
+	if(!magReady){
+		//磁化情報をある程度得たらそれ以上は更新しない。
+		magMax.Max(mag);
+		magMin.Min(mag);
+	}
 	const VECTOR<3> deGain(magMax - magMin);
 	const double* const d(deGain);
 

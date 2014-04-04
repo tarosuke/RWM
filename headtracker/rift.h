@@ -35,7 +35,7 @@ private:
 	VQON gravity; //平均加速度(機体座標系)
 
 	//磁気センサ
-	const static int maxMagAverageRatio = 1000;
+	const static int maxMagAverageRatio = 10000;
 	int magAverageRatio;
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値

@@ -28,6 +28,7 @@ private:
 	pthread_t sensorThread;
 
 	//加速度センサ(絶対座標系)
+	const static int initialGravityRatio = 10;
 	const static int maxGravityAverageRatio = 100000;
 	int gravityAverageRatio;
 	VQON velocity; //移動速度
@@ -35,7 +36,8 @@ private:
 	VQON gravity; //平均加速度(機体座標系)
 
 	//磁気センサ
-	const static int maxMagAverageRatio = 1000;
+	const static int initialMagRatio = 10;
+	const static int maxMagAverageRatio = 10000;
 	int magAverageRatio;
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値

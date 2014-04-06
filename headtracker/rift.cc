@@ -55,9 +55,9 @@ int RIFT::OpenDevice(){
 namespace{ const float MAXFLOAT(3.40282347e+38F); };
 RIFT::RIFT() :
 	fd(OpenDevice()),
-	gravityAverageRatio(10),
+	gravityAverageRatio(initialGravityRatio),
 	gravity((const double[]){ 0.0, 0-G, 0.0 }),
-	magAverageRatio(100),
+	magAverageRatio(initialMagRatio),
 	magMax((const double[]){ 0-MAXFLOAT, 0-MAXFLOAT, 0-MAXFLOAT }),
 	magMin((const double[]){ MAXFLOAT, MAXFLOAT, MAXFLOAT }),
 	magFront((const double[]){ 0, 0, 1 }),
@@ -95,7 +95,7 @@ RIFT::~RIFT(){
 	//磁化情報を保存
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
-//	settings.Store("magFront", &magFront);
+	settings.Store("magFront", &magFront);
 }
 
 void RIFT::Keepalive(){
@@ -220,7 +220,7 @@ void RIFT::Correction(){
 	Rotate(differ);
 
 	//磁気による姿勢補正
-	if(magReady && magAverageRatio < maxMagAverageRatio){
+	if(magReady){
 		//準備ができていて、かつまだ補正が完了していない
 		VQON mag(magneticField);
 		mag.Rotate(direction); //絶対基準にする
@@ -294,8 +294,11 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	VQON mag(axis);
 
 	//キャリブレーション
-	magMax.Max(mag);
-	magMin.Min(mag);
+	if(!magReady){
+		//磁化情報をある程度得たらそれ以上は更新しない。
+		magMax.Max(mag);
+		magMin.Min(mag);
+	}
 	const VECTOR<3> deGain(magMax - magMin);
 	const double* const d(deGain);
 
@@ -320,7 +323,7 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		//キャリブレーション判定
 		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
 			magReady = true;
-			magAverageRatio = 100; //キャリブレーションのやり直し
+			magAverageRatio = initialMagRatio;
 			puts("magnetic azimuth correction READY.");
 		}
 	}

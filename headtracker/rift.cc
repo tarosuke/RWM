@@ -316,11 +316,12 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		mag.Normalize();
 
 		//平均化処理
-		mag *= 1.0 / magAverageRatio;
-		magneticField *= 1.0 - 1.0 / magAverageRatio;
+		const double r(1.0 / magAverageRatio);
+		mag *= r;
+		magneticField *= 1.0 - r;
 		magneticField += mag;
 	}else{
-		//キャリブレーション判定
+		//キャリブレーション可能判定
 		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
 			magReady = true;
 			magAverageRatio = initialMagRatio;

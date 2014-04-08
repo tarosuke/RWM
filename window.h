@@ -122,7 +122,7 @@ protected:
 		unsigned w, //転送サイズ
 		unsigned h);
 
-	//マウスイベント
+	//マウスイベント TODO:視線イベントを分離する
 	virtual void OnMouseDown(const MOUSE_EVENT&){}; //ボタンが押された
 	virtual void OnMouseUp(const MOUSE_EVENT&){}; //ボタンが放された
 	virtual void OnMouseEnter(const MOUSE_EVENT&){}; //ポインタが窓に入った
@@ -179,7 +179,9 @@ private:
 		float y;
 	};
 	static POINT lookingPoint;
+	static POINT oldLookingPoint;
 	POINT localLookingPoint;
+	POINT GetLocal(const POINT&);
 };
 
 

@@ -206,8 +206,7 @@ void WINDOW::Draw(float distance){
 	const float h2(height * scale * 0.5);
 	if(!lookingWindow && (-w2 <= h && h < w2) && (-h2 <= v && v < h2)){
 		lookingWindow = this;
-		localLookingPoint.x = (-h + w2) / scale;
-		localLookingPoint.y = (-v + h2) / scale;
+		localLookingPoint = GetLocal((const POINT){h, v});
 	}
 
 	//窓の向き＆表示位置計算
@@ -242,6 +241,7 @@ void WINDOW::Draw(float distance){
 
 WINDOW* WINDOW::lookingWindow;
 WINDOW::POINT WINDOW::lookingPoint;
+WINDOW::POINT WINDOW::oldLookingPoint;
 void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	//描画中心点算出
 	VECTOR<3> front((const double[]){ 0, 0, 1 });
@@ -255,13 +255,69 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	lookingPoint.y = v[1] * motionDistance / v[2];
 
 	//窓描画
-	lookingWindow = 0;
+	WINDOW* const oldLookingWindow(lookingWindow);
 	float dd(0.0);
 	lookingWindow = 0;
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.02){
 		(*i).Draw(baseDistance + dd);
 	}
+
+	if(oldLookingWindow != lookingWindow){
+		//Enter/Leave発生
+		MOUSE_EVENT e;
+		if(oldLookingWindow){
+			WINDOW& w(*oldLookingWindow);
+			const POINT gp((POINT){
+				w.horiz * scale + lookingPoint.x,
+				w.vert * scale - lookingPoint.y});
+			const POINT p(w.GetLocal(gp));
+			e.x = p.x;
+			e.y = p.y;
+			e.buttonState = 0; //TODO:AtMouseで管理する
+			e.type = EVENT::mouseLeave;
+			w.OnMouseLeave(e);
+		}
+		if(lookingWindow){
+			oldLookingPoint = lookingPoint;
+			WINDOW& w(*lookingWindow);
+			const POINT gp((POINT){
+				w.horiz * scale + lookingPoint.x,
+				w.vert * scale - lookingPoint.y});
+			const POINT p(w.GetLocal(gp));
+			e.x = p.x;
+			e.y = p.y;
+			e.buttonState = 0; //TODO:AtMouseで管理する
+			e.type = EVENT::mouseEnter;
+			w.OnMouseEnter(e);
+		}
+	}else if(lookingWindow){
+		WINDOW& w(*lookingWindow);
+		const float dx(oldLookingPoint.x - lookingPoint.x);
+		const float dy(oldLookingPoint.y - lookingPoint.y);
+		//Moveを発生
+		if(0.00001 <= dx * dx + dy * dy){
+			const POINT gp((POINT){
+				w.horiz * scale + lookingPoint.x,
+				w.vert * scale - lookingPoint.y});
+			const POINT p(w.GetLocal(gp));
+			MOUSE_EVENT e;
+			e.type = EVENT::mouseMove;
+			e.x = p.x;
+			e.y = p.y;
+			e.buttonState = 0; //TODO:AtMouseで管理する
+			w.OnMouseMove(e);
+			oldLookingPoint = lookingPoint;
+		}
+	}
 }
+
+
+WINDOW::POINT WINDOW::GetLocal(const POINT& g){
+	const float w2(width * scale * 0.5);
+	const float h2(height * scale * 0.5);
+	return (POINT){(-g.x + w2) / scale, (-g.y + h2) / scale};
+}
+
 
 
 //イベントの一次ハンドラ

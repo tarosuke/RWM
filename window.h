@@ -179,6 +179,7 @@ private:
 		float y;
 	};
 	static POINT lookingPoint;
+	static POINT oldLookingPoint;
 	POINT localLookingPoint;
 	POINT GetLocal(const POINT&);
 };

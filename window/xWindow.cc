@@ -296,6 +296,9 @@ void XWINDOW::OnMouseLeave(const MOUSE_EVENT& e){
 	printf("mouseLeave:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
 }
 
+void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
+	printf("mouseMove:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+}
 
 
 

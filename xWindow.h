@@ -69,5 +69,6 @@ private:
 	void OnMouseUp(const MOUSE_EVENT&);
 	void OnMouseEnter(const MOUSE_EVENT&);
 	void OnMouseLeave(const MOUSE_EVENT&);
+	void OnMouseMove(const MOUSE_EVENT&);
 };
 

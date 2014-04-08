@@ -65,5 +65,7 @@ private:
 	void OnDamage(XDamageNotifyEvent&);
 	void OnKeyDown(const KEY_EVENT&);
 	void OnKeyUp(const KEY_EVENT&);
+	void OnMouseDown(const MOUSE_EVENT&);
+	void OnMouseUp(const MOUSE_EVENT&);
 };
 

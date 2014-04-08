@@ -266,7 +266,23 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 
 //イベントの一次ハンドラ
 void WINDOW::AtMouse(const MOUSE_EVENT& e){
-	//イベント送信対象
+	if(!lookingWindow){
+		return;
+	}
+	WINDOW& w(*lookingWindow);
+	MOUSE_EVENT ev(e);
+	ev.x = w.localLookingPoint.x;
+	ev.y = w.localLookingPoint.y;
+	switch(e.type){
+	case EVENT::mouseDown :
+		w.OnMouseDown(ev);
+		break;
+	case EVENT::mouseUp :
+		w.OnMouseUp(ev);
+		break;
+	default:
+		break;
+	}
 }
 
 void WINDOW::AtKey(const KEY_EVENT& e){

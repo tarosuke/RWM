@@ -281,14 +281,20 @@ void XWINDOW::OnResized(unsigned w, unsigned h){
 
 
 void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
-	printf("mouseDown:(%f %f) %08x.\n.", e.x, e.y, e.buttonState);
+	printf("mouseDown:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
 }
 
 void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
-	printf("mouseUp:(%f %f) %08x.\n.", e.x, e.y, e.buttonState);
+	printf("mouseUp:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
 }
 
+void XWINDOW::OnMouseEnter(const MOUSE_EVENT& e){
+	printf("mouseEnter:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+}
 
+void XWINDOW::OnMouseLeave(const MOUSE_EVENT& e){
+	printf("mouseLeave:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+}
 
 
 

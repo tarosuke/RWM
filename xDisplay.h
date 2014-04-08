@@ -14,6 +14,8 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 
+#include <window.h>
+
 
 class XDISPLAY{
 public:
@@ -55,6 +57,8 @@ protected:
 
 	//内部イベントハンドラ
 	void AtDamage(XDamageNotifyEvent&);
+
+	static void AtMouse(WINDOW::EVENT::EVENT_TYPE, const XButtonEvent&);
 
 
 	//テスト窓

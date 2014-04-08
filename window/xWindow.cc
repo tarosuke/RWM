@@ -279,6 +279,27 @@ void XWINDOW::OnResized(unsigned w, unsigned h){
 
 
 
+
+void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
+	printf("mouseDown:(%f %f) %08x.\n.", e.x, e.y, e.buttonState);
+}
+
+void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
+	printf("mouseUp:(%f %f) %08x.\n.", e.x, e.y, e.buttonState);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 #if 0
 
 

@@ -207,10 +207,10 @@ void XDISPLAY::EventHandler(){
 			XWINDOW::AtXKey(e.xkey);
 			break;
 		case ButtonPress:
-			AtMouse(WINDOW::EVENT::mouseDown, e.xbutton);
+			XWINDOW::AtXMouse(WINDOW::EVENT::mouseDown, e.xbutton);
 			break;
 		case ButtonRelease:
-			AtMouse(WINDOW::EVENT::mouseUp, e.xbutton);
+			XWINDOW::AtXMouse(WINDOW::EVENT::mouseUp, e.xbutton);
 			break;
 		case ConfigureNotify:
 			XWINDOW::AtXConfigure(e.xconfigure);
@@ -237,18 +237,6 @@ void XDISPLAY::EventHandler(){
 }
 
 
-void XDISPLAY::AtMouse(WINDOW::EVENT::EVENT_TYPE type, const XButtonEvent& e){
-	WINDOW::MOUSE_EVENT mouseEvent;
-	mouseEvent.type = type;
-	mouseEvent.x =
-	mouseEvent.y = 0.0; //Rift上の座標には意味がない
-	mouseEvent.hScroll =
-	mouseEvent.vScroll = 0; //TODO:スクロールのサポート
-	mouseEvent.buttonState = e.button;
-	mouseEvent.button =
-	mouseEvent.clicks = 0;
-	WINDOW::AtMouse(mouseEvent);
-}
 
 
 

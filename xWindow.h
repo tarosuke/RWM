@@ -30,6 +30,7 @@ public:
 	static void AtXUnmap(const XUnmapEvent&);
 	static void AtXDamage(const XEvent&);
 	static void AtXKey(const XKeyEvent&);
+	static void AtXMouse(EVENT::EVENT_TYPE, const XButtonEvent&);
 	static void AtXConfigure(const XConfigureEvent&);
 
 private:

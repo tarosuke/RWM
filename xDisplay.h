@@ -58,8 +58,6 @@ protected:
 	//内部イベントハンドラ
 	void AtDamage(XDamageNotifyEvent&);
 
-	static void AtMouse(WINDOW::EVENT::EVENT_TYPE, const XButtonEvent&);
-
 
 	//テスト窓
 #ifdef TEST

@@ -220,6 +220,22 @@ void XWINDOW::AtXKey(const XKeyEvent& e){
 }
 
 
+void XWINDOW::AtXMouse(EVENT::EVENT_TYPE type, const XButtonEvent& xe){
+	WINDOW::MOUSE_EVENT mouseEvent;
+	mouseEvent.type = type;
+	mouseEvent.x =
+	mouseEvent.y = 0.0; //Rift上の座標には意味がない
+	mouseEvent.hScroll =
+	mouseEvent.vScroll = 0; //TODO:スクロールのサポート
+	mouseEvent.buttonState = xe.button;
+	mouseEvent.button =
+	mouseEvent.clicks = 0;
+	mouseEvent.orgEvent = static_cast<const void*>(&xe);
+	WINDOW::AtMouse(mouseEvent);
+}
+
+
+
 void XWINDOW::OnKeyDown(const KEY_EVENT& e){
 	XKeyEvent xe;
 	xe.type = KeyPress;
@@ -282,22 +298,36 @@ void XWINDOW::OnResized(unsigned w, unsigned h){
 
 void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
 	printf("mouseDown:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+	XButtonEvent xe(*static_cast<const XButtonEvent*>(e.orgEvent));
+	xe.x = e.x;
+	xe.y = e.y;
+	xe.x_root = e.x + vx;
+	xe.y_root = e.y + vy;
+	xe.root = RootWindow(display, 0);
+	XSendEvent(const_cast<Display*>(display), wID, false, 0, (XEvent*)&xe);
 }
 
 void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
 	printf("mouseUp:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+	XButtonEvent xe(*static_cast<const XButtonEvent*>(e.orgEvent));
+	xe.x = e.x;
+	xe.y = e.y;
+	xe.x_root = e.x + vx;
+	xe.y_root = e.y + vy;
+	xe.root = RootWindow(display, 0);
+	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
 }
 
 void XWINDOW::OnMouseEnter(const MOUSE_EVENT& e){
-	printf("mouseEnter:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+// 	printf("mouseEnter:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
 }
 
 void XWINDOW::OnMouseLeave(const MOUSE_EVENT& e){
-	printf("mouseLeave:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+// 	printf("mouseLeave:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
 }
 
 void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
-	printf("mouseMove:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+// 	printf("mouseMove:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
 }
 
 

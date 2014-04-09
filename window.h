@@ -49,6 +49,7 @@ public:
 		static const unsigned CtrlKey = 2;
 		static const unsigned AltKey = 4;
 		unsigned modifiers; //モディファイアキーの状態
+		const void* orgEvent;
 	};
 	class MOUSE_EVENT : public EVENT{
 	public:

@@ -1,5 +1,5 @@
 CCOPTS +=
-COPTS += -O2 -Wall -Werror -I..
+COPTS += -O2 -Wall -Werror -ggdb -I..
 
 srcs = $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl)
 mods = $(basename $(srcs))

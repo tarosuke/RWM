@@ -56,8 +56,6 @@ private:
 
 	void AssignXTexture();
 
-
-
 	//内部イベントハンドラ
 	void OnMoved(int x, int y); //X側で窓が移動した
 	void OnResized(unsigned w, unsigned h); //X側でリサイズされた
@@ -68,8 +66,6 @@ private:
 	void OnKeyUp(const KEY_EVENT&);
 	void OnMouseDown(const MOUSE_EVENT&);
 	void OnMouseUp(const MOUSE_EVENT&);
-	void OnMouseEnter(const MOUSE_EVENT&);
-	void OnMouseLeave(const MOUSE_EVENT&);
 	void OnMouseMove(const MOUSE_EVENT&);
 };
 

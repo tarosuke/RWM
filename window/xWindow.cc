@@ -297,8 +297,15 @@ void XWINDOW::OnResized(unsigned w, unsigned h){
 
 
 void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
-	printf("mouseDown:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
-	XButtonEvent xe(*static_cast<const XButtonEvent*>(e.orgEvent));
+// 	printf("mouseDown:(%f %f %d %d) %08x.\n", e.x, e.y, vx, vy, e.buttonState);
+	XButtonEvent xe;
+	XButtonEvent& org(*(XButtonEvent*)e.orgEvent);
+	xe.time = org.time;
+	xe.serial = org.serial;
+	xe.button = org.button;
+	xe.type = ButtonPress;
+	xe.window = wID;
+	xe.display = const_cast<Display*>(display);
 	xe.x = e.x;
 	xe.y = e.y;
 	xe.x_root = e.x + vx;
@@ -308,8 +315,15 @@ void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
 }
 
 void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
-	printf("mouseUp:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
-	XButtonEvent xe(*static_cast<const XButtonEvent*>(e.orgEvent));
+// 	printf("mouseUp:(%f %f %d %d) %08x.\n", e.x, e.y, vx, vy, e.buttonState);
+	XButtonEvent xe;
+	XButtonEvent& org(*(XButtonEvent*)e.orgEvent);
+	xe.time = org.time;
+	xe.serial = org.serial;
+	xe.button = org.button;
+	xe.type = ButtonRelease;
+	xe.window = wID;
+	xe.display = const_cast<Display*>(display);
 	xe.x = e.x;
 	xe.y = e.y;
 	xe.x_root = e.x + vx;
@@ -318,16 +332,20 @@ void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
 	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
 }
 
-void XWINDOW::OnMouseEnter(const MOUSE_EVENT& e){
-// 	printf("mouseEnter:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
-}
-
-void XWINDOW::OnMouseLeave(const MOUSE_EVENT& e){
-// 	printf("mouseLeave:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
-}
-
 void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
 // 	printf("mouseMove:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+	XMotionEvent xe;
+	xe.time = 0;
+	xe.serial = 0;
+	xe.type = MotionNotify;
+	xe.window = wID;
+	xe.display = const_cast<Display*>(display);
+	xe.x = e.x;
+	xe.y = e.y;
+	xe.x_root = e.x + vx;
+	xe.y_root = e.y + vy;
+	xe.root = RootWindow(display, 0);
+	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
 }
 
 

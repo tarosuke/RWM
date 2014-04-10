@@ -163,7 +163,9 @@ void WINDOW::UpdateImage(
 }
 
 WINDOW::~WINDOW(){
-	UnFocus();
+	if(this == focused){
+		focused = 0;
+	}
 	if(tID){
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glDeleteTextures(1, &tID);
@@ -182,8 +184,8 @@ void WINDOW::Focus(){
 
 void WINDOW::UnFocus(){
 	if(this == focused){
-		OnUnfocused();
 		focused = 0;
+		OnUnfocused();
 	}
 }
 

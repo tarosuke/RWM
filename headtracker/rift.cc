@@ -16,6 +16,7 @@
 #include <settings/settings.h>
 
 
+
 int RIFT::OpenDevice(){
 	//Riftのセンサを準備
 	for(int i(0); i < 99; i++){
@@ -219,19 +220,25 @@ void RIFT::Correction(){
 	differ *= GetCorrectionGain(differ);
 	Rotate(differ);
 
+	//方位補正
+#if 0
 	//磁気による姿勢補正
 	if(magReady){
-		//準備ができていて、かつまだ補正が完了していない
 		VQON mag(magneticField);
 		mag.Rotate(direction); //絶対基準にする
 
 		//正面との差分で姿勢を補正
 		QON magDiffer(magFront, mag);
+
 		magDiffer.FilterAxis(2); //水平角以外をキャンセル
 		magDiffer *= GetCorrectionGain(magDiffer);
 		RotateAzimuth(magDiffer);
 		gravity.ReverseRotate(magDiffer);
 	}
+#else
+	//減衰による方位補正
+	ResetAzimuthOffset(0.0002);
+#endif
 }
 
 

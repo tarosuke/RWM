@@ -221,7 +221,7 @@ void RIFT::Correction(){
 	Rotate(differ);
 
 	//方位補正
-#if 0
+#if 1
 	//磁気による姿勢補正
 	if(magReady){
 		VQON mag(magneticField);
@@ -231,9 +231,13 @@ void RIFT::Correction(){
 		QON magDiffer(magFront, mag);
 
 		magDiffer.FilterAxis(2); //水平角以外をキャンセル
-		magDiffer *= GetCorrectionGain(magDiffer);
-		RotateAzimuth(magDiffer);
-		gravity.ReverseRotate(magDiffer);
+
+		const double gain(GetCorrectionGain(magDiffer));
+		if(0.01 < gain){
+			magDiffer *= gain;
+			RotateAzimuth(magDiffer);
+			magneticField.ReverseRotate(magDiffer);
+		}
 	}
 #else
 	//減衰による方位補正
@@ -316,17 +320,19 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		mag -= offset;
 
 		//各軸ゲイン調整
-		double* const g(mag);
-		g[0] /= d[0];
-		g[1] /= d[1];
-		g[2] /= d[2];
+// 		double* const g(mag);
+// 		g[0] /= d[0];
+// 		g[1] /= d[1];
+// 		g[2] /= d[2];
 		mag.Normalize();
 
 		//平均化処理
 		const double r(1.0 / magAverageRatio);
 		mag *= r;
+// const double* const h(mag);
+// printf("magRatio:%u %lf %lf %lf.\n", magAverageRatio, h[1], h[2], h[3]);
 		magneticField *= 1.0 - r;
-		magneticField += mag;
+		magneticField += mag;;
 	}else{
 		//キャリブレーション可能判定
 		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){

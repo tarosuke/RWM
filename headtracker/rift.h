@@ -37,7 +37,7 @@ private:
 
 	//磁気センサ
 	const static int initialMagRatio = 10;
-	const static int maxMagAverageRatio = 10000;
+	const static int maxMagAverageRatio = 100000;
 	int magAverageRatio;
 	VQON magMax; //磁気センサの最大値
 	VQON magMin; //磁気センサの最小値

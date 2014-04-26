@@ -221,7 +221,7 @@ void RIFT::Correction(){
 	Rotate(differ);
 
 	//方位補正
-#if 1
+#if 0
 	//磁気による姿勢補正
 	if(magReady){
 		VQON mag(magneticField);

@@ -166,6 +166,9 @@ WINDOW::~WINDOW(){
 	if(this == focused){
 		focused = 0;
 	}
+	if(this == lookingWindow){
+		lookingWindow = 0;
+	}
 	if(tID){
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glDeleteTextures(1, &tID);
@@ -195,6 +198,11 @@ void WINDOW::Draw(float distance){
 		return;
 	}
 
+	//フォーカスがなければフォーカスを設定
+	if(!focused){
+		focused = this;
+	}
+
 	//描画位置算出
 	const float h(horiz * scale + lookingPoint.x);
 	const float v(vert * scale - lookingPoint.y);
@@ -213,16 +221,8 @@ void WINDOW::Draw(float distance){
 
 	//窓の向き＆表示位置計算
 	glPushMatrix();
-#if 0
-	const float ha(-(h / distance) * 180 / M_PI);
-	const float va(-(v / distance) * 180 / M_PI);
-	const float d(sqrt(ha*ha + va*va));
-
-	//向きと位置を設定
-	glRotatef(d, va, ha, 0);
-#else
 	glTranslatef(h, -v, 0);
-#endif
+
 	//描画
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);

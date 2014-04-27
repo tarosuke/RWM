@@ -58,13 +58,15 @@ void VIEW::Run(){
 		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0);
 
 		//フォグ
-// 		glFogi(GL_FOG_MODE, GL_LINEAR);
-// 		glFogi(GL_FOG_START, 10);
-// 		glFogi(GL_FOG_END, 5000);
-// 		const GLfloat fogColor[] = { 0.6, 0.6, 0.6, 0.6 };
-// 		glFogfv(GL_FOG_COLOR, fogColor);
-// 		glHint(GL_FOG_HINT, GL_DONT_CARE);
-// 		glEnable(GL_FOG);
+#if 0
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		glFogi(GL_FOG_START, 10);
+		glFogi(GL_FOG_END, 5000);
+		const GLfloat fogColor[] = { 0.6, 0.6, 0.6, 0.6 };
+		glFogfv(GL_FOG_COLOR, fogColor);
+		glHint(GL_FOG_HINT, GL_DONT_CARE);
+		glEnable(GL_FOG);
+#endif
 
 		//(投影行列初期化も含めた)描画前処理
 		PreDraw();
@@ -83,6 +85,15 @@ void VIEW::Run(){
 		head.GetView(); //頭の姿勢、位置を反映
 
 #if 1
+#if 1
+		//動作確認用地面っぽい平面
+		glBegin(GL_POLYGON);
+		glVertex3f(0, -1.6, -10);
+		glVertex3f(8.66, -1.6, 5);
+		glVertex3f(-8.66, -1.6, 5);
+		glEnd();
+#endif
+#if 0
 		//動作確認マーカー
 		for(float z(-2); z <= 2; z += 0.5){
 			for(float y(-2); y <= 2; y += 0.5){
@@ -98,6 +109,7 @@ void VIEW::Run(){
 				}
 			}
 		}
+#endif
 #endif
 
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする

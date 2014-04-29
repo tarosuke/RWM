@@ -4,6 +4,7 @@
 
 #include <view/riftView.h>
 #include <window.h>
+#include <server.h>
 
 
 int main(int argc, char *argv[]){

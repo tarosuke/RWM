@@ -82,6 +82,9 @@ public:
 	void Move(float h, float v); ///移動
 	void Resize(unsigned w, unsigned h); ///リサイズ
 
+	//便利メソッド
+	static bool IsLookingSomeWindow(){ return !!lookingWindow; };
+
 protected:
 	/** 新規窓
 	 * 新規に窓を精製する。

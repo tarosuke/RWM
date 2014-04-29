@@ -15,6 +15,8 @@
 #include "rift.h"
 #include <settings/settings.h>
 
+#include <window.h>
+
 
 
 int RIFT::OpenDevice(){
@@ -241,7 +243,9 @@ void RIFT::Correction(){
 	}
 #else
 	//減衰による方位補正
-	ResetAzimuthOffset(0.0002);
+	if(!WINDOW::IsLookingSomeWindow()){
+		ResetAzimuthOffset(0.0002);
+	}
 #endif
 }
 

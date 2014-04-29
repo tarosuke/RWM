@@ -20,11 +20,11 @@ class XDISPLAY;
 class XWINDOW : public WINDOW{
 	XWINDOW();
 public:
-	XWINDOW(float x, float y, int w, int h, Window, const Display*);
+	XWINDOW(float x, float y, int w, int h, Window, Display*);
 
 	//X用イベントハンドラ
 	static void AtXCreate(const XCreateWindowEvent&, unsigned, unsigned);
-	static void AtXCreate(const Display*, Window, unsigned, unsigned);
+	static void AtXCreate(Display* const, Window, unsigned, unsigned);
 	static void AtXDestroy(const XDestroyWindowEvent&);
 	static void AtXMap(const XMapEvent&);
 	static void AtXUnmap(const XUnmapEvent&);
@@ -37,7 +37,7 @@ private:
 	~XWINDOW(){}; //Xのメッセージに追従し、外部からは呼ばれないのでprivate
 
 	//X関連
-	const Display* const display;
+	Display* const display;
 	const Window wID; //窓ID
 	Damage dID; //xDamageID
 
@@ -55,6 +55,9 @@ private:
 	TOOLBOX::NODE<XWINDOW> xNode; //X窓リストのノード
 
 	void AssignXTexture();
+
+	//子窓探索
+	void SendEvent(Window, XButtonEvent&);
 
 	//内部イベントハンドラ
 	void OnMoved(int x, int y); //X側で窓が移動した

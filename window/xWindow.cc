@@ -27,7 +27,7 @@ XWINDOW::XWINDOW(
 	int w,
 	int h,
 	Window window,
-	const Display* d) :
+	Display* d) :
 	WINDOW(x, y, w, h),
 	display(d),
 	wID(window),
@@ -36,8 +36,8 @@ XWINDOW::XWINDOW(
 	xWindowList.Insert(xNode);
 
 	//XDamageイベントを受け取る設定
-	XSelectInput(const_cast<Display*>(display), wID, PropertyChangeMask);
-	dID = XDamageCreate(const_cast<Display*>(display), wID, XDamageReportNonEmpty);
+	XSelectInput(display, wID, PropertyChangeMask);
+	dID = XDamageCreate(display, wID, XDamageReportNonEmpty);
 }
 
 
@@ -59,7 +59,7 @@ XWINDOW* XWINDOW::FindWindowByID(const Display* d, Window w){
 
 
 ///既存窓登録用
-void XWINDOW::AtXCreate(const Display* d, Window w, unsigned hc, unsigned vc){
+void XWINDOW::AtXCreate(Display* const d, Window w, unsigned hc, unsigned vc){
 	const XWINDOW* const xw(FindWindowByID(d, w));
 	if(xw){
 		//登録済なので終了
@@ -68,7 +68,7 @@ void XWINDOW::AtXCreate(const Display* d, Window w, unsigned hc, unsigned vc){
 
 	//新規窓登録
 	XWindowAttributes attr;
-	XGetWindowAttributes(const_cast<Display*>(d), w, &attr);
+	XGetWindowAttributes(d, w, &attr);
 	XWINDOW* const nxw(new XWINDOW(
 		(float)attr.x - hc + attr.width / 2,
 		(float)attr.y - vc + attr.height / 2,
@@ -135,7 +135,7 @@ void XWINDOW::AtXUnmap(const XUnmapEvent& e){
 void XWINDOW::AssignXTexture(){
 	//窓取得
 	XImage* const wImage(XGetImage(
-		const_cast<Display*>(display),
+		display,
 		wID,
 		0, 0, width, height,
 		AllPlanes, ZPixmap));
@@ -166,11 +166,11 @@ void XWINDOW::AtXDamage(const XEvent& ev){
 
 void XWINDOW::OnDamage(XDamageNotifyEvent& e){
 	//変化分を取得したと通知
-	XDamageSubtract(const_cast<Display*>(display), e.damage, None, None);
+	XDamageSubtract(display, e.damage, None, None);
 
 	//変化分をwImageへ取得
 	XImage* const wImage(XGetImage(
-		const_cast<Display*>(display),
+		display,
 		wID,
 		e.area.x,
 		e.area.y,
@@ -239,7 +239,7 @@ void XWINDOW::AtXMouse(EVENT::EVENT_TYPE type, const XButtonEvent& xe){
 void XWINDOW::OnKeyDown(const KEY_EVENT& e){
 	XKeyEvent xe;
 	xe.type = KeyPress;
-	xe.display = const_cast<Display*>(display);
+	xe.display = display;
 	xe.window = wID;
 	xe.state =
 		(e.modifiers & EVENT::ShiftKey ? ShiftMask : 0) |
@@ -247,12 +247,12 @@ void XWINDOW::OnKeyDown(const KEY_EVENT& e){
 		(e.modifiers & EVENT::AltKey ? Mod1Mask : 0);
 		xe.keycode = e.keyCode;
 	xe.send_event = 0;
-	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
+	XSendEvent(display, wID, true, 0, (XEvent*)&xe);
 }
 void XWINDOW::OnKeyUp(const KEY_EVENT& e){
 	XKeyEvent xe;
 	xe.type = KeyRelease;
-	xe.display = const_cast<Display*>(display);
+	xe.display = display;
 	xe.window = wID;
 	xe.state =
 	(e.modifiers & EVENT::ShiftKey ? ShiftMask : 0) |
@@ -260,7 +260,7 @@ void XWINDOW::OnKeyUp(const KEY_EVENT& e){
 	(e.modifiers & EVENT::AltKey ? Mod1Mask : 0);
 	xe.keycode = e.keyCode;
 	xe.send_event = 0;
-	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
+	XSendEvent(display, wID, true, 0, (XEvent*)&xe);
 }
 
 
@@ -305,13 +305,17 @@ void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
 	xe.button = org.button;
 	xe.type = ButtonPress;
 	xe.window = wID;
-	xe.display = const_cast<Display*>(display);
+	xe.display = display;
 	xe.x = e.x;
 	xe.y = e.y;
 	xe.x_root = e.x + vx;
 	xe.y_root = e.y + vy;
 	xe.root = RootWindow(display, 0);
+#if 1
 	XSendEvent(const_cast<Display*>(display), wID, false, 0, (XEvent*)&xe);
+#else
+	SendEvent(wID, xe);
+#endif
 }
 
 void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
@@ -323,13 +327,17 @@ void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
 	xe.button = org.button;
 	xe.type = ButtonRelease;
 	xe.window = wID;
-	xe.display = const_cast<Display*>(display);
+	xe.display = display;
 	xe.x = e.x;
 	xe.y = e.y;
 	xe.x_root = e.x + vx;
 	xe.y_root = e.y + vy;
 	xe.root = RootWindow(display, 0);
-	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
+#if 1
+	XSendEvent(display, wID, true, 0, (XEvent*)&xe);
+#else
+	SendEvent(wID, xe);
+#endif
 }
 
 void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
@@ -339,13 +347,41 @@ void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
 	xe.serial = 0;
 	xe.type = MotionNotify;
 	xe.window = wID;
-	xe.display = const_cast<Display*>(display);
+	xe.display = display;
 	xe.x = e.x;
 	xe.y = e.y;
 	xe.x_root = e.x + vx;
 	xe.y_root = e.y + vy;
 	xe.root = RootWindow(display, 0);
-	XSendEvent(const_cast<Display*>(display), wID, true, 0, (XEvent*)&xe);
+	XSendEvent(display, wID, true, 0, (XEvent*)&xe);
+}
+
+
+void XWINDOW::SendEvent(Window w, XButtonEvent& e){
+	int x(e.x);
+	int y(e.y);
+	unsigned int numChildren;
+	Window* children;
+	if(!XQueryTree(display, w, 0, 0, &children, &numChildren) && children && numChildren){
+		for(unsigned int n(0); n < numChildren; ++n){
+			Window ww(children[numChildren - n - 1]);
+			XWindowAttributes attr;
+			XGetWindowAttributes(display, ww, &attr);
+
+			//範囲内の子
+			if(attr.x <= x && x < attr.x + attr.width &&
+			   attr.y <= y && y < attr.y + attr.height){
+				e.x -= attr.x;
+				e.y -= attr.y;
+				XFree(children);
+				return SendEvent(ww, e);
+			}
+		}
+	}
+	if(children){
+		XFree(children);
+	}
+	XSendEvent(e.display, w, false, 0, (XEvent*)&e);
 }
 
 

@@ -236,9 +236,28 @@ void WINDOW::Draw(float distance){
 	glVertex3f(w2, -h2, -distance);
 	glEnd();
 
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//focusを持ってたら枠を付ける
+	if(this == focused){
+		const float gap(0.005);
+		glLineWidth(2);
+		glColor3f(0.75, 0.75, 0.75);
+		glBegin(GL_LINES);
+		glVertex3f(-w2 - gap, h2 + gap + gap, -distance);
+		glVertex3f(-w2 - gap, -h2 - gap - gap, -distance);
+		glVertex3f(w2 + gap, h2 + gap + gap, -distance);
+		glVertex3f(w2 + gap, -h2 - gap - gap, -distance);
+
+		glVertex3f(-w2 - gap - gap, h2 + gap, -distance);
+		glVertex3f(w2 + gap + gap, h2 + gap, -distance);
+		glVertex3f(-w2 - gap - gap, -h2 - gap, -distance);
+		glVertex3f(w2 + gap + gap, -h2 - gap, -distance);
+		glEnd();
+	}
+
 	//後始末
 	glPopMatrix();
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 WINDOW* WINDOW::lookingWindow;
@@ -365,6 +384,14 @@ void WINDOW::AtJS(const JS_EVENT& e){
 }
 
 
+void WINDOW::SetVisibility(bool v){
+	visibility = v;
+	if(v){
+		Focus();
+	}else if(this == focused){
+		UnFocus();
+	}
+}
 
 
 void WINDOW::Move(float h, float v){

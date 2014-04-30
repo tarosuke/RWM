@@ -156,7 +156,7 @@ protected:
 	unsigned width;
 	unsigned height;
 
-	void SetVisibility(bool v){ visibility = v; if(v){ Focus(); } };
+	void SetVisibility(bool v);
 	bool IsVisible(){ return visibility; };
 
 private:

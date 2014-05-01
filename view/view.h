@@ -30,8 +30,8 @@ public:
 	virtual ~VIEW();
 	void Run();
 	//描画オブジェクトの登録
-	void RegisterStickey(DRAWER& d){ d.Add(stickeies); };
-	void RegisterExternal(DRAWER& d){ d.Add(externals); };
+	void RegisterStickies(TOOLBOX::QUEUE<DRAWER>& d);
+	void RegisterExternals(TOOLBOX::QUEUE<DRAWER>& d);
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
 	//終了設定
@@ -46,8 +46,19 @@ protected:
 	HEADTRACKER& head;
 
 	//描画対象物
-	TOOLBOX::QUEUE<DRAWER> stickeies;
-	TOOLBOX::QUEUE<DRAWER> externals;
+	class DRAWTARGETS{
+	public:
+		typedef TOOLBOX::QUEUE<DRAWER> Q;
+		DRAWTARGETS() : now(0), next(0){};
+		operator Q*() const { return now; };
+		operator bool() const { return !!now; };
+		void SetDrawList(const Q&);
+	private:
+		Q* now;
+		Q* next;
+	};
+	DRAWTARGETS stickeies;
+	DRAWTARGETS externals;
 
 	//幅や高さ
 	int width;
@@ -59,7 +70,7 @@ protected:
 	//描画ハンドラ
 	XDISPLAY x;
 	XVFB xvfb;
-	void DrawObjects(TOOLBOX::QUEUE<DRAWER>&);
+	void DrawObjects(const DRAWTARGETS&) const;
 	virtual void PreDraw();
 	virtual void PostDraw();
 	void Update(){

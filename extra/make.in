@@ -1,12 +1,14 @@
+# common make @extra
+
 CCOPTS +=
 COPTS += -O2 -Wall -Werror -ggdb -I..
 
-srcs = $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl)
+srcs = $(wildcard *.c) $(wildcard *.cc)
 mods = $(basename $(srcs))
 objs = $(addsuffix .o, $(mods))
 
 $(target) : makefile $(objs)
-	ar -rc $(target) $(objs)
+	gcc -o $(target) $(objs)
 
 -include $(addsuffix .d, $(mods))
 
@@ -30,4 +32,3 @@ $(target) : makefile $(objs)
 
 clean :
 	@rm -f $(target) *.o *.d *.a
-	@for f in *; do if [ -d $$f ]; then make -C $$f clean; fi; done

@@ -134,8 +134,10 @@ void VIEW::SIGCHLD_Handler(int sig){
 
 
 
-void VIEW::DrawObjects(TOOLBOX::QUEUE<DRAWER>& q){
-	for(TOOLBOX::QUEUE<DRAWER>::ITOR i(q); i; (*i++).Draw());
+void VIEW::DrawObjects(const DRAWTARGETS& p) const{
+	if(p){
+		for(TOOLBOX::QUEUE<DRAWER>::ITOR i(*p); i; (*i++).Draw());
+	}
 }
 
 void VIEW::PreDraw(){

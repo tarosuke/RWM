@@ -1,3 +1,11 @@
-target = extra.a
-COPTS += -I ..
-include ../make.in
+# extra
+
+.PHONY: clean ambient/ambient
+
+ambient/amdient :
+	make -C ambient
+
+
+clean:
+	make -C ambient clean
+

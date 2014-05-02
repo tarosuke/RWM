@@ -192,17 +192,7 @@ void WINDOW::UnFocus(){
 	}
 }
 
-void WINDOW::Draw(float distance){
-	//可視設定チェック
-	if(!visibility){
-		return;
-	}
-
-	//フォーカスがなければフォーカスを設定
-	if(!focused){
-		focused = this;
-	}
-
+void WINDOW::Draw(bool withTransparent){
 	//描画位置算出
 	const float h(horiz * scale + lookingPoint.x);
 	const float v(vert * scale - lookingPoint.y);
@@ -214,9 +204,16 @@ void WINDOW::Draw(float distance){
 	//最初に視野の中心がかかった窓を見てることにする
 	const float w2(width * scale * 0.5);
 	const float h2(height * scale * 0.5);
-	if(!lookingWindow && (-w2 <= h && h < w2) && (-h2 <= v && v < h2)){
+	if(!withTransparent && //値のアップデートは不透過描画の時だけ
+	   !lookingWindow &&
+	   (-w2 <= h && h < w2) && (-h2 <= v && v < h2)){
 		lookingWindow = this;
 		localLookingPoint = GetLocal((const POINT){h, v});
+	}
+
+	//今描画しようとしている方と違うなら終了
+	if(withTransparent != !(1.0 <= GetUntransparency())){
+		return;
 	}
 
 	//窓の向き＆表示位置計算
@@ -224,6 +221,7 @@ void WINDOW::Draw(float distance){
 	glTranslatef(h, -v, 0);
 
 	//描画
+	glColor4f(1, 1, 1, GetUntransparency());
 	glBindTexture(GL_TEXTURE_2D, tID);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2f(0, 0);
@@ -239,10 +237,10 @@ void WINDOW::Draw(float distance){
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//focusを持ってたら枠を付ける
-	if(this == focused){
+	if(!withTransparent && this == focused){
 		const float gap(0.005);
 		glLineWidth(2);
-		glColor3f(0.75, 0.75, 0.75);
+		glColor4f(0.75, 0.75, 0.75, 1.0);
 		glBegin(GL_LINES);
 		glVertex3f(-w2 - gap, h2 + gap + gap, -distance);
 		glVertex3f(-w2 - gap, -h2 - gap - gap, -distance);
@@ -280,7 +278,16 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	float dd(0.0);
 	lookingWindow = 0;
 	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++, dd += 0.02){
-		(*i).Draw(baseDistance + dd);
+		(*i).distance = baseDistance + dd;
+		if((*i).visibility){
+			//フォーカスがなければフォーカスを設定
+			if(!focused){
+				focused = i;
+			}
+
+			//不透過窓ならここで描画
+			(*i).Draw(false);
+		}
 	}
 
 	if(oldLookingWindow != lookingWindow){
@@ -328,6 +335,15 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 			e.buttonState = 0; //TODO:AtMouseで管理する
 			w.OnMouseMove(e);
 			oldLookingPoint = lookingPoint;
+		}
+	}
+}
+
+//透過窓描画
+void WINDOW::DrawTransparentAll(const COMPLEX<4>& pose){
+	for(TOOLBOX::QUEUE<WINDOW>::RITOR i(windowList); i; i--){
+		if((*i).visibility){
+			(*i).Draw(true);
 		}
 	}
 }

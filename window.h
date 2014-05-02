@@ -21,6 +21,7 @@ public:
 	 * @attention 描画先の設定が完了している事が前提。
 	 */
 	static void DrawAll(const COMPLEX<4>&);
+	static void DrawTransparentAll(const COMPLEX<4>&);
 
 	//イベントと一次ハンドラ
 	class EVENT{
@@ -160,7 +161,7 @@ protected:
 	bool IsVisible(){ return visibility; };
 
 private:
-	void Draw(float distance);
+	void Draw(bool withTransparent);
 
 	//窓全体関連
 	static TOOLBOX::QUEUE<WINDOW> windowList;
@@ -175,6 +176,7 @@ private:
 	TOOLBOX::NODE<WINDOW> node;
 	unsigned tID; //窓の内容を保持するテクスチャID(0なら無効)
 	bool visibility; //可視状態
+	float distance;
 
 	//見ている先
 	static WINDOW* lookingWindow;
@@ -186,6 +188,11 @@ private:
 	static POINT oldLookingPoint;
 	POINT localLookingPoint;
 	POINT GetLocal(const POINT&);
+
+	//透過窓
+	float GetUntransparency(){
+		return this == focused ? 1.0 : 0.75;
+	};
 };
 
 

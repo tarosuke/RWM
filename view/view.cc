@@ -79,9 +79,10 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
-		WINDOW::DrawAll(head.GetDirection()); //窓を描画
+		WINDOW::DrawAll(head.GetDirection()); //非透過窓描画
 		DrawObjects(stickeies); //視界に貼り付いている物体を描画
 
+		glPushMatrix();
 		head.GetView(); //頭の姿勢、位置を反映
 
 #if 1
@@ -114,6 +115,11 @@ void VIEW::Run(){
 
 		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		DrawObjects(externals); //externalを描画
+
+		//透過窓描画
+		glPopMatrix(); //窓描画直後の状態に戻す
+		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
+		WINDOW::DrawTransparentAll(head.GetDirection()); //透過窓描画
 
 		//描画後処理
 		PostDraw();

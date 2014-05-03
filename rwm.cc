@@ -9,7 +9,11 @@
 
 int main(int argc, char *argv[]){
 	static RIFTVIEW view;
-	view.Run();
+	if(SERVER::Start(view, "rwm")){
+		view.Run();
+	}else{
+		puts("socket fail.");
+	}
 
 	return 0;
 }

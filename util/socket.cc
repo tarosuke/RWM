@@ -65,3 +65,13 @@ SOCKET::~SOCKET(){
 	close(fd);
 }
 
+
+
+UNIX_SOCKET::UNIX_SOCKET(const char* path) : SOCKET(AF_UNIX, SOCK_STREAM, 0){
+	sockaddr_un addr;
+	addr.sun_family = AF_UNIX;
+	strncpy(&addr.sun_path[1], path, sizeof(addr.sun_path) - 1);
+	addr.sun_path[0] = 0;
+	connect(fd, (sockaddr*)&addr, sizeof(addr));
+}
+

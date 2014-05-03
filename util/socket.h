@@ -41,7 +41,7 @@ class UNIX_SERVERSOCKET : public SERVERSOCKET{
 	UNIX_SERVERSOCKET(UNIX_SERVERSOCKET&);
 	void operator=(UNIX_SERVERSOCKET&);
 public:
-	UNIX_SERVERSOCKET(const char* path) throw(int);
+	UNIX_SERVERSOCKET(const char* path, int type=SOCK_STREAM) throw(int);
 private:
 	sockaddr_un addr;
 	const sockaddr* PrepareSA(const char* path);
@@ -62,6 +62,7 @@ public:
 		return send(fd, content, size, flag);
 
 	};
+	int Send(const char*);
 	int Receive(void* content, unsigned size, int flag=0){
 		return recv(fd, content, size, flag);
 	};
@@ -78,7 +79,7 @@ class UNIX_SOCKET : public SOCKET{
 	UNIX_SOCKET(UNIX_SOCKET&);
 	void operator=(UNIX_SOCKET&);
 public:
-	UNIX_SOCKET(const char*);
+	UNIX_SOCKET(const char*, int type=SOCK_STREAM) throw(int);
 };
 
 

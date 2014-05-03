@@ -15,7 +15,6 @@ bool SERVER::Start(VIEW& v, const char* p){
 		return true;
 	}
 	catch(int e){
-		printf("fail:%d.\n", e);
 		return false;
 	}
 }
@@ -45,6 +44,9 @@ void* SERVER::_ServerThread(void* t){
 }
 
 void SERVER::ServerThread(){
-	for(;be;sleep(10));
+	static char text[127];
+	while(be && 0 < sock.Receive(text, sizeof(text))){
+		puts(text);
+	}
 }
 

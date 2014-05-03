@@ -1,5 +1,6 @@
 #include <server.h>
 #include <stdio.h>
+#include <unistd.h>
 
 
 VIEW* SERVER::view(0);
@@ -44,5 +45,6 @@ void* SERVER::_ServerThread(void* t){
 }
 
 void SERVER::ServerThread(){
+	for(;be;sleep(10));
 }
 

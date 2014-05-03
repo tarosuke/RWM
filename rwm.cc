@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
 	if(SERVER::Start(view, "rwm")){
 		view.Run();
 	}else{
-		puts("socket fail.");
+		puts("server failed.");
 	}
 
 	return 0;

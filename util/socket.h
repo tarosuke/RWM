@@ -78,7 +78,7 @@ class UNIX_SOCKET : public SOCKET{
 	UNIX_SOCKET(UNIX_SOCKET&);
 	void operator=(UNIX_SOCKET&);
 public:
-	UNIX_SOCKET(const char*);
+	UNIX_SOCKET(const char*) throw(int);
 };
 
 

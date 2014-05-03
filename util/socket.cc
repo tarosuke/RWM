@@ -19,7 +19,6 @@ SERVERSOCKET::SERVERSOCKET(
 	int s,
 	int b) throw(int): fd(socket(d, t, p)){
 	if(fd < 0 || bind(fd, a, s) < 0 || listen(fd, b) < 0){
-		printf("listen failed:%d.\n", b);
 		throw errno;
 	};
 }
@@ -33,14 +32,13 @@ int SERVERSOCKET::Accept() throw(int){
 }
 
 SERVERSOCKET::~SERVERSOCKET(){
-	puts("close");
 	close(fd);
 }
 
 
 
 UNIX_SERVERSOCKET::UNIX_SERVERSOCKET(const char* path) throw(int) :
-	SERVERSOCKET(AF_UNIX, SOCK_STREAM, 0, PrepareSA(path), sizeof(addr)){
+	SERVERSOCKET(AF_UNIX, SOCK_SEQPACKET, 0, PrepareSA(path), sizeof(addr)){
 }
 
 const sockaddr* UNIX_SERVERSOCKET::PrepareSA(const char* path){
@@ -67,11 +65,14 @@ SOCKET::~SOCKET(){
 
 
 
-UNIX_SOCKET::UNIX_SOCKET(const char* path) : SOCKET(AF_UNIX, SOCK_STREAM, 0){
+UNIX_SOCKET::UNIX_SOCKET(const char* path) throw(int) :
+	SOCKET(AF_UNIX, SOCK_SEQPACKET, 0){
 	sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
 	strncpy(&addr.sun_path[1], path, sizeof(addr.sun_path) - 1);
 	addr.sun_path[0] = 0;
-	connect(fd, (sockaddr*)&addr, sizeof(addr));
+	if(connect(fd, (sockaddr*)&addr, sizeof(addr)) < 0){
+		throw errno;
+	};
 }
 

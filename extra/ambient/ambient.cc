@@ -8,5 +8,6 @@ int main(){
 	puts("HELLO AMBIENT.");
 
 	UNIX_SOCKET("rwm");
+	puts("connected");
 	for(;;sleep(10));
 }

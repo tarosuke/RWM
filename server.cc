@@ -15,7 +15,6 @@ bool SERVER::Start(VIEW& v, const char* p){
 		return true;
 	}
 	catch(int e){
-		printf("fail:%d.\n", e);
 		return false;
 	}
 }

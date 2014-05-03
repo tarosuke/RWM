@@ -26,7 +26,7 @@ rwm.test: makefile $(objs) toolboxes locals
 	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ $(objs) $(libs)
 
 locals:
-	@for f in *; do if [ -f $$f/makefile ]; then make -j -C $$f; fi; done
+	@for f in $(subtargets); do  make -j -C $$f; done
 
 toolboxes:
 	make -C toolbox/glpose

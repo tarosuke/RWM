@@ -5,6 +5,9 @@ srcs = $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl)
 mods = $(basename $(srcs))
 objs = $(addsuffix .o, $(mods))
 
+subtargets = $(dir $(wildcard */makefile))
+
+
 $(target) : makefile $(objs)
 	ar -rc $(target) $(objs)
 
@@ -30,4 +33,4 @@ $(target) : makefile $(objs)
 
 clean :
 	@rm -f $(target) *.o *.d *.a
-	@for f in *; do if [ -d $$f ]; then make -C $$f clean; fi; done
+	@for f in $(subtargets); do if [ -d $$f ]; then make -C $$f clean; fi; done

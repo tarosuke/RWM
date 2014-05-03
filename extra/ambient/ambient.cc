@@ -5,9 +5,13 @@
 
 
 int main(){
-	puts("HELLO AMBIENT.");
+	try{
+		static UNIX_SOCKET sock("rwm");
+		sock.Send("HELLO AMBIENT.");
 
-	UNIX_SOCKET("rwm");
-	puts("connected");
-	for(;;sleep(10));
+		for(;;sleep(10));
+	}
+	catch(int){
+		puts("Failed to connect RWM.");
+	}
 }

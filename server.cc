@@ -44,6 +44,9 @@ void* SERVER::_ServerThread(void* t){
 }
 
 void SERVER::ServerThread(){
-	for(;be;sleep(10));
+	static char text[127];
+	while(be && 0 < sock.Receive(text, sizeof(text))){
+		puts(text);
+	}
 }
 

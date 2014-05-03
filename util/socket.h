@@ -62,6 +62,7 @@ public:
 		return send(fd, content, size, flag);
 
 	};
+	int Send(const char*);
 	int Receive(void* content, unsigned size, int flag=0){
 		return recv(fd, content, size, flag);
 	};

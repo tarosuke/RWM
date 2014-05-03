@@ -59,6 +59,10 @@ SOCKET::SOCKET(int domain, int type, int protocol) throw(int) :
 	}
 }
 
+int SOCKET::Send(const char* str){
+	return Send(str, strlen(str));
+}
+
 SOCKET::~SOCKET(){
 	close(fd);
 }

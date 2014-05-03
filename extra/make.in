@@ -7,8 +7,8 @@ srcs = $(wildcard *.c) $(wildcard *.cc)
 mods = $(basename $(srcs))
 objs = $(addsuffix .o, $(mods))
 
-$(target) : makefile $(objs)
-	gcc -o $(target) $(objs)
+$(target) : makefile $(objs) $(libs)
+	gcc -o $(target) $(objs) $(addprefix -L ,$(libs))
 
 -include $(addsuffix .d, $(mods))
 

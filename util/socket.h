@@ -5,6 +5,8 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
+#include <errno.h>
 
 
 
@@ -43,7 +45,7 @@ public:
 private:
 	sockaddr_un addr;
 	const sockaddr* PrepareSA(const char* path);
-}
+};
 
 
 

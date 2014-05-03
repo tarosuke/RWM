@@ -37,8 +37,8 @@ SERVERSOCKET::~SERVERSOCKET(){
 
 
 
-UNIX_SERVERSOCKET::UNIX_SERVERSOCKET(const char* path) throw(int) :
-	SERVERSOCKET(AF_UNIX, SOCK_SEQPACKET, 0, PrepareSA(path), sizeof(addr)){
+UNIX_SERVERSOCKET::UNIX_SERVERSOCKET(const char* path, int type) throw(int) :
+	SERVERSOCKET(AF_UNIX, type, 0, PrepareSA(path), sizeof(addr)){
 }
 
 const sockaddr* UNIX_SERVERSOCKET::PrepareSA(const char* path){
@@ -65,8 +65,8 @@ SOCKET::~SOCKET(){
 
 
 
-UNIX_SOCKET::UNIX_SOCKET(const char* path) throw(int) :
-	SOCKET(AF_UNIX, SOCK_SEQPACKET, 0){
+UNIX_SOCKET::UNIX_SOCKET(const char* path, int type) throw(int) :
+	SOCKET(AF_UNIX, type, 0){
 	sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
 	strncpy(&addr.sun_path[1], path, sizeof(addr.sun_path) - 1);

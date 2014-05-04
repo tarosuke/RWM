@@ -10,7 +10,8 @@
 int main(){
 	try{
 		static UNIX_SOCKET sock("rwm");
-		sock.Send("HELLO AMBIENT.");
+		PACKET::FEATURECHECK featureCheck;
+		featureCheck.SendTo(sock);
 
 		for(;;sleep(10));
 	}

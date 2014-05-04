@@ -5,12 +5,12 @@ namespace PACKET{
 
 	unsigned short PACKET::sequence(0);
 
-	PACKET::PACKET(unsigned short type, unsigned short size, void* buff) :
+	PACKET::PACKET(TYPE type, unsigned short size, void* buff) :
 		body(buff),
 		length(size){
-		header[0] = type;
+		header[0] = (unsigned short)type;
 		header[1] = size;
-		header[2] = ++seqence;
+		header[2] = ++sequence;
 		header[3] = 0;
 	}
 
@@ -18,7 +18,10 @@ namespace PACKET{
 		//ヘッダ送信
 		s.Send(header, sizeof(header));
 		//ボディ
-		s.Send(body, length);
+		if(length && body){
+			s.Send(body, length);
+		}
+		return true;
 	}
 }
 

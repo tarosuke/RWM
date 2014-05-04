@@ -2,12 +2,16 @@
 #include <unistd.h>
 
 #include <socket.h>
+#include <packet.h>
+
+#include "client.h"
 
 
 int main(){
 	try{
 		static UNIX_SOCKET sock("rwm");
-		sock.Send("HELLO AMBIENT.");
+		PACKET::FEATURECHECK featureCheck;
+		featureCheck.SendTo(sock);
 
 		for(;;sleep(10));
 	}

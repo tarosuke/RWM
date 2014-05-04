@@ -1,6 +1,7 @@
 #include <server.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <util/packet.h>
 
 
 VIEW* SERVER::view(0);
@@ -38,7 +39,9 @@ SERVER::SERVER(SERVERSOCKET& server) : sock(server){
 }
 
 void* SERVER::_ServerThread(void* t){
-	(*(SERVER*)t).ServerThread();
+	SERVER* const s((SERVER*)t);
+	(*s).ServerThread();
+	delete s;
 	pthread_exit(0);
 	return 0;
 }
@@ -48,5 +51,15 @@ void SERVER::ServerThread(){
 	while(be && 0 < sock.Receive(text, sizeof(text))){
 		puts(text);
 	}
+}
+
+
+
+namespace PACKET{
+	void FEATURECHECK::Do(SOCKET& s){
+		FEATUREANSWER ans(0);
+		ans.SendTo(s);
+	}
+	void FEATUREANSWER::Do(SOCKET&){}
 }
 

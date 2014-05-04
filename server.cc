@@ -38,7 +38,9 @@ SERVER::SERVER(SERVERSOCKET& server) : sock(server){
 }
 
 void* SERVER::_ServerThread(void* t){
-	(*(SERVER*)t).ServerThread();
+	SERVER* const s((SERVER*)t);
+	(*s).ServerThread();
+	delete s;
 	pthread_exit(0);
 	return 0;
 }

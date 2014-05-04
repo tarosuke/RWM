@@ -2,6 +2,9 @@
 #include <unistd.h>
 
 #include <socket.h>
+#include <packet.h>
+
+#include "client.h"
 
 
 int main(){

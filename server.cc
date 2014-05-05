@@ -47,16 +47,33 @@ void* SERVER::_ServerThread(void* t){
 }
 
 void SERVER::ServerThread(){
-	static char text[127];
-	while(be && 0 < sock.Receive(text, sizeof(text))){
-		puts(text);
+#if 0
+	static char c;
+	while(be && 0 < sock.Receive(&c, 1)){
+		printf("%02x\n", c);
 	}
+#else
+	try{
+		while(be){
+			PACKET::PACKET::Receive(sock);
+		}
+	}
+	catch(int){
+		puts("disconnected");
+	}
+#endif
 }
 
 
 
 namespace PACKET{
+// 	const char* IDENT::myName = "RWM";
+// 	IDENT() : PACKET(PACKET::Ident, strlen(myName), myName){};
+// 	IDENT(HEADER& h) : PACKET(PACKET::Ident, h.length, malloc(h.length)){}
+
+
 	void FEATURECHECK::Do(SOCKET& s){
+		puts("FEATURECHECK::Do");
 		FEATUREANSWER ans(0);
 		ans.SendTo(s);
 	}

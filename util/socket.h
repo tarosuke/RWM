@@ -58,13 +58,16 @@ class SOCKET{
 	void operator=(SOCKET&);
 public:
 	SOCKET(SERVERSOCKET& server) throw(int) : fd(server.Accept()){};
-	int Send(const void* content, unsigned size, int flag=0){
-		return send(fd, content, size, flag);
-
+	void Send(const void* content, unsigned size, int flag=0) throw(int){
+		if(send(fd, content, size, flag) <= 0){
+			throw errno;
+		}
 	};
-	int Send(const char*);
-	int Receive(void* content, unsigned size, int flag=0){
-		return recv(fd, content, size, flag);
+	void Send(const char*);
+	void Receive(void* content, unsigned size, int flag=0){
+		if(recv(fd, content, size, flag) <= 0){
+			throw errno;
+		}
 	};
 	virtual ~SOCKET();
 protected:

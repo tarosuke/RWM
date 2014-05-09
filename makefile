@@ -1,4 +1,4 @@
-.PHONY: toolboxes
+.PHONY: subtargets
 all: rwm
 
 COPTS += -IX11 -I.
@@ -10,7 +10,6 @@ libs= window/window.a view/view.a headtracker/headtracker.a util/util.a toolbox/
 
 
 subtargetDir = $(subst /makefile,,$(wildcard */makefile toolbox/*/makefile))
-subtargets = $(foreach p,$(subtargetDir),$(subst /toolbox/,/,$(p)/$(p).a))
 
 
 
@@ -23,29 +22,16 @@ test: rwm.test
 run: rwm
 	./rwm
 
-rwm: makefile $(objs) $(subtargets)
+rwm: makefile $(objs) subtargets
 	gcc -o $@ $(objs) $(libs)
 
 rwm.test: COPTS+=-DTEST
-rwm.test: makefile $(objs) $(subtargets)
+rwm.test: makefile $(objs) subtargets
 	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ $(objs) $(libs)
 
-vpath
-
-vpath %.a $(subtargets)
-
-%.a :
-	make -C $(dir $@)
-
-toolboxes:
-	make -C toolbox/glpose
-	make -C toolbox/input
-	make -C toolbox/cyclic
-	make -C toolbox/complex
-
-t:
-	@echo $(subtargets)
+subtargets:
+	for p in $(subtargetDir); do make -j -C $$p || exit -1; done
 
 clean:
 	rm -f rwm rwm.test *.a *.map *.o *.d
-	for p in $(subtargetDir); do make -C $$p clean; done
+	for p in $(subtargetDir); do make -j -C $$p clean; done

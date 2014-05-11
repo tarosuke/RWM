@@ -6,10 +6,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "view.h"
 #include <window.h>
+#include <server.h>
 #include <toolbox/complex/complex.h>
 
 
@@ -109,6 +111,51 @@ void VIEW::Run(){
 					glEnd();
 				}
 			}
+		}
+#endif
+#if 1
+		class SNOW{
+		public:
+			SNOW() : x(R() * 10 - 5), y(R() * 10), z(R() * 10 - 10){};
+			void Run(){
+				x += R() * 0.005;
+				y += R() * 0.005;
+				z += R() * 0.005;
+
+				const float r(3 / sqrt(x*x+y*y+z*z));
+
+				if(1.0 <= r){
+					glPointSize(r);
+					glColor3f(1, 1, 1);
+				}else{
+					glPointSize(1);
+					glColor4f(1, 1, 1, r);
+				}
+				glBegin(GL_POINTS);
+				glVertex3f(x, y, z);
+				glEnd();
+
+				y -= 0.025;
+				if(y < -1.6 ){
+					y += 10.0;
+				}
+				if(x < -5) x += 10;
+				if(5 < x) x -= 10;
+				if(z < -10) z += 10;
+				if(0 < z) z -= 10;
+			};
+		private:
+			static float R(){
+				return (float)rand() / RAND_MAX;
+			};
+			float x;
+			float y;
+			float z;
+		};
+		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
+		static SNOW snow[1000];
+		for(unsigned n(0); n < 1000; ++n){
+			snow[n].Run();
 		}
 #endif
 #endif

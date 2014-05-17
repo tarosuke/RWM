@@ -11,8 +11,14 @@ namespace PACKET{
 	public:
 		enum TYPE{
 			Ident,
-			FeatureCheck,
-			FeatureAnswer,
+			FeatureCheck, //追加機能チェック
+			FeatureAnswer, //追加機能応答
+			Form, //形状データ設定
+			StartRegisterPersistents, //恒久データ登録開始
+			StopRegisterPersitents, //恒久データ登録終了、有効化
+			FrameSync, //フレーム同期
+			RenderForms, //レンダリング対象形状指定
+			FinishRender, //形状データ指定終了
 		};
 		bool SendTo(SOCKET&);
 		static void Receive(SOCKET&); //受信パケットに応じたPACKETのファクトリでもあるが受信PACKETは自己消滅なので外部にインスタンスが見えることはない

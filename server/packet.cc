@@ -1,31 +1,12 @@
+/////サーバ側
+
 #include "../util/packet.h"
+#include "form.h"
 
 #include <stdio.h>
 
 
 namespace PACKET{
-
-	unsigned short PACKET::sequence(0);
-
-	PACKET::PACKET(TYPE type, unsigned short size, void* buff) :
-		body(buff),
-		length(size){
-		header.type = (unsigned short)type;
-		header.length = size;
-		header.sequence = ++sequence;
-		header._reserved = 0;
-	}
-
-	bool PACKET::SendTo(SOCKET& s){
-		//ヘッダ送信
-		s.Send(&header, sizeof(header));
-		//ボディ
-		if(length && body){
-			s.Send(body, length);
-		}
-		return true;
-	}
-
 
 
 	//受信処理＆PACKETシリーズのファクトリ
@@ -42,6 +23,9 @@ namespace PACKET{
 			break;
 		case FeatureAnswer:
 			p = new FEATUREANSWER(head);
+			break;
+		case Form: //頂点データ
+			p = new FORM(head);
 			break;
 		}
 

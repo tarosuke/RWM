@@ -2,7 +2,7 @@
 
 target = ambient
 libs = ../../util/util.a -lstdc++ -lgdbm -lpthread
-COPTS= -I../../util
+COPTS= -I../../util -DCLIENT
 
 include ../make.in
 

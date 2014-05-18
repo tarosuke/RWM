@@ -6,7 +6,7 @@ COPTS += -IX11 -I.
 include make.in
 
 
-libs= server/server.a window/window.a view/view.a headtracker/headtracker.a util/util.a toolbox/glpose/glpose.a settings/settings.a image/image.a toolbox/input/input.a toolbox/cyclic/cyclic.a toolbox/complex/complex.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lXdamage -lstdc++ -lgdbm -lpthread
+libs= window/window.a view/view.a headtracker/headtracker.a server/server.a util/util.a  toolbox/glpose/glpose.a settings/settings.a image/image.a toolbox/input/input.a toolbox/cyclic/cyclic.a toolbox/complex/complex.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lXdamage -lstdc++ -lgdbm -lpthread
 
 
 subtargetDir = $(subst /makefile,,$(wildcard */makefile toolbox/*/makefile))

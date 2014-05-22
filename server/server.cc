@@ -72,11 +72,12 @@ namespace PACKET{
 // 	IDENT(HEADER& h) : PACKET(PACKET::Ident, h.length, malloc(h.length)){}
 
 
-	void FEATURECHECK::Do(SOCKET& s){
+	bool FEATURECHECK::Do(SOCKET& s){
 		puts("FEATURECHECK::Do");
 		FEATUREANSWER ans(0);
 		ans.SendTo(s);
+		return true;
 	}
-	void FEATUREANSWER::Do(SOCKET&){}
+	bool FEATUREANSWER::Do(SOCKET&){ return true; }
 }
 

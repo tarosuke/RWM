@@ -30,31 +30,31 @@ namespace PACKET{
 			unsigned short _reserved;
 		}__attribute__((packed));
 		PACKET(TYPE type, unsigned short size, void* buff);
-		PACKET(const HEADER& h, void* buff) :
-			header(h), body(buff), length(h.length){};
-		virtual ~PACKET(){};
+		PACKET(SOCKET&, const HEADER& h);
+		virtual ~PACKET();
+		void* GetBody(){ return body; };
 	private:
 		static unsigned short sequence;
-		virtual void Do(SOCKET&)=0; //パケット処理
+		virtual bool Do(SOCKET&)=0; //パケット処理
 		HEADER header;
 		void* const body;
-		const short length;
+		const bool mallocedBody;
 	};
 
 
 
 
 
-	class IDENT : public PACKET{
-	public:
-		IDENT() : PACKET(PACKET::Ident, 0, 0){};
-		IDENT(HEADER& h) : PACKET(h, 0){};
-	private:
-		static const int maxNameLen = 32;
-		static const char* myName;
-		char name[maxNameLen];
-		void Do(SOCKET&);
-	};
+// 	class IDENT : public PACKET{
+// 	public:
+// 		IDENT() : PACKET(PACKET::Ident, 0, 0){};
+// 		IDENT(HEADER& h) : PACKET(h, 0){};
+// 	private:
+// 		static const int maxNameLen = 32;
+// 		static const char* myName;
+// 		char name[maxNameLen];
+// 		bool Do(SOCKET&);
+// 	};
 
 
 
@@ -69,9 +69,9 @@ namespace PACKET{
 	class FEATURECHECK : public PACKET{
 	public:
 		FEATURECHECK() : PACKET(PACKET::FeatureCheck, 0, 0){};
-		FEATURECHECK(HEADER& h) : PACKET(h, 0){};
+		FEATURECHECK(SOCKET& s, HEADER& h) : PACKET(s, h){};
 	private:
-		void Do(SOCKET&);
+		bool Do(SOCKET&);
 	};
 
 	class FEATUREANSWER : public PACKET{
@@ -80,10 +80,10 @@ namespace PACKET{
 			PACKET(PACKET::FeatureAnswer,
 			       sizeof(unsigned),
 			       &(*this).features), features(ans){};
-		FEATUREANSWER(HEADER& h) : PACKET(h, &features){};
+		FEATUREANSWER(SOCKET&s, HEADER& h) : PACKET(s, h){};
 	private:
 		unsigned features;
-		void Do(SOCKET&);
+		bool Do(SOCKET&);
 	};
 
 }

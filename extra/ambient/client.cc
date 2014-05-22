@@ -9,9 +9,10 @@
 
 
 namespace PACKET{
-	void FEATURECHECK::Do(SOCKET&){}
-	void FEATUREANSWER::Do(SOCKET&){
+	bool FEATURECHECK::Do(SOCKET&){ return true; }
+	bool FEATUREANSWER::Do(SOCKET&){
 		printf("featureAnswer:%x.\n", features);
+		return true;
 	}
 }
 

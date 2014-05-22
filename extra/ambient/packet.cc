@@ -19,24 +19,19 @@ namespace PACKET{
 		PACKET* p(0);
 		switch(head.type){
 		case FeatureCheck:
-			p = new FEATURECHECK(head);
+			p = new FEATURECHECK(s, head);
 			break;
 		case FeatureAnswer:
-			p = new FEATUREANSWER(head);
+			p = new FEATUREANSWER(s, head);
 			break;
 		}
 
 		if(p){
-			//内容の読み込み(あれば)
-			if((*p).length){
-				s.Receive((*p).body, (*p).length);
-			}
-
 			//実行
-			(*p).Do(s);
-
-			//領域破棄
-			delete p;
+			if((*p).Do(s)){
+				//trueが返ったらdelete
+				delete p;
+			}
 		}
 	}
 

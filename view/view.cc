@@ -85,7 +85,7 @@ void VIEW::Run(){
 
 		//各段階描画
 		WINDOW::DrawAll(head.GetDirection()); //非透過窓描画
-		DrawObjects(stickeies); //視界に貼り付いている物体を描画
+		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
 		glPushMatrix();
 		head.GetView(); //頭の姿勢、位置を反映
@@ -121,8 +121,8 @@ void VIEW::Run(){
 #endif
 #endif
 
-		glEnable(GL_LIGHTING); //無効にした照明を有効にする
-		DrawObjects(externals); //externalを描画
+//		glEnable(GL_LIGHTING); //無効にした照明を有効にする
+		externals.Each(&DRAWER::Draw); //externalを描画
 
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
@@ -147,12 +147,6 @@ void VIEW::SIGCHLD_Handler(int sig){
 }
 
 
-
-void VIEW::DrawObjects(const DRAWTARGETS& p) const{
-	if(p){
-		for(TOOLBOX::QUEUE<DRAWER>::ITOR i(*p); i; (*i++).Draw());
-	}
-}
 
 void VIEW::PreDraw(){
 	//描画領域設定

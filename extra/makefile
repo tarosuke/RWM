@@ -2,10 +2,13 @@
 
 .PHONY: clean ambient/ambient
 
+subtargets = $(subst /makefile,,$(wildcard */makefile toolbox/*/makefile))
+
 ambient/amdient :
-	make -C ambient
+	for p in $(subtargets); do make -j -C $$p || exit -1; done
 
 
 clean:
-	make -C ambient clean
+	rm -f *.a
+	for p in $(subtargets); do make -j -C $$p clean || exit -1; done
 

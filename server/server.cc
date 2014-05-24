@@ -47,12 +47,6 @@ void* SERVER::_ServerThread(void* t){
 }
 
 void SERVER::ServerThread(){
-#if 0
-	static char c;
-	while(be && 0 < sock.Receive(&c, 1)){
-		printf("%02x\n", c);
-	}
-#else
 	try{
 		while(be){
 			PACKET::PACKET::Receive(sock);
@@ -61,7 +55,6 @@ void SERVER::ServerThread(){
 	catch(int){
 		puts("disconnected");
 	}
-#endif
 }
 
 

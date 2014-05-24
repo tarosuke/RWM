@@ -1,7 +1,6 @@
 /////サーバ側
 
 #include "../util/packet.h"
-#include "form.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,9 +23,6 @@ namespace PACKET{
 			break;
 		case FeatureAnswer:
 			p = new FEATUREANSWER(s, head);
-			break;
-		case Form: //頂点情報登録
-			p = new FORM(s, head);
 			break;
 		}
 

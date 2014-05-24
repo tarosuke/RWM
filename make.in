@@ -1,9 +1,9 @@
 CCOPTS +=
 COPTS += -O2 -Wall -Werror -ggdb -I..
 
-srcs = $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl)
-mods = $(basename $(srcs))
-objs = $(addsuffix .o, $(mods))
+srcs += $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl)
+mods += $(basename $(srcs))
+objs += $(addsuffix .o, $(mods))
 
 subtargets = $(dir $(wildcard */makefile))
 

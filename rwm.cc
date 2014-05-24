@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[]){
 	static RIFTVIEW view;
-	if(SERVER::Start(view, "rwm")){
+	if(SERVER::Start(view, "rwm/ambient")){
 		view.Run();
 	}else{
 		puts("server failed.");

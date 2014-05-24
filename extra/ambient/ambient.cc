@@ -9,13 +9,9 @@
 
 int main(){
 	try{
-		static UNIX_SOCKET sock("rwm");
-#if 0
-		sock.Send("HELLO AMBIENT.");
-#else
+		static UNIX_SOCKET sock("rwm/ambient");
 		PACKET::FEATURECHECK featureCheck;
 		featureCheck.SendTo(sock);
-#endif
 
 		try{
 			for(;;){

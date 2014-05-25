@@ -54,24 +54,7 @@ void VIEW::Run(){
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_TEXTURE_2D);
 
-		//基本ライト(場所は自分、明るさはAMBIENTへ)
-		glEnable(GL_LIGHT0);
-		glLightf(GL_LIGHT0, GL_POSITION, 0);
-		const GLfloat myLight[] = { 0.3, 0.3, 0.3, 1 };
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, myLight);
-		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0);
-		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0);
 
-		//フォグ
-#if 0
-		glFogi(GL_FOG_MODE, GL_LINEAR);
-		glFogi(GL_FOG_START, 10);
-		glFogi(GL_FOG_END, 5000);
-		const GLfloat fogColor[] = { 0.6, 0.6, 0.6, 0.6 };
-		glFogfv(GL_FOG_COLOR, fogColor);
-		glHint(GL_FOG_HINT, GL_DONT_CARE);
-		glEnable(GL_FOG);
-#endif
 
 		//(投影行列初期化も含めた)描画前処理
 		PreDraw();
@@ -121,7 +104,6 @@ void VIEW::Run(){
 #endif
 #endif
 
-//		glEnable(GL_LIGHTING); //無効にした照明を有効にする
 		externals.Each(&DRAWER::Draw); //externalを描画
 
 		//透過窓描画

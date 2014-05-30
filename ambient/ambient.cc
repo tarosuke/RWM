@@ -6,50 +6,15 @@
 #include <ambient.h>
 
 
-
-
-class Wall : public Ambient::Object{
-public:
-	Wall(TOOLBOX::QUEUE<Object>& to) : Object(to){};
-private:
-	void Draw() const{
-		glColor4f(0.7, 0.7, 1.0, 1);
-		static const float vArr[] = {
-			-2, 2.4-1.6, 2,
-			-2, -1.6, 2,
-			-2, 2.4-1.6, -4,
-			-2, -1.6, -4};
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, vArr);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, sizeof(vArr) / sizeof(vArr[0]));
-	};
-};
-
-class TestRoom : public Ambient::Room{
-public:
-	TestRoom(){
-		new Wall(borders);
-	};
-};
-
-
-
-
-
-
-
-
-
-
-
 Ambient::Room* Ambient::in(0);
+TOOLBOX::QUEUE<Ambient::Room> rooms;
 unsigned Ambient::sequence(0);
-
 
 
 Ambient::Ambient(VIEW& v){
 	v.RegisterExternals(*this);
-in = new TestRoom;
+
+	in = new SquareRoom(4,6);
 }
 
 
@@ -70,8 +35,8 @@ void Ambient::Draw() const{
 	glEnable(GL_FOG);
 #endif
 
-	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CCW);
+// 	glEnable(GL_CULL_FACE);
+// 	glFrontFace(GL_CCW);
 
 	if(in){
 		(*in).Draw(1);

@@ -1,9 +1,18 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
-
+#include <stdio.h>
 
 #include <ambient.h>
 
+
+
+Ambient::Room::Room(const float* m) : node(*this){
+	if(m){
+		for(unsigned n(0); n < 16; ++n){
+			viewMatrix[n] = m[n];
+		}
+	}
+};
 
 
 void Ambient::Room::Draw(const unsigned level){
@@ -41,4 +50,31 @@ void Ambient::Room::Draw(const unsigned level){
 	glDisable(GL_STENCIL_TEST);
 	transparents.Each(&Object::Draw);
 }
+
+
+
+SquareRoom::RoundWall::RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, float w, float d, float h) : Ambient::Object(to){
+	for(unsigned n(0); n < 5; ++n){
+		vertexes[n][0][0] =
+		vertexes[n][1][0] = n & 2 ? w/2 : -w/2;
+		vertexes[n][0][1] = h - 1.6;
+		vertexes[n][1][1] = -1.6;
+		vertexes[n][0][2] =
+		vertexes[n][1][2] = (n + 1) & 2 ? d/2 : -d/2;
+	}
+}
+
+
+void SquareRoom::RoundWall::Draw() const{
+// 	puts("SquareRoom::RoundWall::Draw()");
+	glColor4f(0.7, 0.7, 1.0, 1);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, &vertexes[0][0]);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 12);
+}
+
+
+
+SquareRoom::SquareRoom(float width, float depth, float height) : roundWall(borders, width, depth, height){}
+
 

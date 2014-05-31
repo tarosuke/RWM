@@ -7,6 +7,7 @@
 
 
 Ambient::Room::Room(const float* m) : node(*this){
+	Ambient::rooms.Add(node);
 	if(m){
 		for(unsigned n(0); n < 16; ++n){
 			viewMatrix[n] = m[n];
@@ -66,11 +67,10 @@ SquareRoom::RoundWall::RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, float w, f
 
 
 void SquareRoom::RoundWall::Draw() const{
-// 	puts("SquareRoom::RoundWall::Draw()");
 	glColor4f(0.7, 0.7, 1.0, 1);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, &vertexes[0][0]);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 12);
+	glVertexPointer(3, GL_FLOAT, 0, &vertexes[0][0][0]);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 10);
 }
 
 

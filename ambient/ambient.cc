@@ -7,7 +7,7 @@
 
 
 Ambient::Room* Ambient::in(0);
-TOOLBOX::QUEUE<Ambient::Room> rooms;
+TOOLBOX::QUEUE<Ambient::Room> Ambient::rooms;
 unsigned Ambient::sequence(0);
 
 

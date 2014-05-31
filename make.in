@@ -1,7 +1,7 @@
 CCOPTS +=
 COPTS += -O2 -Wall -Werror -ggdb -I..
 
-srcs += $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl)
+srcs += $(wildcard *.c) $(wildcard *.cc) $(wildcard *.glsl) $(wildcard *.tga)
 mods += $(basename $(srcs))
 objs += $(addsuffix .o, $(mods))
 
@@ -20,6 +20,9 @@ $(target) : makefile $(objs)
 	${CC} $(COPTS) -c ${INCLUDES} -o $@ $<
 
 %.o : %.glsl makefile
+	objcopy -I binary -O elf64-x86-64 -B i386 $< $@
+
+%.o : %.tga makefile
 	objcopy -I binary -O elf64-x86-64 -B i386 $< $@
 
 %.d : %.cc

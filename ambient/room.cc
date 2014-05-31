@@ -7,6 +7,7 @@
 
 
 Ambient::Room::Room(const float* m) : node(*this){
+	Ambient::rooms.Add(node);
 	if(m){
 		for(unsigned n(0); n < 16; ++n){
 			viewMatrix[n] = m[n];

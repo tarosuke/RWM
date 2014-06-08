@@ -1,10 +1,25 @@
 
 
 #include <view/view.h>
+#include <raster.h>
 
 
 class Ambient : public VIEW::DRAWER{
 public:
+	//テクスチャセットのラッパ
+	class TexSet{
+	public:
+		TexSet(const Raster&);
+		~TexSet();
+		void Activate(unsigned) const;
+		void Deactivate() const;
+	private:
+		const unsigned size;
+		const unsigned numOf;
+		unsigned* const ids;
+	};
+
+
 	//ジオメトリのための構造体
 	struct V2{
 		float x;
@@ -18,7 +33,7 @@ public:
 		Object(TOOLBOX::QUEUE<Object>& to) : node(*this){
 			to.Add(node);
 		};
-		virtual void Draw() const=0;
+		virtual void Draw(const TexSet&) const=0;
 		Room* next;
 	protected:
 	private:
@@ -30,7 +45,7 @@ public:
 	class Room{
 	public:
 		Room(const float* m=0);
-		void Draw(const unsigned level);
+		void Draw(const TexSet&, const unsigned level);
 	protected:
 		TOOLBOX::QUEUE<Object> gates;
 		TOOLBOX::QUEUE<Object> borders;
@@ -50,6 +65,8 @@ private:
 
 	static const unsigned stencilBitMask = 15;
 	static const unsigned maxLevel = 15; //15回部屋を通ったらその先は描画しない
+
+	TexSet texSet;
 };
 
 
@@ -60,8 +77,14 @@ public:
 	class RoundWall : public Ambient::Object{
 	public:
 		RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, float w, float d, float h);
-		void Draw() const;
+		void Draw(const Ambient::TexSet&) const;
 	private:
-		float vertexes[5][2][3];
+		struct VERTEX{
+			float x;
+			float y;
+			float z;
+			float u;
+			float v;
+		}__attribute__((packed)) vertexes[5][2];
 	}roundWall;
 };

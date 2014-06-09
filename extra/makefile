@@ -1,10 +1,10 @@
 # extra
 
-.PHONY: clean ambient/ambient
+.PHONY: clean all
 
-subtargets = $(subst /makefile,,$(wildcard */makefile toolbox/*/makefile))
+subtargets = $(subst /makefile,,$(wildcard */makefile))
 
-ambient/amdient :
+all :
 	for p in $(subtargets); do make -j -C $$p || exit -1; done
 
 

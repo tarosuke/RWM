@@ -15,6 +15,7 @@ unsigned Ambient::sequence(0);
 
 
 extern "C" const TGA::RAW _binary_texture_tga_start;
+extern "C" const char _binary_embed_world_start[];
 
 Ambient::Ambient(VIEW& v) : texSet(TGA(&_binary_texture_tga_start)){
 	v.RegisterExternals(*this);

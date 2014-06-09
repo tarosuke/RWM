@@ -17,8 +17,8 @@ Ambient::Room::Room(const float* m) : node(*this){
 
 
 void Ambient::Room::Draw(const TexSet& texSet, const unsigned level){
-	//既に描画されていたら戻る
 	if(sequence == Ambient::sequence){
+		//描画済
 		return;
 	}
 	sequence = Ambient::sequence;
@@ -70,7 +70,7 @@ SquareRoom::RoundWall::RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, float w, f
 		//u/v座標
 		vertexes[n][0].u =
 		vertexes[n][1].u = x;
-		vertexes[n][0].v = 
+		vertexes[n][0].v =
 		vertexes[n][1].v = z * 1.732;
 	}
 }

@@ -15,6 +15,7 @@ unsigned Ambient::sequence(0);
 
 
 extern "C" const TGA::RAW _binary_texture_tga_start;
+extern "C" const char _binary_embed_world_start[];
 
 Ambient::Ambient(VIEW& v) : texSet(TGA(&_binary_texture_tga_start)){
 	v.RegisterExternals(*this);
@@ -93,7 +94,7 @@ void Ambient::Draw() const{
 #endif
 
 // 	glEnable(GL_CULL_FACE);
-// 	glFrontFace(GL_CCW);
+// 	glFrontFace(GL_CW);
 
 	glEnable(GL_TEXTURE_2D);
 

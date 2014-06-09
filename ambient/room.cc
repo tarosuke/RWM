@@ -17,8 +17,8 @@ Ambient::Room::Room(const float* m) : node(*this){
 
 
 void Ambient::Room::Draw(const TexSet& texSet, const unsigned level){
-	//既に描画されていたら戻る
 	if(sequence == Ambient::sequence){
+		//描画済
 		return;
 	}
 	sequence = Ambient::sequence;
@@ -54,25 +54,7 @@ void Ambient::Room::Draw(const TexSet& texSet, const unsigned level){
 
 
 
-SquareRoom::RoundWall::RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, float w, float d, float h) : Ambient::Object(to){
-	for(unsigned n(0); n < 5; ++n){
-		const float x(n & 2 ? w/2 : -w/2);
-		const float z((n + 1) & 2 ? d/2 : -d/2);
-
-		//頂点座標
-		vertexes[n][0].x =
-		vertexes[n][1].x = x;
-		vertexes[n][0].y = h - 1.6;
-		vertexes[n][1].y = -1.6;
-		vertexes[n][0].z =
-		vertexes[n][1].z = z;
-
-		//u/v座標
-		vertexes[n][0].u =
-		vertexes[n][1].u = x;
-		vertexes[n][0].v = 
-		vertexes[n][1].v = z * 1.732;
-	}
+SquareRoom::RoundWall::RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, const SquareRoom& room) : Ambient::Object(to), room(room){
 }
 
 
@@ -82,13 +64,48 @@ void SquareRoom::RoundWall::Draw(const Ambient::TexSet& texSet) const{
 	glColor4f(1.0, 1.0, 1.0, 1);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(3, GL_FLOAT, sizeof(VERTEX), &vertexes[0][0]);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(VERTEX), &(vertexes[0][0].u));
+	glVertexPointer(3, GL_FLOAT, sizeof(VERTEX), &room.vertexes[0][0]);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(VERTEX), &(room.vertexes[0][0].u));
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 10);
 }
 
 
+const float SquareRoom::Plane::colors[2][4] = {
+	{ 1, 1, 1, 1 }, { 0.5, 0.25, 0.25, 1 } };
 
-SquareRoom::SquareRoom(float width, float depth, float height) : roundWall(borders, width, depth, height){}
+SquareRoom::Plane::Plane(TOOLBOX::QUEUE<Ambient::Object>& to, const SquareRoom& room, bool floor) : Ambient::Object(to), room(room), offset(floor ? 0 : 1), color(colors[floor ? 0 : 1]){}
+
+void SquareRoom::Plane::Draw(const Ambient::TexSet& texSet) const{
+	texSet.Activate(0);
+
+	glColor4fv(color);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glVertexPointer(3, GL_FLOAT, sizeof(VERTEX) * 2, &room.vertexes[0][offset]);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(VERTEX) * 2, &(room.vertexes[0][offset].u));
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 10);
+}
+
+
+SquareRoom::SquareRoom(float width, float depth, float height) : roundWall(borders, *this), floor(borders, *this, true), ceil(borders, *this, false){
+	for(unsigned n(0); n < 5; ++n){
+		const float x(n & 2 ? width/2 : -width/2);
+		const float z((n + 1) & 2 ? depth/2 : -depth/2);
+
+		//頂点座標
+		vertexes[n][0].x =
+		vertexes[n][1].x = x;
+		vertexes[n][0].y = height - 1.6;
+		vertexes[n][1].y = -1.6;
+		vertexes[n][0].z =
+		vertexes[n][1].z = z;
+
+		//u/v座標
+		vertexes[n][0].u =
+		vertexes[n][1].u = x;
+		vertexes[n][0].v =
+		vertexes[n][1].v = z * 1.732;
+	}
+}
 
 

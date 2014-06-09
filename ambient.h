@@ -73,18 +73,31 @@ private:
 
 class SquareRoom : public Ambient::Room{
 public:
+	struct VERTEX{
+		float x;
+		float y;
+		float z;
+		float u;
+		float v;
+	}__attribute__((packed));
 	SquareRoom(float width, float depth, float height = 2.4);
 	class RoundWall : public Ambient::Object{
 	public:
-		RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, float w, float d, float h);
+		RoundWall(TOOLBOX::QUEUE<Ambient::Object>& to, const SquareRoom&);
 		void Draw(const Ambient::TexSet&) const;
 	private:
-		struct VERTEX{
-			float x;
-			float y;
-			float z;
-			float u;
-			float v;
-		}__attribute__((packed)) vertexes[5][2];
+		const SquareRoom& room;
 	}roundWall;
+	class Plane : public Ambient::Object{
+	public:
+		Plane(TOOLBOX::QUEUE<Ambient::Object>&, const SquareRoom&, bool);
+		void Draw(const Ambient::TexSet&) const;
+	private:
+		const SquareRoom& room;
+		const unsigned offset;
+		const float* const color;
+		static const float colors[2][4];
+	}floor, ceil;
+private:
+	VERTEX vertexes[5][2];
 };

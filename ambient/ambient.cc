@@ -94,7 +94,7 @@ void Ambient::Draw() const{
 #endif
 
 // 	glEnable(GL_CULL_FACE);
-// 	glFrontFace(GL_CCW);
+// 	glFrontFace(GL_CW);
 
 	glEnable(GL_TEXTURE_2D);
 

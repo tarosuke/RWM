@@ -20,6 +20,28 @@ public:
 	};
 
 
+	//ディスプレイリストのラッパ
+	class DisplayList{
+	public:
+		//記録用RAIIキー(存在している間は記録)
+		class Recorder{
+		public:
+			Recorder(DisplayList& dl) : recorder(dl){ dl.StartRecord(); };
+			~Recorder(){ recorder.EndRecord(); };
+		private:
+			DisplayList& recorder;
+		};
+
+		DisplayList();
+		~DisplayList();
+		void StartRecord();
+		void EndRecord();
+		void Playback();
+	private:
+		static bool recording;
+		const unsigned id;
+	};
+
 	//ジオメトリのための構造体
 	struct V2{
 		float x;
@@ -41,6 +63,19 @@ public:
 
 	};
 
+	//「壁」
+	class Wall : public Object{
+	public:
+		struct WallDef{
+			V2 points[2];
+			unsigned texID;
+			V2 uvPoints[2];
+			Room* gate;
+		};
+	private:
+		unsigned texID;
+	};
+
 	//「部屋」
 	class Room{
 	public:
@@ -53,6 +88,13 @@ public:
 		unsigned sequence;
 	private:
 		TOOLBOX::NODE<Room> node;
+		struct Plane{
+			float height;
+			unsigned texID;
+			V2 uvOffset;
+			V2 uvScale;
+		}floor, ceil;
+		float brightness;
 		float viewMatrix[16]; //view変換行列
 	};
 

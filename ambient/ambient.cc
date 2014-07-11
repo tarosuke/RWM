@@ -15,12 +15,12 @@ unsigned Ambient::sequence(0);
 
 
 extern "C" const TGA::RAW _binary_texture_tga_start;
-extern "C" const char _binary_embed_world_start[];
+
 
 Ambient::Ambient(VIEW& v) : texSet(TGA(&_binary_texture_tga_start)){
 	v.RegisterExternals(*this);
 
-	in = new SquareRoom(4,6);
+// 	in = new SquareRoom(4,6);
 }
 
 
@@ -104,3 +104,24 @@ void Ambient::Draw() const{
 	glDisable(GL_CULL_FACE);
 }
 
+
+
+
+
+bool Ambient::DisplayList::recording(false);
+Ambient::DisplayList::DisplayList() : id(glGenLists(1)){};
+Ambient::DisplayList::~DisplayList(){
+	glDeleteLists(id, 1);
+};
+void Ambient::DisplayList::Playback(){
+	glCallList(id);
+}
+void Ambient::DisplayList::StartRecord(){
+	assert(!recording);
+	recording = true;
+	glNewList(id, GL_COMPILE);
+}
+void Ambient::DisplayList::EndRecord(){
+	glEndList();
+	recording = false;
+}

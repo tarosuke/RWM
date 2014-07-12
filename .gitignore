@@ -29,3 +29,5 @@ rwm
 *.map
 *.d
 .rwm.settings
+.project
+.cproject

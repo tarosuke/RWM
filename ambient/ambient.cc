@@ -108,20 +108,3 @@ void Ambient::Draw() const{
 
 
 
-bool Ambient::DisplayList::recording(false);
-Ambient::DisplayList::DisplayList() : id(glGenLists(1)){};
-Ambient::DisplayList::~DisplayList(){
-	glDeleteLists(id, 1);
-};
-void Ambient::DisplayList::Playback(){
-	glCallList(id);
-}
-void Ambient::DisplayList::StartRecord(){
-	assert(!recording);
-	recording = true;
-	glNewList(id, GL_COMPILE);
-}
-void Ambient::DisplayList::EndRecord(){
-	glEndList();
-	recording = false;
-}

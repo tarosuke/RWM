@@ -73,7 +73,7 @@ void VIEW::Run(){
 		glPushMatrix();
 		head.GetView(); //頭の姿勢、位置を反映
 
-#if 1
+#if 0
 #if 0
 		//動作確認用地面っぽい平面
 		glBegin(GL_POLYGON);

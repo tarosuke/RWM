@@ -20,27 +20,6 @@ public:
 	};
 
 
-	//ディスプレイリストのラッパ
-	class DisplayList{
-	public:
-		//記録用RAIIキー(存在している間は記録)
-		class Recorder{
-		public:
-			Recorder(DisplayList& dl) : recorder(dl){ dl.StartRecord(); };
-			~Recorder(){ recorder.EndRecord(); };
-		private:
-			DisplayList& recorder;
-		};
-
-		DisplayList();
-		~DisplayList();
-		void StartRecord();
-		void EndRecord();
-		void Playback();
-	private:
-		static bool recording;
-		const unsigned id;
-	};
 
 	//ジオメトリのための構造体
 	struct V2{

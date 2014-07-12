@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include <ambient.h>
+#include <ambient/ambient.h>
 #include <ambient/tga.h>
 
 

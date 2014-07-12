@@ -4,7 +4,7 @@
 
 #include <view/riftView.h>
 #include <window.h>
-#include <ambient.h>
+#include <ambient/ambient.h>
 
 
 int main(int argc, char *argv[]){

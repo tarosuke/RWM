@@ -2,7 +2,7 @@
 #include <GL/gl.h>
 #include <stdio.h>
 
-#include <ambient.h>
+#include <ambient/ambient.h>
 
 
 

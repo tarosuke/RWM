@@ -16,6 +16,7 @@ namespace Ambient{
 		World(VIEW&);
 
 	private:
+		static const unsigned maxRoomTraverse = 15;
 		TOOLBOX::QUEUE<Room> rooms;
 		Room* entryRoom;
 

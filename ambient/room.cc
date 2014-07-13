@@ -7,11 +7,17 @@
 
 namespace Ambient{
 
-	void Room::Draw(){
-		//テンプレートを使って部屋基準の物体を描画
+	void Room::Draw(unsigned remain){
+		//view行列でアフィン変換した上でテンプレートを描画
 		{
 			GL::Matrix::Local local(viewMatrix);
 			form.Draw();
+		}
+
+		//リンク先の部屋も描画
+		--remain;
+		for(TOOLBOX::QUEUE<Room>::ITOR i(links); i; i++){
+			(*i).Draw(remain);
 		}
 
 		//TODO:部屋の中の(動く)物体を描画
@@ -21,14 +27,12 @@ namespace Ambient{
 
 
 
-
-
-
-
-
-
-
-
+	Room::Template::Template() : node(*this){}
+	void Room::Template::Record(){
+		//ディスプレイリストへこの部屋テンプレートの描画内容を記録
+		GL::DisplayList::Recorder r(hardObjects);
+		DrawHardObjects();
+	}
 }
 
 #if 0

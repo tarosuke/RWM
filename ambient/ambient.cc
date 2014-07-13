@@ -16,7 +16,7 @@ namespace Ambient{
 
 	void World::Draw() const{
 		if(entryRoom){
-			(*entryRoom).Draw();
+			(*entryRoom).Draw(maxRoomTraverse);
 		}
 	}
 

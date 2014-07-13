@@ -17,8 +17,8 @@ namespace GL{
 
 		DisplayList();
 		~DisplayList();
-		unsigned GetID(){ return id; };
 		void Playback();
+		unsigned GetID(){ return id; };
 	private:
 		static bool recording;
 		const unsigned id;

@@ -8,6 +8,36 @@
 #include <ambient/tga.h>
 
 
+namespace Ambient{
+
+	World::World(VIEW& v) : entryRoom(0){
+		v.RegisterExternals(*this);
+	}
+
+	void World::Draw() const{
+		if(entryRoom){
+			(*entryRoom).Draw();
+		}
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+
 Ambient::Room* Ambient::in(0);
 TOOLBOX::QUEUE<Ambient::Room> Ambient::rooms;
 unsigned Ambient::sequence(0);
@@ -107,4 +137,4 @@ void Ambient::Draw() const{
 
 
 
-
+#endif

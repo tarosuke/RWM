@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[]){
 	static RIFTVIEW view;
-	static Ambient ambient(view);
+	static Ambient::World world(view);
 	view.Run();
 	return 0;
 }

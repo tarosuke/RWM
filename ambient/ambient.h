@@ -1,8 +1,47 @@
-
+#pragma once
 
 #include <view/view.h>
 #include <raster.h>
 
+#include "room.h"
+#include "../toolbox/queue/queue.h"
+
+
+
+namespace Ambient{
+
+	class World : public VIEW::DRAWER{
+		World();
+	public:
+		World(VIEW&);
+
+	private:
+		TOOLBOX::QUEUE<Room> rooms;
+		Room* entryRoom;
+
+		void Draw() const;
+	};
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 
 class Ambient : public VIEW::DRAWER{
 public:
@@ -122,3 +161,6 @@ public:
 private:
 	VERTEX vertexes[5][2];
 };
+
+
+#endif

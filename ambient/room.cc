@@ -2,9 +2,36 @@
 #include <GL/gl.h>
 #include <stdio.h>
 
-#include <ambient.h>
+#include "room.h"
 
 
+namespace Ambient{
+
+	void Room::Draw(){
+		//テンプレートを使って部屋基準の物体を描画
+		{
+			GL::Matrix::Local local(viewMatrix);
+			form.Draw();
+		}
+
+		//TODO:部屋の中の(動く)物体を描画
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+#if 0
 
 Ambient::Room::Room(const float* m) : node(*this){
 	Ambient::rooms.Add(node);
@@ -109,3 +136,4 @@ SquareRoom::SquareRoom(float width, float depth, float height) : roundWall(borde
 }
 
 
+#endif

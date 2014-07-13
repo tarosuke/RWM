@@ -4,12 +4,12 @@
 
 #include <view/riftView.h>
 #include <window.h>
-#include <ambient.h>
+#include <ambient/ambient.h>
 
 
 int main(int argc, char *argv[]){
 	static RIFTVIEW view;
-	static Ambient ambient(view);
+	static Ambient::World world(view);
 	view.Run();
 	return 0;
 }

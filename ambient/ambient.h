@@ -1,8 +1,47 @@
-
+#pragma once
 
 #include <view/view.h>
 #include <raster.h>
 
+#include "room.h"
+#include "../toolbox/queue/queue.h"
+
+
+
+namespace Ambient{
+
+	class World : public VIEW::DRAWER{
+		World();
+	public:
+		World(VIEW&);
+
+	private:
+		TOOLBOX::QUEUE<Room> rooms;
+		Room* entryRoom;
+
+		void Draw() const;
+	};
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 
 class Ambient : public VIEW::DRAWER{
 public:
@@ -18,6 +57,7 @@ public:
 		const unsigned numOf;
 		unsigned* const ids;
 	};
+
 
 
 	//ジオメトリのための構造体
@@ -41,6 +81,19 @@ public:
 
 	};
 
+	//「壁」
+	class Wall : public Object{
+	public:
+		struct WallDef{
+			V2 points[2];
+			unsigned texID;
+			V2 uvPoints[2];
+			Room* gate;
+		};
+	private:
+		unsigned texID;
+	};
+
 	//「部屋」
 	class Room{
 	public:
@@ -53,6 +106,13 @@ public:
 		unsigned sequence;
 	private:
 		TOOLBOX::NODE<Room> node;
+		struct Plane{
+			float height;
+			unsigned texID;
+			V2 uvOffset;
+			V2 uvScale;
+		}floor, ceil;
+		float brightness;
 		float viewMatrix[16]; //view変換行列
 	};
 
@@ -101,3 +161,6 @@ public:
 private:
 	VERTEX vertexes[5][2];
 };
+
+
+#endif

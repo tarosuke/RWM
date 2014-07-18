@@ -16,7 +16,7 @@ namespace Ambient{
 
 	void World::Draw() const{
 		if(entryRoom){
-			(*entryRoom).Draw(maxRoomTraverse);
+			(*entryRoom).Draw(maxRoomTraverse); //TODO:ユーザーアバターを作ったらそっちを参照するように修正する
 		}
 	}
 

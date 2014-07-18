@@ -13,6 +13,7 @@ namespace Ambient{
 		class Template{
 		public:
 			Template();
+			~Template();
 			void Draw(){ hardObjects.Playback(); };
 			void Record();
 		protected:
@@ -22,7 +23,7 @@ namespace Ambient{
 			GL::DisplayList hardObjects; //部屋それ自体などの動かない物体
 		};
 
-		void Draw(unsigned); //部屋の描画(hardObjectsはPlaybackする)
+		void Draw(unsigned); //部屋の描画(formをDrawして次の部屋のDrawを呼ぶ)
 	protected:
 		Room();
 		~Room();

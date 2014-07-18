@@ -28,6 +28,7 @@ namespace Ambient{
 
 
 	Room::Template::Template() : node(*this){}
+	Room::Template::~Template(){}
 	void Room::Template::Record(){
 		//ディスプレイリストへこの部屋テンプレートの描画内容を記録
 		GL::DisplayList::Recorder r(hardObjects);

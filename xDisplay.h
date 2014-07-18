@@ -11,6 +11,7 @@
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xcomposite.h>
 
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
 

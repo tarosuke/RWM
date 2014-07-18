@@ -7,6 +7,7 @@
 #include <X11/Xatom.h>
 #include <X11/extensions/Xdamage.h>
 
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
 

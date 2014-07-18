@@ -1,24 +1,27 @@
 #pragma once
 
-namespace GL{
+#include <GL/glew.h>
+#include <GL/gl.h>
 
+
+namespace GL{
 
 	class Matrix{
 	public:
-		//Matrixをローカルで使うためのRAIIラッパ
-		class Local{
+		//MatrixのRAIIラッパ
+		class Zone{
+			Zone();
 		public:
-			Local(Matrix& m);
-			Local();
-			~Local();
+			enum FLAG{ load };
+			Zone(Matrix& m);
+			Zone(Matrix& m, FLAG);
+			~Zone();
 		};
 
-		Matrix(const float*);
-		Matrix();
+		Matrix(); //初期値は単位行列
+		Matrix(const float body[16]);
 	private:
-		float body[16];
-		void Multi();
-		void Load();
+		float matrix[16];
 	};
 
 

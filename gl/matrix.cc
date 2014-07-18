@@ -1,6 +1,3 @@
-#include <GL/glew.h>
-#include <GL/gl.h>
-
 #include <string.h>
 
 #include "matrix.h"
@@ -9,39 +6,27 @@
 
 namespace GL{
 
-	Matrix::Matrix(const float* m){
-		memcpy(body, m, sizeof(body));
-	}
-
-	void Matrix::Multi(){
-		glMultMatrixf(body);
-	}
-	void Matrix::Load(){
-		glLoadMatrixf(body);
+	Matrix::Zone::Zone(Matrix& m){
+		glPushMatrix();
+		glMultMatrixf(m.matrix);
+	};
+	Matrix::Zone::Zone(Matrix& m, FLAG){
+		glPushMatrix();
+		glLoadMatrixf(m.matrix);
+	};
+	Matrix::Zone::~Zone(){
+		glPopMatrix();
 	}
 
 
 	Matrix::Matrix(){
 		for(unsigned n(0); n < 16; ++n){
-			body[n] = 0.0;
+			matrix[n] = 0;
 		}
-		body[0] =
-		body[5] =
-		body[10] = 1;
+		matrix[0] = matrix[5] = matrix[10] = 1;
 	}
-
-
-	Matrix::Local::Local(Matrix& m){
-		glPushMatrix();
-		m.Multi();
-	}
-
-	Matrix::Local::Local(){
-		glPushMatrix();
-	}
-
-	Matrix::Local::~Local(){
-		glPopMatrix();
+	Matrix::Matrix(const float body[16]){
+		memcpy(matrix, body, sizeof(matrix));
 	}
 
 }

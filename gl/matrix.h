@@ -13,8 +13,8 @@ namespace GL{
 			Zone();
 		public:
 			enum FLAG{ load };
-			Zone(Matrix& m);
-			Zone(Matrix& m, FLAG);
+			Zone(const Matrix& m);
+			Zone(const Matrix& m, FLAG);
 			~Zone();
 		};
 

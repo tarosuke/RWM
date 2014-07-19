@@ -6,11 +6,11 @@
 
 namespace GL{
 
-	Matrix::Zone::Zone(Matrix& m){
+	Matrix::Zone::Zone(const Matrix& m){
 		glPushMatrix();
 		glMultMatrixf(m.matrix);
 	};
-	Matrix::Zone::Zone(Matrix& m, FLAG){
+	Matrix::Zone::Zone(const Matrix& m, FLAG){
 		glPushMatrix();
 		glLoadMatrixf(m.matrix);
 	};

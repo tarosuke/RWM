@@ -15,10 +15,17 @@ namespace Ambient{
 	public:
 		World(VIEW&);
 
+		void ChangeRoom(const Room* rooms[2]){
+			if(rooms[0] == entryRoom){
+				entryRoom = rooms[1];
+			}else{
+				entryRoom = rooms[0];
+			}
+		};
 	private:
 		static const unsigned maxRoomTraverse = 15;
 		TOOLBOX::QUEUE<Room> rooms;
-		Room* entryRoom;
+		const Room* entryRoom;
 
 		void Draw() const;
 	};

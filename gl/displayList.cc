@@ -13,7 +13,7 @@ namespace GL{
 	DisplayList::~DisplayList(){
 		glDeleteLists(id, 1);
 	};
-	void DisplayList::Playback(){
+	void DisplayList::Playback() const{
 		glCallList(id);
 	}
 	void DisplayList::StartRecord(bool draw){

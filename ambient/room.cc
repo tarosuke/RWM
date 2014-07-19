@@ -7,7 +7,7 @@
 
 namespace Ambient{
 
-	void Room::Draw(unsigned remain){
+	void Room::Draw(unsigned remain) const{
 		//view行列でアフィン変換した上でテンプレートを描画
 		{
 			GL::Matrix::Zone zone(modelMatrix);

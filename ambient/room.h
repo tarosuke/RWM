@@ -14,7 +14,7 @@ namespace Ambient{
 		public:
 			Template();
 			~Template();
-			void Draw(){ hardObjects.Playback(); };
+			void Draw() const { hardObjects.Playback(); };
 			void Record();
 		protected:
 			virtual void DrawHardObjects()=0; //床とか壁とか描画(記録用)
@@ -23,17 +23,17 @@ namespace Ambient{
 			GL::DisplayList hardObjects; //部屋それ自体などの動かない物体
 		};
 
-		void Draw(unsigned); //部屋の描画(formをDrawして次の部屋のDrawを呼ぶ)
+		void Draw(unsigned) const; //部屋の描画(formをDrawして次の部屋のDrawを呼ぶ)
 	protected:
 		Room();
 		~Room();
 
 	private:
-		TOOLBOX::NODE<Room> node; //登録用ノード
-		TOOLBOX::NODE<Room> linkNode; //隣の部屋用ノード
-		Template& form;
+		mutable TOOLBOX::NODE<Room> node; //登録用ノード
+		mutable TOOLBOX::NODE<Room> linkNode; //隣の部屋用ノード
+		const Template& form;
 		GL::Matrix modelMatrix;
-		TOOLBOX::QUEUE<Room> links;
+		mutable TOOLBOX::QUEUE<Room> links;
 	};
 
 }

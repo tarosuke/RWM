@@ -8,9 +8,9 @@
 
 namespace Ambient{
 
-	class Wall{
+	class Border{
 	public:
-		Wall(float x0, float y0, float x1, float y1, const float hights[]);
+		Border(float x0, float y0, float x1, float y1, const float hights[]);
 		void Draw(); //設定された通りに壁を描画
 
 		bool Collision(float& x, float& y, float& dx, float& dy);

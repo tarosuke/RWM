@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "room.h"
-#include "wall.h"
+#include "border.h"
 
 
 
@@ -38,9 +38,9 @@ namespace Ambient{
 	}
 
 	int Room::Template::Collision(float& x, float& y, float& dx, float& dy){
-		for(unsigned n(0); n < maxWalls; ++n){
-			if(walls[n]){
-				if((*walls[n]).Collision(x, y, dx, dy)){
+		for(unsigned n(0); n < maxBorders; ++n){
+			if(borders[n]){
+				if((*borders[n]).Collision(x, y, dx, dy)){
 					//リンク通過
 					return n;
 				}

@@ -23,11 +23,11 @@ namespace Ambient{
 		protected:
 			virtual void DrawHardObjects()=0; //床とか天井とか描画(記録用)
 		private:
-			static const unsigned maxWalls = 8; //壁の最大数
+			static const unsigned maxBorders = 8; //壁の最大数
 
 			TOOLBOX::NODE<Template> node; //登録用ノード
 			GL::DisplayList hardObjects; //部屋それ自体などの動かない物体
-			class Wall* walls[maxWalls];
+			class Border* borders[maxBorders];
 		};
 
 		void Draw(unsigned) const; //部屋の描画(formをDrawして次の部屋のDrawを呼ぶ)

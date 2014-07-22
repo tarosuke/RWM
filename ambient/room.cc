@@ -3,6 +3,8 @@
 #include <stdio.h>
 
 #include "room.h"
+#include "wall.h"
+
 
 
 namespace Ambient{
@@ -33,6 +35,18 @@ namespace Ambient{
 		//ディスプレイリストへこの部屋テンプレートの描画内容を記録
 		GL::DisplayList::Recorder r(hardObjects);
 		DrawHardObjects();
+	}
+
+	int Room::Template::Collision(float& x, float& y, float& dx, float& dy){
+		for(unsigned n(0); n < maxWalls; ++n){
+			if(walls[n]){
+				if((*walls[n]).Collision(x, y, dx, dy)){
+					//リンク通過
+					return n;
+				}
+			}
+		}
+		return -1;
 	}
 }
 

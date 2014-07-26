@@ -1,17 +1,31 @@
-.PHONY: subtargets
 all: rwm
 
-COPTS += -IX11 -I.
-
-include make.in
+.PHONY : clean test
 
 
-libs= window/window.a ambient/ambient.a view/view.a headtracker/headtracker.a util/util.a  toolbox/glpose/glpose.a settings/settings.a image/image.a gl/gl.a toolbox/input/input.a toolbox/cyclic/cyclic.a toolbox/complex/complex.a -lGL -lGLU -lGLEW -lm -lX11 -lXmu -lXi -lXext -lXcomposite -lXdamage -lstdc++ -lgdbm -lpthread
+####################################################################### VALUES
+
+COPTS += -IX11
 
 
-subtargetDir = $(subst /makefile,,$(wildcard */makefile toolbox/*/makefile))
+libs = GL GLU GLEW m X11 Xmu Xi Xext Xcomposite Xdamage stdc++ gdbm pthread
+LIBOPTS = $(addprefix -l, $(libs))
 
 
+ssfc = .c .cc .glsl
+spth = * */* */* */*/*
+srcs = $(patsubst old/%,,$(foreach p, $(spth), $(foreach s, $(ssfc), $(wildcard $(p)$(s)))))
+
+dirs = $(sort $(dir $(srcs)))
+mods = $(basename $(notdir $(srcs)))
+dmds= $(addprefix objs/, $(mods))
+objs = $(addsuffix .o, $(dmds))
+deps = $(addsuffix .d, $(dmds))
+
+
+
+
+######################################################################## RULES
 
 install: rwm
 	sudo cp rwm /usr/local/bin/
@@ -22,16 +36,42 @@ test: rwm.test
 run: rwm
 	./rwm
 
-rwm: makefile $(objs) subtargets
-	gcc -o $@ $(objs) $(libs)
+rwm: makefile $(objs)
+	gcc -o $@ $(objs) $(LIBOPTS)
 
 rwm.test: COPTS+=-DTEST
-rwm.test: makefile $(objs) subtargets
-	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ $(objs) $(libs)
-
-subtargets:
-	for p in $(subtargetDir); do make -j -C $$p || exit -1; done
+rwm.test: makefile $(objs)
+	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ $(objs)  $(LIBOPTS)
 
 clean:
-	rm -f rwm rwm.test *.a *.map *.o *.d
-	for p in $(subtargetDir); do make -j -C $$p clean; done
+	rm -fr rwm rwm.test objs/*
+
+
+
+################################################################# COMMON RULES
+
+
+-include $(deps)
+
+vpath %.o objs
+vpath % $(dirs)
+
+
+objs/%.o : %.cc makefile
+	$(CC) $(COPTS) $(CCOPTS) -c -o $@ $<
+
+objs/%.o : %.c makefile
+	${CC} $(COPTS) -c -o $@ $<
+
+objs/%.o : %.glsl makefile
+	objcopy -I binary -O elf64-x86-64 -B i386 $< $@
+
+objs/%.d : %.cc
+	@echo $@
+	@$(CPP) $(COPTS) $(CCOPTS) -MM $< > $@
+
+objs/%.d : %.c
+	@echo $@
+	@$(CPP) $(COPTS) -MM $< > $@
+
+

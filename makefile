@@ -68,10 +68,12 @@ objs/%.o : %.glsl makefile
 
 objs/%.d : %.cc
 	@echo $@
-	@$(CPP) $(COPTS) $(CCOPTS) -MM $< > $@
+	@echo -n objs/ > $@
+	@$(CPP) $(COPTS) $(CCOPTS) -MM $< >> $@
 
 objs/%.d : %.c
 	@echo $@
-	@$(CPP) $(COPTS) -MM $< > $@
+	@echo -n objs/ > $@
+	@$(CPP) $(COPTS) -MM $< >> $@
 
 

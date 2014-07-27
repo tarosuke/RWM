@@ -13,7 +13,7 @@ LIBOPTS = $(addprefix -l, $(libs))
 
 
 ssfc = .c .cc .glsl
-spth = * */* */* */*/*
+spth = * */* */*/*
 srcs = $(patsubst old/%,,$(foreach p, $(spth), $(foreach s, $(ssfc), $(wildcard $(p)$(s)))))
 
 dirs = $(sort $(dir $(srcs)))
@@ -21,7 +21,6 @@ mods = $(basename $(notdir $(srcs)))
 dmds= $(addprefix objs/, $(mods))
 objs = $(addsuffix .o, $(dmds))
 deps = $(addsuffix .d, $(dmds))
-
 
 
 

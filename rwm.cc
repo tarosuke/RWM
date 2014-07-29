@@ -6,7 +6,7 @@
 
 
 int main(int argc, char *argv[]){
-	static XDisplay display;
+	static XDISPLAY display;
 	display.Run();
 
 	return 0;

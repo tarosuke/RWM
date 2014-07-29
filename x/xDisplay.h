@@ -3,10 +3,14 @@
 #include "../display.h"
 
 
-class XDisplay : public Display{
+class XDISPLAY : public DISPLAY{
 public:
-	XDisplay();
+	XDISPLAY();
 	void Run();
+
+private:
+
+	static const int glxAttributes[];
 };
 
 

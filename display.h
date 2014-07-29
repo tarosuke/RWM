@@ -1,19 +1,19 @@
-///////////////////////////////////////////////////////////// ABSTRACT Display
+///////////////////////////////////////////////////////////// ABSTRACT DISPLAY
 #pragma once
 
 #include "view.h"
 
 
-class Display{
-	Display();
-	Display(const Display&);
-	void operator+(const Display&);
+class DISPLAY{
+	DISPLAY();
+	DISPLAY(const DISPLAY&);
+	void operator+(const DISPLAY&);
 
 public:
 	virtual void Run()=0;
 
 protected:
-	Display(unsigned w, unsigned h);
+	DISPLAY(unsigned w, unsigned h);
 
 private:
 	View* view;

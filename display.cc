@@ -4,5 +4,5 @@
 #include "view.h"
 
 
-DISPLAY::DISPLAY(unsigned w, unsigned h) : view(View::New(w, h)){
+DISPLAY::DISPLAY(const PARAM& p) : view(VIEW::New(p.width, p.height)){
 }

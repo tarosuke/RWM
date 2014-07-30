@@ -13,9 +13,20 @@ public:
 	virtual void Run()=0;
 
 protected:
-	DISPLAY(unsigned w, unsigned h);
+	struct PARAM{
+		unsigned width;
+		unsigned height;
+	};
+
+
+	DISPLAY(const PARAM&);
 
 private:
-	View* view;
+	VIEW& view;
+
+
+
+	unsigned width;
+	unsigned height;
 };
 

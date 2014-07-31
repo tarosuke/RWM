@@ -9,15 +9,16 @@ class VIEW{
 public:
 
 	//環境をチェックして適切なViewを返す。引数は画面サイズ
-	static VIEW& New(unsigned width, unsigned height) throw(const char*);
+	static VIEW& New() throw(const char*);
 
 
 	virtual ~VIEW(){};
 
 protected:
 
+	//共通描画処理の前後に呼ばれるデバイス固有処理のハンドラ
 	virtual void PreDraw()=0; //投影行列の設定やディスプレイリストの設定など
-	virtual void PostDraw()=0; //反対の目の分の設定、描画など
+	virtual void PostDraw(){}; //反対の目の分の設定、描画など
 
 private:
 };

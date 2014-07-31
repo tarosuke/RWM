@@ -5,7 +5,6 @@
 
 
 class DISPLAY{
-	DISPLAY();
 	DISPLAY(const DISPLAY&);
 	void operator+(const DISPLAY&);
 
@@ -13,20 +12,9 @@ public:
 	virtual void Run()=0;
 
 protected:
-	struct PARAM{
-		unsigned width;
-		unsigned height;
-	};
-
-
-	DISPLAY(const PARAM&);
+	DISPLAY();
 
 private:
 	VIEW& view;
-
-
-
-	unsigned width;
-	unsigned height;
 };
 

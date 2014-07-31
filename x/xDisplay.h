@@ -13,8 +13,6 @@ private:
 
 	static const int glxAttributes[];
 
-	PARAM Setup();
-
 	int damageBase;
 	int dagame_err;
 };

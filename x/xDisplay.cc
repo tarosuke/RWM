@@ -35,13 +35,13 @@ const int XDISPLAY::glxAttributes[] = {
 
 
 //TODO:根窓を取得してOpenGLとXDamageを含む各種イベントをセットアップ
-XDISPLAY::XDISPLAY() : DISPLAY(Setup()){
+XDISPLAY::XDISPLAY() : DISPLAY(){
 }
 
 
 
 //与えられたX鯖へ接続して寝窓を取得してセットアップ
-XDISPLAY::XDISPLAY(const char* server) : DISPLAY(Setup()){
+XDISPLAY::XDISPLAY(const char* server) : DISPLAY(){
 }
 
 
@@ -50,10 +50,4 @@ XDISPLAY::XDISPLAY(const char* server) : DISPLAY(Setup()){
 void XDISPLAY::Run(){
 }
 
-
-
-DISPLAY::PARAM XDISPLAY::Setup(){
-	PARAM param = { 1280, 800 };
-	return param;
-}
 

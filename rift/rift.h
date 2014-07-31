@@ -16,4 +16,8 @@ private:
 
 	void PreDraw(){};
 	void PostDraw(){};
+
+
+	static const unsigned width = 1280;
+	static const unsigned height = 800;
 };

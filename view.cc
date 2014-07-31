@@ -4,7 +4,7 @@
 
 
 
-VIEW& VIEW::New(unsigned w, unsigned h) throw(const char*){
+VIEW& VIEW::New() throw(const char*){
 	VIEW* v;
 
 	if((v = RIFT_DK1::New())){

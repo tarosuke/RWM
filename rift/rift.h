@@ -5,6 +5,10 @@
 
 
 class RIFT : public VIEW{
+public:
+	static VIEW* New();
+private:
+	static VIEW* (*factories[])();
 };
 
 

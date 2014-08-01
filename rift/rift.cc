@@ -12,3 +12,8 @@ VIEW* RIFT_DK1::New(){
 	return new RIFT_DK1; //スタブ
 }
 
+
+
+RIFT_DK1::RIFT_DK1() : RIFT(width, height){
+}
+

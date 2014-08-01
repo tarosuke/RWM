@@ -1,6 +1,5 @@
 #include <pthread.h>
 
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xcomposite.h>
@@ -34,14 +33,14 @@ const int XDISPLAY::glxAttributes[] = {
 };
 
 
-//TODO:根窓を取得してOpenGLとXDamageを含む各種イベントをセットアップ
-XDISPLAY::XDISPLAY() : DISPLAY(){
+//根窓を取得してOpenGLとXDamageを含む各種イベントをセットアップ
+XDISPLAY::XDISPLAY(unsigned w, unsigned h){
 }
 
 
 
-//与えられたX鯖へ接続して寝窓を取得してセットアップ
-XDISPLAY::XDISPLAY(const char* server) : DISPLAY(){
+//与えられたX鯖へ接続して根窓を取得してセットアップ
+XDISPLAY::XDISPLAY(const char* server){
 }
 
 

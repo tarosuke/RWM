@@ -5,10 +5,13 @@
 
 
 class RIFT : public VIEW{
+	RIFT();
+	RIFT(const RIFT&);
+	void operator=(const RIFT&);
 public:
-	static VIEW* New();
+protected:
+	RIFT(unsigned w, unsigned h) : VIEW(w, h){};
 private:
-	static VIEW* (*factories[])();
 };
 
 
@@ -16,7 +19,7 @@ class RIFT_DK1 : public RIFT{
 public:
 	static VIEW* New();
 private:
-	RIFT_DK1(){};
+	RIFT_DK1();
 
 	void PreDraw(){};
 	void PostDraw(){};

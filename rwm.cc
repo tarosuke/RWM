@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "x/xDisplay.h"
+#include "view.h"
 
 
 int main(int argc, char *argv[]){
-	static XDISPLAY display;
-	display.Run();
+	VIEW& v(VIEW::New());
+	v.Run();
 
 	return 0;
 }

@@ -15,3 +15,16 @@ VIEW& VIEW::New() throw(const char*){
 
 	throw "VRHMDが見つかりませんでした";
 }
+
+
+
+VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
+}
+
+
+
+
+void VIEW::Run(){
+}
+
+

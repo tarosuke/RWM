@@ -9,5 +9,6 @@ int main(int argc, char *argv[]){
 	VIEW& v(VIEW::New());
 	v.Run();
 
+	scanf("\n");
 	return 0;
 }

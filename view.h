@@ -4,6 +4,9 @@
  */
 #pragma once
 
+#include "tools/factory.h"
+
+
 
 class VIEW{
 public:
@@ -15,7 +18,6 @@ public:
 	virtual ~VIEW(){};
 
 protected:
-
 	//共通描画処理の前後に呼ばれるデバイス固有処理のハンドラ
 	virtual void PreDraw()=0; //投影行列の設定やディスプレイリストの設定など
 	virtual void PostDraw(){}; //反対の目の分の設定、描画など

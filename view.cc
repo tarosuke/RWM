@@ -4,10 +4,12 @@
 
 
 
-VIEW& VIEW::New() throw(const char*){
-	VIEW* v;
+template<> FACTORY<VIEW>* FACTORY<VIEW>::start(0);
 
-	if((v = RIFT_DK1::New())){
+
+VIEW& VIEW::New() throw(const char*){
+	VIEW* const v(FACTORY<VIEW>::New());
+	if(v){
 		return *v;
 	}
 

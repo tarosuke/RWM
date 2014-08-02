@@ -13,10 +13,9 @@ public:
 	XDISPLAY(unsigned w, unsigned h);
 	XDISPLAY(const char*);
 	~XDISPLAY();
-	void Run();
+	bool Run();  //falseになったら終了(イベントを受け取るこのクラスが判定)
 
 private:
-
 	//GL関連
 	static int glxAttributes[];
 	GLXContext glxContext;

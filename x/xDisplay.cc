@@ -11,6 +11,7 @@
 
 
 #include "xDisplay.h"
+#include "../view.h"
 
 
 
@@ -47,9 +48,6 @@ XDISPLAY::XDISPLAY(unsigned w, unsigned h) : xDisplay(XOpenDisplay("")){
 		RootWindow(xDisplay, 0),
 		0, 0, w, h, 0,
 		BlackPixel(xDisplay, 0), BlackPixel(xDisplay, 0));
-	if(!xDisplay){
-		throw "表示先窓を開けませんでした。";
-	}
 	XMapWindow( xDisplay, rootWindowID );
 #else
 	rootWindowID = RootWindow(xDisplay, 0);
@@ -59,8 +57,8 @@ XDISPLAY::XDISPLAY(unsigned w, unsigned h) : xDisplay(XOpenDisplay("")){
 	InputSetup();
 
 	//OpenGLに諸条件を設定
-	XVisualInfo *visual =
-	glXChooseVisual(xDisplay, DefaultScreen(xDisplay), glxAttributes);
+	XVisualInfo *visual = glXChooseVisual(
+		xDisplay, DefaultScreen(xDisplay), glxAttributes);
 	glxContext = glXCreateContext(xDisplay, visual, NULL, True);
 	XFree(visual);
 
@@ -132,7 +130,7 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 	XGetErrorText(d, (*e).error_code, description, 256);
 	printf("%s(%u)\nserial:%lu\nreqCode:%u\nminCode:%u\n",
 	       description,
-	(*e).error_code,
+	       (*e).error_code,
 	       (*e).serial,
 	       (*e).request_code,
 	       (*e).minor_code);
@@ -156,7 +154,8 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 
 
-void XDISPLAY::Run(){
+bool XDISPLAY::Run(){
+	return false;
 }
 
 

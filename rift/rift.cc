@@ -101,13 +101,11 @@ RIFT_DK1::~RIFT_DK1(){
 #endif
 }
 
+const char RIFT_DK1::keepaliveCommand[5] ={
+	8, 0, 0, (char)(keepaliveInterval & 0xff), (char)(keepaliveInterval >> 8)
+};
 void RIFT_DK1::Keepalive(){
-	char buff[5];
-	buff[0] = 8;
-	buff[1] = buff[2] = 0; //command ID
-	buff[3] = keepAliveInterval & 0xFF;
-	buff[4] = keepAliveInterval >> 8;
-	ioctl(fd, HIDIOCSFEATURE(5), buff);
+	ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
 }
 
 void RIFT_DK1::SensorThread(){

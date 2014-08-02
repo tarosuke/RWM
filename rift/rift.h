@@ -42,7 +42,8 @@ private:
 	const int fd;
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
-	static const long keepAliveInterval = 1000;
+	static const long keepaliveInterval = 1000;
+	static const char keepaliveCommand[];
 	void Keepalive();
 
 	// SENSOR
@@ -51,7 +52,7 @@ private:
 	//ファストスタート処理
 	static const int initialAverageRatio = 3;
 	static const int maxAverageRatio = 10000;
-	int averageRatio;
+	float averageRatio;
 
 	//加速度センサ(絶対座標系)
 	VECTOR<3> velocity; //移動速度

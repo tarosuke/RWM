@@ -31,19 +31,11 @@ private:
 
 	//VIEWとしてのインターフェイス
 	RIFT_DK1(int);
+	~RIFT_DK1();
 	void PreDraw(){};
 	void PostDraw(){};
 	const POSE& Pose() const{ return pose; };
-
-
-
-
-
-
-
-
-
-
+	POSE pose;
 
 
 	// HID
@@ -51,13 +43,35 @@ private:
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
 	static const long keepAliveInterval = 1000;
+	void Keepalive();
 
 	// SENSOR
-	static const double G = 9.80665;
 	pthread_t sensorThread;
 
-	POSE pose;
+	//ファストスタート処理
+	static const int initialAverageRatio = 3;
+	static const int maxAverageRatio = 10000;
+	int averageRatio;
 
+	//加速度センサ(絶対座標系)
+	VECTOR<3> velocity; //移動速度
+	VECTOR<3> position; //位置(変位)
+	VECTOR<3> gravity; //平均加速度(機体座標系)
 
+	//磁気センサ
+	VECTOR<3> magMax; //磁気センサの最大値
+	VECTOR<3> magMin; //磁気センサの最小値
+	VECTOR<3> magFront; //正面にする方位
+	bool magReady; //磁化情報取得完了
+	VECTOR<3> magneticField; //磁気の向き(機体座標系)
 
+	// 温度センサ[℃]
+	float temperature;
+
+	// 受信処理
+	static void* _SensorThread(void* initialData);
+	void SensorThread();
+
+	//受信データのデコード
+	void Decode(const char*);
 };

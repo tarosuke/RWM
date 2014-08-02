@@ -61,9 +61,9 @@ void VIEW::Run(){
 		p.direction.GetRotation(r);
 		glPushMatrix();
 		const double* const pp(p.position);
-		glTranslated(-pp[0], -pp[1], -pp[2]);
 		glRotated(-r.angle * 180 / M_PI, r.axis[0], r.axis[1], r.axis[2]);
-
+		glTranslated(-pp[0], -pp[1], -pp[2]);
+		
 		externals.Each(&DRAWER::Draw); //externalを描画
 
 		//透過窓描画

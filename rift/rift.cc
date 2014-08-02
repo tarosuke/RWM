@@ -17,3 +17,4 @@ VIEW* RIFT_DK1::New(){
 RIFT_DK1::RIFT_DK1() : RIFT(width, height){
 }
 
+

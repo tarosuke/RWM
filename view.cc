@@ -1,4 +1,7 @@
 
+#include <GL/glew.h>
+#include <GL/gl.h>
+
 #include "view.h"
 #include "rift/rift.h"
 
@@ -52,8 +55,14 @@ void VIEW::Run(){
 		//WINDOW::DrawAll(head.GetDirection()); //非透過窓描画
 		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
+		//頭の向きと位置をModel-View行列に反映
+		const POSE p(Pose());
+		COMPLEX<4>::ROTATION r;
+		p.direction.GetRotation(r);
 		glPushMatrix();
-		HeadTrack(); //頭の向きをModel-View行列に反映
+		const double* const pp(p.position);
+		glTranslated(-pp[0], -pp[1], -pp[2]);
+		glRotated(-r.angle * 180 / M_PI, r.axis[0], r.axis[1], r.axis[2]);
 
 		externals.Each(&DRAWER::Draw); //externalを描画
 

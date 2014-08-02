@@ -19,15 +19,18 @@ class RIFT_DK1 : public RIFT{
 public:
 	static VIEW* New();
 private:
-	RIFT_DK1();
-
-	void PreDraw(){};
-	void PostDraw(){};
-
-
+	static FACTORY<VIEW> factory;
 	static const unsigned width = 1280;
 	static const unsigned height = 800;
 
 
-	static FACTORY<VIEW> factory;
+	POSE pose;
+
+	RIFT_DK1();
+
+	void PreDraw(){};
+	void PostDraw(){};
+	const POSE& Pose() const{ return pose; };
+
+
 };

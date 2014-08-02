@@ -7,7 +7,7 @@
 #include "toolbox/factory/factory.h"
 #include "x/xDisplay.h"
 #include "toolbox/queue/queue.h"
-
+#include "toolbox/complex/complex.h"
 
 
 class VIEW{
@@ -47,18 +47,18 @@ public:
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
 
-
-
-
-
-
 protected:
+	struct POSE{
+		COMPLEX<4> direction;
+		VECTOR<3> position;
+	};
+
 	VIEW(unsigned w, unsigned h);
 
 	//共通描画処理の前後に呼ばれるデバイス固有処理のハンドラ
 	virtual void PreDraw()=0; //投影行列の設定やディスプレイリストの設定など
 	virtual void PostDraw(){}; //反対の目の分の設定、描画など
-	virtual void HeadTrack(){}; //頭の向きを反映
+	virtual const POSE& Pose() const=0; //頭の位置と向きを反映
 
 private:
 	//X画面

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <pthread.h>
+
 #include "../view.h"
 
 
@@ -16,6 +18,9 @@ private:
 
 
 class RIFT_DK1 : public RIFT{
+	RIFT_DK1();
+	RIFT_DK1(const RIFT_DK1&);
+	void operator=(const RIFT_DK1&);
 public:
 	static VIEW* New();
 private:
@@ -24,13 +29,35 @@ private:
 	static const unsigned height = 800;
 
 
-	POSE pose;
-
-	RIFT_DK1();
-
+	//VIEWとしてのインターフェイス
+	RIFT_DK1(int);
 	void PreDraw(){};
 	void PostDraw(){};
 	const POSE& Pose() const{ return pose; };
+
+
+
+
+
+
+
+
+
+
+
+
+	// HID
+	const int fd;
+	static const int VendorID = 0x2833;
+	static const int ProductID = 0x0001;
+	static const long keepAliveInterval = 1000;
+
+	// SENSOR
+	static const double G = 9.80665;
+	pthread_t sensorThread;
+
+	POSE pose;
+
 
 
 };

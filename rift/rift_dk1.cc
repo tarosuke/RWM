@@ -59,14 +59,7 @@ VIEW* RIFT_DK1::New(){
 #define G (9.80665)
 RIFT_DK1::RIFT_DK1(int f) :
 	RIFT(width, height),
-	fd(f),
-	averageRatio(initialAverageRatio),
-	gravity((const double[]){ 0.0, -G, 0.0 }),
-	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
-	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),
-	magFront((const double[]){ 0, 0, 1 }),
-	magReady(false),
-	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
+	fd(f){
 
 #if 0
 	//過去の磁化情報があれば取得
@@ -101,10 +94,12 @@ RIFT_DK1::~RIFT_DK1(){
 #endif
 }
 
-const char RIFT_DK1::keepaliveCommand[5] ={
-	8, 0, 0, (char)(keepaliveInterval & 0xff), (char)(keepaliveInterval >> 8)
-};
 void RIFT_DK1::Keepalive(){
+	static const char keepaliveCommand[5] ={
+		8, 0, 0,
+		(char)(keepaliveInterval & 0xff),
+		(char)(keepaliveInterval >> 8)
+	};
 	ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
 }
 
@@ -144,9 +139,66 @@ void* RIFT_DK1::_SensorThread(void* initialData){
 	return 0;
 }
 
+void RIFT_DK1::DecodeSensor(const unsigned char* buff, int v[3]){
+	struct {int x:21;} s;
 
-void RIFT_DK1::Decode(const char* buff){
+	v[0] = s.x =
+	((unsigned)buff[0] << 13) |
+	((unsigned)buff[1] << 5) |
+	((buff[2] & 0xF8) >> 3);
+	v[1] = s.x =
+	(((unsigned)buff[2] & 0x07) << 18) |
+	((unsigned)buff[3] << 10) |
+	((unsigned)buff[4] << 2) |
+	((buff[5] & 0xC0) >> 6);
+	v[2] = s.x =
+	(((unsigned)buff[5] & 0x3F) << 15) |
+	((unsigned)buff[6] << 7) |
+	(buff[7] >> 1);
 }
 
+void RIFT_DK1::Decode(const char* buff){
+	struct{
+		int accel[3];
+		int rotate[3];
+	}sample[3];
+	int mag[3];
 
+	//NOTE:リトルエンディアン機で動かす前提
+	const unsigned char numOfSamples(buff[1]);
+	const unsigned short timestamp(*(unsigned short*)&buff[2]);
+//	const short temp(*(short*)&buff[6]);
+
+	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
+	for(unsigned char i(0); i < samples; i++){
+		DecodeSensor((unsigned char*)buff + 8 + 16 * i, sample[i].accel);
+		DecodeSensor((unsigned char*)buff + 16 + 16 * i, sample[i].rotate);
+	}
+	//磁気センサのデータ取得(座標系が違うのでY-Zを交換)
+	mag[0] = *(short*)&buff[56];
+	mag[1] = *(short*)&buff[60];
+	mag[2] = *(short*)&buff[58];
+
+	static unsigned short prevTime;
+	const unsigned short deltaT(timestamp - prevTime);
+	prevTime = timestamp;
+
+	const double qtime(1.0/1000.0);
+	const double dt(qtime * deltaT / numOfSamples);
+
+	// 各サンプル値で状況を更新
+	for(unsigned char i(0); i < samples; i++){
+		UpdateAngularVelocity(sample[i].rotate, dt);
+		UpdateAccelaretion(sample[i].accel, dt);
+	}
+
+	// 磁界値取得
+	UpdateMagneticField(mag);
+
+	//温度取得
+//	temperature = 0.01 * temp;
+
+	//補正
+//	Correction();
+}
 

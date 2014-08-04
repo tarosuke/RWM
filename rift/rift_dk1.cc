@@ -55,8 +55,6 @@ VIEW* RIFT_DK1::New(){
 }
 
 
-#define MaxFloat (3.40282347e+38F)
-#define G (9.80665)
 RIFT_DK1::RIFT_DK1(int f) :
 	RIFT(width, height),
 	fd(f){

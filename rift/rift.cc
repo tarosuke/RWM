@@ -16,19 +16,10 @@ RIFT::RIFT(unsigned w, unsigned h) :
 	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),
 	magFront((const double[]){ 0, 0, 1 }),
 	magReady(false),
-	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
+	magneticField((const double[3]){ 0.0, 0.0, 0.01 }),
+	width(w),
+	height(h){
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
@@ -116,4 +107,17 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		}
 	}
 }
+
+
+
+/////VIEW関連
+
+extern "C"{
+	extern char _binary_rift_vertex_glsl_start[];
+	extern char _binary_rift_fragment_glsl_start[];
+	extern char _binary_rift_vertex_glsl_end[];
+	extern char _binary_rift_fragment_glsl_end[];
+};
+const char* RIFT::vertexShaderSource(_binary_rift_vertex_glsl_start);
+const char* RIFT::fragmentShaderSource(_binary_rift_fragment_glsl_start);
 

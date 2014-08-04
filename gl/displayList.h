@@ -19,12 +19,12 @@ namespace GL{
 		~DisplayList();
 		void Playback() const;
 		unsigned GetID(){ return id; };
-	private:
-		static bool recording;
-		const unsigned id;
 
 		void StartRecord(bool);
 		void EndRecord();
+	private:
+		static bool recording;
+		const unsigned id;
 	};
 
 }

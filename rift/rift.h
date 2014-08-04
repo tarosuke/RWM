@@ -3,6 +3,7 @@
 #include <pthread.h>
 
 #include "../view.h"
+#include "../gl/displayList.h"
 
 
 
@@ -22,6 +23,8 @@ private:
 	const POSE& Pose() const{ return pose; };
 	POSE pose;
 
+	/////センサ関連
+
 	//補正のファストスタート処理
 	static const int initialAverageRatio = 3;
 	static const int maxAverageRatio = 10000;
@@ -40,6 +43,32 @@ private:
 
 	// 温度センサ[℃]
 	float temperature;
+
+	/////VIEW関連
+	int deDistorShaderProgram;
+	static const char* vertexShaderSource;
+	static const char* fragmentShaderSource;
+	struct P2{
+		float u;
+		float v;
+	};
+	P2 GetTrueCoord(float u, float v);
+	static float D(float l);
+	unsigned framebufferTexture;
+	unsigned deDistorTexture;
+
+	//画面の大きさなど
+	const unsigned width;
+	const unsigned height;
+	static const float inset = 0.1453 + 0.04;
+
+	//描画前＆描画後
+	void PreDraw(){}; //描画領域、東映行列の設定、displayList記録開始
+	void PostDraw(){}; //右目用設定、displayList再生による再描画、歪み除去
+
+	//再描画用
+	GL::DisplayList displayList;
+
 };
 
 
@@ -57,8 +86,6 @@ private:
 	//VIEWとしてのインターフェイス
 	RIFT_DK1(int);
 	~RIFT_DK1();
-	void PreDraw(){};
-	void PostDraw(){};
 
 	// HID
 	const int fd;

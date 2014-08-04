@@ -143,18 +143,18 @@ void RIFT_DK1::DecodeSensor(const unsigned char* buff, int v[3]){
 	struct {int x:21;} s;
 
 	v[0] = s.x =
-	((unsigned)buff[0] << 13) |
-	((unsigned)buff[1] << 5) |
-	((buff[2] & 0xF8) >> 3);
+		((unsigned)buff[0] << 13) |
+		((unsigned)buff[1] << 5) |
+		((buff[2] & 0xfb) >> 3);
 	v[1] = s.x =
-	(((unsigned)buff[2] & 0x07) << 18) |
-	((unsigned)buff[3] << 10) |
-	((unsigned)buff[4] << 2) |
-	((buff[5] & 0xC0) >> 6);
+		(((unsigned)buff[2] & 0x07) << 18) |
+		((unsigned)buff[3] << 10) |
+		((unsigned)buff[4] << 2) |
+		((buff[5] & 0xc0) >> 6);
 	v[2] = s.x =
-	(((unsigned)buff[5] & 0x3F) << 15) |
-	((unsigned)buff[6] << 7) |
-	(buff[7] >> 1);
+		(((unsigned)buff[5] & 0x3f) << 15) |
+		((unsigned)buff[6] << 7) |
+		(buff[7] >> 1);
 }
 
 void RIFT_DK1::Decode(const char* buff){

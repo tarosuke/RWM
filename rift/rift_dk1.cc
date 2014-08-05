@@ -194,9 +194,7 @@ void RIFT_DK1::Decode(const char* buff){
 	UpdateMagneticField(mag);
 
 	//温度取得
-//	temperature = 0.01 * temp;
+	UpdateTemperature(0.01 * *(short*)&buff[6]);
 
-	//補正
-//	Correction();
 }
 

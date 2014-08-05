@@ -18,6 +18,7 @@ protected:
 	void UpdateAngularVelocity(const int[3], double);
 	void UpdateAccelaretion(const int[3], double);
 	void UpdateMagneticField(const int[3]);
+	void UpdateTemperature(float){};
 
 private:
 	const POSE& Pose() const{ return pose; };

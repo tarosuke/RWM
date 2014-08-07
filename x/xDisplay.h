@@ -14,6 +14,7 @@ public:
 	XDISPLAY(const char*);
 	~XDISPLAY();
 	bool Run();  //falseになったら終了(イベントを受け取るこのクラスが判定)
+	void Update(); //描画終了後、VSYNCを待って画面切り替え
 
 private:
 	//GL関連

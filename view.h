@@ -54,6 +54,7 @@ protected:
 	};
 
 	VIEW(unsigned w, unsigned h);
+	float GetTanFov(){ return tanFov; };
 
 	//共通描画処理の前後に呼ばれるデバイス固有処理のハンドラ
 	virtual void PreDraw()=0; //投影行列の設定やディスプレイリストの設定など
@@ -67,6 +68,9 @@ private:
 	//描画対象物
 	TOOLBOX::QUEUE<DRAWER> stickeies;
 	TOOLBOX::QUEUE<DRAWER> externals;
+
+	static float fov;
+	static float tanFov;
 };
 
 

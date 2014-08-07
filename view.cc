@@ -63,7 +63,7 @@ void VIEW::Run(){
 		const double* const pp(p.position);
 		glRotated(-r.angle * 180 / M_PI, r.axis[0], r.axis[1], r.axis[2]);
 		glTranslated(-pp[0], -pp[1], -pp[2]);
-		
+
 		externals.Each(&DRAWER::Draw); //externalを描画
 
 		//透過窓描画
@@ -73,7 +73,13 @@ void VIEW::Run(){
 
 		//描画後処理
 		PostDraw();
+
+		//VSYNCを待って表示
+		xDisplay.Update();
+
 	}
 }
 
 
+float VIEW::fov(90);
+float VIEW::tanFov(1); //fovが更新されたらtanf(fov * M_PI / 360)で再計算

@@ -155,7 +155,12 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 
 bool XDISPLAY::Run(){
-	return false;
+	static unsigned remain(60 * 10);
+	return !!--remain; //TODO:イベントに基づいて終了できるようにする
+}
+
+void XDISPLAY::Update(){
+	glXSwapBuffers(xDisplay, rootWindowID);
 }
 
 

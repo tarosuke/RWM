@@ -62,10 +62,12 @@ private:
 	const unsigned width;
 	const unsigned height;
 	static const float inset = 0.1453 + 0.04;
+	static const float nearDistance = 0.1;
+	static const float farDistance = 5000;
 
 	//描画前＆描画後
-	void PreDraw(){}; //描画領域、東映行列の設定、displayList記録開始
-	void PostDraw(){}; //右目用設定、displayList再生による再描画、歪み除去
+	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始
+	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 
 	//再描画用
 	GL::DisplayList displayList;

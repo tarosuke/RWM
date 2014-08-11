@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "view.h"
+#include "view/view.h"
 
 
 int main(int argc, char *argv[]){

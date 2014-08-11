@@ -4,10 +4,10 @@
  */
 #pragma once
 
-#include "toolbox/factory/factory.h"
-#include "x/xDisplay.h"
-#include "toolbox/queue/queue.h"
-#include "toolbox/complex/complex.h"
+#include "../toolbox/factory/factory.h"
+#include "../x/xDisplay.h"
+#include "../toolbox/queue/queue.h"
+#include "../toolbox/complex/complex.h"
 
 
 class VIEW{

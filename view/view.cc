@@ -3,7 +3,7 @@
 #include <GL/gl.h>
 
 #include "view.h"
-#include "rift/rift.h"
+#include "../rift/rift.h"
 
 
 

@@ -13,7 +13,7 @@ LIBOPTS = $(addprefix -l, $(libs))
 
 
 ssfc = .c .cc .glsl
-spth = * */* */*/*
+spth = */* */*/*
 srcs = $(patsubst old/%,,$(foreach p, $(spth), $(foreach s, $(ssfc), $(wildcard $(p)$(s)))))
 
 dirs = $(sort $(dir $(srcs)))
@@ -35,12 +35,12 @@ test: rwm.test
 run: rwm
 	./rwm
 
-rwm: makefile $(objs)
-	gcc -o $@ $(objs) $(LIBOPTS)
+rwm: makefile rwm.cc $(objs)
+	gcc -o $@ rwm.cc $(objs) $(LIBOPTS)
 
 rwm.test: COPTS+=-DTEST
-rwm.test: makefile $(objs)
-	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ $(objs)  $(LIBOPTS)
+rwm.test: makefile rwm.cc $(objs)
+	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ rwm.cc $(objs) $(LIBOPTS)
 
 clean:
 	rm -fr rwm rwm.test objs/*

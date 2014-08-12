@@ -22,6 +22,8 @@ dmds= $(addprefix objs/, $(mods))
 objs = $(addsuffix .o, $(dmds))
 deps = $(addsuffix .d, $(dmds))
 
+rwmObjs = objs/rift_dk1.o
+
 
 
 ######################################################################## RULES
@@ -29,21 +31,28 @@ deps = $(addsuffix .d, $(dmds))
 install: rwm
 	sudo cp rwm /usr/local/bin/
 
-test: rwm.test
+test: rwm.test rwmSoundd
 	./rwm.test
 
 run: rwm
 	./rwm
 
-rwm: makefile rwm.cc $(objs)
-	gcc -o $@ rwm.cc $(objs) $(LIBOPTS)
+rwm: makefile rwm.cc $(rwmObjs) userLib.a rwmSoundd
+	gcc -Xlinker "-Map=rwm.map" -o $@ rwm.cc $(rwmObjs) userLib.a $(LIBOPTS)
 
 rwm.test: COPTS+=-DTEST
-rwm.test: makefile rwm.cc $(objs)
-	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ rwm.cc $(objs) $(LIBOPTS)
+rwm.test: makefile rwm.cc $(rwmObjs) userLib.a
+	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ rwm.cc $(rwmObjs) userLib.a $(LIBOPTS)
+
+rwmSoundd: makefile rwmSoundd.cc userLib.a
+	gcc -Xlinker "-Map=rwmSoundd.map" -o $@ rwmSoundd.cc userLib.a $(LIBOPTS)
 
 clean:
-	rm -fr rwm rwm.test objs/*
+	rm -fr rwm rwm.test rwmSoundd *.map userLib.a objs/*
+
+
+userLib.a: $(objs)
+	ar -rc $@ $(objs)
 
 
 

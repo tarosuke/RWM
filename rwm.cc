@@ -6,7 +6,12 @@
 
 
 int main(int argc, char *argv[]){
-	VIEW& v(VIEW::New());
-	v.Run();
+	try{
+		VIEW& v(VIEW::New());
+		v.Run();
+	}
+	catch(const char* m){
+		printf("エラー：%s.\n", m);
+	}
 	return 0;
 }

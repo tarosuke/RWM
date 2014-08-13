@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include <raster.h>
+#include "image.h"
 
 
-class TGA : public Raster{
+class TGA : public IMAGE{
 public:
 	struct RAW{
 		unsigned char IDLen;
@@ -21,11 +21,11 @@ public:
 		unsigned char attribute;
 		unsigned char data[0]; //並び准はBGR(A)
 	}__attribute__((packed));
-	TGA(const void* rawTGA) : Raster(
+	TGA(const void* rawTGA) : IMAGE(
+		(*static_cast<const RAW*>(rawTGA)).data,
 		(*static_cast<const RAW*>(rawTGA)).width,
 		(*static_cast<const RAW*>(rawTGA)).height,
-		(*static_cast<const RAW*>(rawTGA)).colorDepth,
-		(*static_cast<const RAW*>(rawTGA)).data){ Dump(rawTGA); };
+		(*static_cast<const RAW*>(rawTGA)).colorDepth){ Dump(rawTGA); };
 private:
 
 	void Dump(const void*);

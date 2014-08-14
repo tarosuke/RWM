@@ -1,5 +1,7 @@
 #pragma once
 
+
+class IMAGE;
 namespace GL{
 	class TEXTURE{
 		TEXTURE(const TEXTURE&);
@@ -7,7 +9,7 @@ namespace GL{
 	public:
 		TEXTURE();
 		TEXTURE(unsigned w, unsigned h);
-		TEXTURE(const class IMAGE&);
+		TEXTURE(const IMAGE&);
 		~TEXTURE();
 
 		void Bind() const;

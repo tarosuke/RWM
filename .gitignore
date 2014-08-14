@@ -15,6 +15,7 @@
 # Target files
 rwm.test
 rwm
+rwmSoundd
 
 # Files kde creates
 .directory

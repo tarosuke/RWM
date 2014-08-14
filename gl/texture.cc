@@ -31,7 +31,22 @@ namespace GL{
 	}
 
 	void TEXTURE::Assign(const IMAGE& image){
+		const unsigned d(image.Depth());
+		glTexImage2D(
+			GL_TEXTURE_2D, 0,
+			d <= 24 ? GL_RGB : GL_RGBA,
+			image.Width(), image.Height(), 0,
+			d <= 24 ? GL_BGR : GL_BGRA,
+			GL_UNSIGNED_BYTE, const_cast<void*>(image.Buffer()));
 		empty = false;
+
+		//属性を設定
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void TEXTURE::Update(const IMAGE& image, int x, int y){

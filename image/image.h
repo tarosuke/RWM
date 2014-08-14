@@ -16,7 +16,7 @@ public:
 	unsigned Width() const{ return width; };
 	unsigned Height() const{ return height; };
 	unsigned Depth() const{ return depth; };
-	const void* Buffer(){ return buffer ? buffer : constBuffer; };
+	const void* Buffer() const{ return buffer ? buffer : constBuffer; };
 private:
 	void* buffer;
 	const void* constBuffer;

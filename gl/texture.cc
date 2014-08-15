@@ -10,12 +10,16 @@ namespace GL{
 
 	unsigned TEXTURE::BINDER::lastBinded(0);
 	TEXTURE::BINDER::BINDER(const TEXTURE& t) : prevBinded(lastBinded){
-		glBindTexture(GL_TEXTURE_2D, t.tid);
-		lastBinded = t.tid;
+		if(lastBinded != t.tid){
+			glBindTexture(GL_TEXTURE_2D, t.tid);
+			lastBinded = t.tid;
+		}
 	}
 	TEXTURE::BINDER::~BINDER(){
-		glBindTexture(GL_TEXTURE_2D, prevBinded);
-		lastBinded = prevBinded;
+		if(prevBinded != lastBinded){
+			glBindTexture(GL_TEXTURE_2D, prevBinded);
+			lastBinded = prevBinded;
+		}
 	}
 
 
@@ -24,8 +28,11 @@ namespace GL{
 		glGenTextures(1, const_cast<unsigned*>(&tid));
 	}
 
-	TEXTURE::TEXTURE(unsigned w, unsigned h) : tid(0), empty(true){
+	TEXTURE::TEXTURE(unsigned w, unsigned h, bool a) : tid(0), empty(true){
 		glGenTextures(1, const_cast<unsigned*>(&tid));
+		BINDER b(*this);
+		glTexStorage2D(GL_TEXTURE_2D, 0, a ? GL_RGBA : GL_RGB, w, h);
+		SetupAttributes();
 	}
 
 	TEXTURE::TEXTURE(const class IMAGE& image) : tid(0), empty(true){

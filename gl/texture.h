@@ -19,7 +19,7 @@ namespace GL{
 			const unsigned prevBinded;
 		};
 		TEXTURE();
-		TEXTURE(unsigned w, unsigned h);
+		TEXTURE(unsigned w, unsigned h, bool alpha=false);
 		TEXTURE(const IMAGE&);
 		~TEXTURE();
 

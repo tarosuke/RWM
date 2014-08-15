@@ -8,6 +8,18 @@
 
 namespace GL{
 
+	unsigned TEXTURE::BINDER::lastBinded(0);
+	TEXTURE::BINDER::BINDER(const TEXTURE& t) : prevBinded(lastBinded){
+		glBindTexture(GL_TEXTURE_2D, t.tid);
+		lastBinded = t.tid;
+	}
+	TEXTURE::BINDER::~BINDER(){
+		glBindTexture(GL_TEXTURE_2D, prevBinded);
+		lastBinded = prevBinded;
+	}
+
+
+
 	TEXTURE::TEXTURE() : tid(0), empty(true){
 		glGenTextures(1, const_cast<unsigned*>(&tid));
 	}
@@ -25,12 +37,9 @@ namespace GL{
 		glDeleteTextures(1, &tid);
 	}
 
-
-	void TEXTURE::Bind() const{
-		glBindTexture(GL_TEXTURE_2D, tid);
-	}
-
 	void TEXTURE::Assign(const IMAGE& image){
+		BINDER b(*this);
+
 		const unsigned d(image.Depth());
 		glTexImage2D(
 			GL_TEXTURE_2D, 0,
@@ -41,12 +50,15 @@ namespace GL{
 		empty = false;
 
 		//属性を設定
+		SetupAttributes();
+	}
+
+	void TEXTURE::SetupAttributes(){
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void TEXTURE::Update(const IMAGE& image, int x, int y){
@@ -54,7 +66,16 @@ namespace GL{
 			//テクスチャメモリが割り当てられていないので終了
 			return;
 		}
-		Bind();
+		BINDER b(*this);
+		glTexSubImage2D(
+			GL_TEXTURE_2D, 0,
+			x,
+			y,
+			image.Width(),
+			image.Height(),
+			GL_BGRA,
+			GL_UNSIGNED_BYTE,
+			image.Buffer());
 	}
 
 }

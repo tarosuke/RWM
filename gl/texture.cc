@@ -33,6 +33,7 @@ namespace GL{
 		BINDER b(*this);
 		glTexStorage2D(GL_TEXTURE_2D, 0, a ? GL_RGBA : GL_RGB, w, h);
 		SetupAttributes();
+		empty = false;
 	}
 
 	TEXTURE::TEXTURE(const class IMAGE& image) : tid(0), empty(true){

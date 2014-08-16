@@ -7,9 +7,11 @@
 
 #include <string>
 
-#include "../event.h"
 #include "../toolbox/queue/queue.h"
 #include "../toolbox/complex/complex.h"
+#include "../view/view.h"
+#include "../gl/texture.h"
+
 
 
 class WINDOW{
@@ -42,9 +44,63 @@ public:
 		unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
 		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
 	};
-	class MOUSE_DOWN_EVENT : public MOUSE_EVENT{
-		void Handle()const{
-		};
+	class KEY_EVENT : public EVENT{
+		unsigned charCode; //文字コード
+		unsigned keyCode; //キーコード(あれば。なければ0)
 	};
+	class JS_EVENT : public EVENT{
+		unsigned upButton; //前回からの間に放されたボタン
+		unsigned downButton; //前回からの間に押されたボタン
+		unsigned buttonState; //現在のボタンの状況
+		unsigned movedAxis; //前回から変化があった軸
+		float axis[8]; //各軸の値(-1.0〜+1.0)
+	};
+	static void AtMouse(const MOUSE_EVENT&);
+	static void AtKey(const KEY_EVENT&);
+	static void AtJS(const JS_EVENT&);
+
+
+	static void DrawAll(const COMPLEX<4>&);
+	static void DrawTransparentAll(const COMPLEX<4>&);
+protected:
+	/** 新規窓
+	 * 新規に窓を精製する。
+	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
+	 * なので作ってから設定する必要がある。
+	 */
+	WINDOW();
+	/** 新規窓(位置、サイズ付き)
+	 * 新規に窓を精製する。
+	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
+	 * なので作ってから設定する必要がある。
+	 */
+	WINDOW(float h, float v, int wi, int hi);
+	/** 中身付き新規窓
+	 * 初期状態はフォーカスなし、テクスチャ割り当て済み、可視
+	 * @attention h,vは左上ではなく中央
+	 * @attention サイズはinitialImageから取得する
+	 */
+	WINDOW(float h, float v, const IMAGE&);
+
+	virtual ~WINDOW();
+private:
+	static TOOLBOX::QUEUE<WINDOW> windowList;
+	static TOOLBOX::QUEUE<WINDOW> invisibleWindowList;
+	TOOLBOX::QUEUE<WINDOW>::NODE node;
+
+
+
+	static WINDOW* focused;
+	void Draw();
+	GL::TEXTURE texture;
+
+
+	struct POINT{
+		float x;
+		float y;
+	};
+	static float motionDistance;
+	static bool lookingFront;
+	static POINT lookingPoint;
 };
 

@@ -4,6 +4,7 @@
 
 #include "view.h"
 #include "../rift/rift.h"
+#include "../window/window.h"
 
 
 
@@ -54,11 +55,11 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
-		//WINDOW::DrawAll(head.GetDirection()); //非透過窓描画
+		const POSE p(Pose());
+		WINDOW::DrawAll(p.direction); //非透過窓描画
 		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
 		//頭の向きと位置をModel-View行列に反映
-		const POSE p(Pose());
 		COMPLEX<4>::ROTATION r;
 		p.direction.GetRotation(r);
 		glPushMatrix();
@@ -71,7 +72,7 @@ void VIEW::Run(){
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
-		//WINDOW::DrawTransparentAll(head.GetDirection()); //透過窓描画
+		WINDOW::DrawTransparentAll(p.direction); //透過窓描画
 
 		//描画後処理
 		PostDraw();

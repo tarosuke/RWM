@@ -58,6 +58,10 @@ public:
 	static void AtMouse(const MOUSE_EVENT&);
 	static void AtKey(const KEY_EVENT&);
 	static void AtJS(const JS_EVENT&);
+
+
+	static void DrawAll(const COMPLEX<4>&);
+	static void DrawTransparentAll(const COMPLEX<4>&);
 protected:
 	/** 新規窓
 	 * 新規に窓を精製する。
@@ -80,20 +84,23 @@ protected:
 
 	virtual ~WINDOW();
 private:
-	static class DRAWER : public VIEW::DRAWER{
-	public:
-		DRAWER(){ VIEW::RegisterStickies(*this); };
-		void Draw() const;
-	}drawer;
-
-
-	static TOOLBOX::QUEUE<WINDOW> queue;
+	static TOOLBOX::QUEUE<WINDOW> windowList;
+	static TOOLBOX::QUEUE<WINDOW> invisibleWindowList;
 	TOOLBOX::QUEUE<WINDOW>::NODE node;
 
 
 
 	static WINDOW* focused;
 	void Draw();
+	GL::TEXTURE texture;
 
+
+	struct POINT{
+		float x;
+		float y;
+	};
+	static float motionDistance;
+	static bool lookingFront;
+	static POINT lookingPoint;
 };
 

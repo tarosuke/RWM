@@ -111,9 +111,11 @@ protected:
 
 	virtual ~WINDOW();
 private:
-	static TOOLBOX::QUEUE<WINDOW> windowList;
-	static TOOLBOX::QUEUE<WINDOW> invisibleWindowList;
-	TOOLBOX::QUEUE<WINDOW>::NODE node;
+	typedef TOOLBOX::QUEUE<WINDOW> Q;
+
+	static Q windowList;
+	static Q invisibleWindowList;
+	Q::NODE node;
 
 
 

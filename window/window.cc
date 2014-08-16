@@ -1,8 +1,8 @@
 #include "window.h"
 
 
-TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
-TOOLBOX::QUEUE<WINDOW> WINDOW::invisibleWindowList;
+WINDOW::Q WINDOW::windowList;
+WINDOW::Q WINDOW::invisibleWindowList;
 WINDOW* WINDOW::focused(0);
 
 
@@ -32,7 +32,7 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	WINDOW* const oldLookingWindow(lookingWindow);
 	lookingWindow = 0;
 	POINT localPoint;
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(windowList); i; i++){
+	for(WINDOW::Q::ITOR i(windowList); i; i++){
 		WINDOW& w(*i);
 		const POINT lp = {
 			lookingPoint.x - w.position.x,
@@ -74,7 +74,7 @@ void WINDOW::DrawTransparentAll(const COMPLEX<4>& pose){
 
 	//非フォーカス
 	glColor4f(1,1,1,0.7); //白、半透明
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(WINDOW::windowList, true); i; --i){
+	for(WINDOW::Q::ITOR i(WINDOW::windowList, WINDOW::Q::ITOR::backward); i; --i){
 		WINDOW* const w(i);
 		if(w != focused){
 			(*w).Draw();

@@ -41,8 +41,8 @@ public:
 
 
 	//描画オブジェクトの登録
-	void RegisterStickies(DRAWER& d){ d.Add(stickeies); };
-	void RegisterExternals(DRAWER& d){ d.Add(externals); };
+	static void RegisterStickies(DRAWER& d){ d.Add(stickeies); };
+	static void RegisterExternals(DRAWER& d){ d.Add(externals); };
 
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
@@ -66,8 +66,8 @@ private:
 	XDISPLAY xDisplay;
 
 	//描画対象物
-	TOOLBOX::QUEUE<DRAWER> stickeies;
-	TOOLBOX::QUEUE<DRAWER> externals;
+	static TOOLBOX::QUEUE<DRAWER> stickeies;
+	static TOOLBOX::QUEUE<DRAWER> externals;
 
 	static float fov;
 	static float tanFov;

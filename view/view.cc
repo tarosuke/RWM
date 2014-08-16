@@ -8,6 +8,8 @@
 
 
 template<> FACTORY<VIEW>* FACTORY<VIEW>::start(0);
+TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::stickeies;
+TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::externals;
 
 
 VIEW& VIEW::New() throw(const char*){

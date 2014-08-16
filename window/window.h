@@ -62,6 +62,33 @@ public:
 
 	static void DrawAll(const COMPLEX<4>&);
 	static void DrawTransparentAll(const COMPLEX<4>&);
+
+
+	//マウスイベント TODO:視線イベントを分離する
+	virtual void OnMouseDown(const MOUSE_EVENT&){}; //ボタンが押された
+	virtual void OnMouseUp(const MOUSE_EVENT&){}; //ボタンが放された
+	virtual void OnMouseEnter(const MOUSE_EVENT&){}; //ポインタが窓に入った
+	virtual void OnMouseMove(const MOUSE_EVENT&){}; //ポインタが窓の中を移動中
+	virtual void OnMouseLeave(const MOUSE_EVENT&){}; //ポインタが窓から出た
+	virtual void OnClick(const MOUSE_EVENT&){}; //クリックとその回数
+	//キーイベント
+	virtual void OnKeyDown(const KEY_EVENT&){}; //キーが押された
+	virtual void OnKeyUp(const KEY_EVENT&){}; //キーが放された
+	static unsigned long long keyState[];
+	virtual void OnKeyChanged(const unsigned long long){};
+	//ジョイスティック
+	virtual void OnJSDown(const JS_EVENT&){};
+	virtual void OnJSUp(const JS_EVENT&){};
+	virtual void OnJSMove(const JS_EVENT&){};
+	virtual void OnJSChange(const JS_EVENT&){};
+	//コントロール
+	virtual void OnResize(unsigned w, unsigned h){};
+	virtual void OnFocused(){};
+	virtual void OnUnfocused(){};
+	virtual void OnEnter(WINDOW*){};
+	virtual void OnLeave(){};
+
+
 protected:
 	/** 新規窓
 	 * 新規に窓を精製する。
@@ -84,9 +111,11 @@ protected:
 
 	virtual ~WINDOW();
 private:
-	static TOOLBOX::QUEUE<WINDOW> windowList;
-	static TOOLBOX::QUEUE<WINDOW> invisibleWindowList;
-	TOOLBOX::QUEUE<WINDOW>::NODE node;
+	typedef TOOLBOX::QUEUE<WINDOW> Q;
+
+	static Q windowList;
+	static Q invisibleWindowList;
+	Q::NODE node;
 
 
 
@@ -99,8 +128,18 @@ private:
 		float x;
 		float y;
 	};
+
+	POINT position;
+	unsigned width;
+	unsigned height;
+
+
 	static float motionDistance;
 	static bool lookingFront;
 	static POINT lookingPoint;
+	static WINDOW* lookingWindow;
+	static const float baseDistance;
+	static float distance;
+
 };
 

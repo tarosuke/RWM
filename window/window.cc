@@ -1,14 +1,17 @@
 #include "window.h"
 
 
-TOOLBOX::QUEUE<WINDOW> WINDOW::windowList;
-TOOLBOX::QUEUE<WINDOW> WINDOW::invisibleWindowList;
+WINDOW::Q WINDOW::windowList;
+WINDOW::Q WINDOW::invisibleWindowList;
 WINDOW* WINDOW::focused(0);
 
 
 float WINDOW::motionDistance(0.7);
 bool WINDOW::lookingFront(false);
 WINDOW::POINT WINDOW::lookingPoint;
+WINDOW* WINDOW::lookingWindow(0);
+const float WINDOW::baseDistance(0.7);
+float WINDOW::distance;
 
 void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	//仮想画面上の視線の先を算出
@@ -25,12 +28,38 @@ void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	lookingPoint.y = v[1] * motionDistance / v[2];
 
 
+	//窓視点チェック
+	WINDOW* const oldLookingWindow(lookingWindow);
+	lookingWindow = 0;
+	POINT localPoint;
+	for(WINDOW::Q::ITOR i(windowList); i; i++){
+		WINDOW& w(*i);
+		const POINT lp = {
+			lookingPoint.x - w.position.x,
+			lookingPoint.y - w.position.y };
+		const float hw(w.width * 0.5);
+		const float hh(w.height * 0.5);
+		if(-hw <= lp.x && lp.x < hw && -hh <= lp.y && lp.y < hh){
+			//lookingPointが窓に含まれる
+			lookingWindow = i;
+			localPoint = lp;
+			break;
+		}
+	}
 
+	//Enter/Leaveイベント生成
+	if(oldLookingWindow != lookingWindow){
+		if(oldLookingWindow){
+			//Leave
+			(*oldLookingWindow).OnLeave();
+		}
+		if(lookingWindow){
+			//Enter
+			(*lookingWindow).OnEnter(oldLookingWindow);
+		}
+	}
 
-
-
-
-	//フォーカス窓
+	//フォーカス窓描画
 	if(focused){
 		glColor4f(1,1,1,1); //白、不透明
 		(*focused).Draw();
@@ -45,7 +74,7 @@ void WINDOW::DrawTransparentAll(const COMPLEX<4>& pose){
 
 	//非フォーカス
 	glColor4f(1,1,1,0.7); //白、半透明
-	for(TOOLBOX::QUEUE<WINDOW>::ITOR i(WINDOW::windowList, true); i; --i){
+	for(WINDOW::Q::ITOR i(WINDOW::windowList, WINDOW::Q::ITOR::backward); i; --i){
 		WINDOW* const w(i);
 		if(w != focused){
 			(*w).Draw();

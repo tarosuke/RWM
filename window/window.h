@@ -60,9 +60,9 @@ public:
 	static void AtJS(const JS_EVENT&);
 
 
-	static void UpdateAll(); //窓の場合描画内容をディスプレイリストに格納する
-	static void DrawAll(const COMPLEX<4>&);
-	static void DrawTransparentAll(const COMPLEX<4>&);
+	static void UpdateAll(const COMPLEX<4>&);
+	static void DrawAll();
+	static void DrawTransparentAll();
 
 
 	//マウスイベント TODO:視線イベントを分離する
@@ -121,11 +121,18 @@ private:
 
 
 	static WINDOW* focused;
-	void Draw();
-	GL::TEXTURE texture;
+	void Draw(float);
+	GL::TEXTURE texture; //描画内容を保持
 
 
-	struct POINT{
+	class POINT{
+	public:
+		const POINT operator-(const POINT& p) const{
+			return (POINT){ x - p.x, y - p.y };
+		};
+		const POINT operator+(const POINT& p) const{
+			return (POINT){ x + p.x, y + p.y };
+		};
 		float x;
 		float y;
 	};

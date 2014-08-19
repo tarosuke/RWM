@@ -39,6 +39,12 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 void VIEW::Run(){
 	//周期処理
 	while(xDisplay.Run()){
+		//頭の向きやイベントに合わせて窓を更新
+		const POSE p(Pose());
+		WINDOW::UpdateAll(p.direction);
+		stickeies.Each(&DRAWER::Update);
+		externals.Each(&DRAWER::Update);
+
 		//バッファのクリア
 		glClear(GL_COLOR_BUFFER_BIT |
 		GL_DEPTH_BUFFER_BIT |
@@ -55,9 +61,7 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
-		const POSE p(Pose());
-		WINDOW::DrawAll(p.direction); //非透過窓描画
-		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
+		WINDOW::DrawAll(); //非透過窓描画
 
 		//頭の向きと位置をModel-View行列に反映
 		COMPLEX<4>::ROTATION r;
@@ -72,7 +76,8 @@ void VIEW::Run(){
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
-		WINDOW::DrawTransparentAll(p.direction); //透過窓描画
+		WINDOW::DrawTransparentAll(); //透過窓描画
+		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
 		//描画後処理
 		PostDraw();

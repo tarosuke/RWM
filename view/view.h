@@ -18,6 +18,9 @@ public:
 	//描画対象
 	class DRAWER{
 	public:
+		//状況の更新
+		virtual void Update(){};
+
 		//内容描画(通常/透過)
 		virtual void Draw() const=0;
 

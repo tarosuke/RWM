@@ -39,6 +39,11 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 void VIEW::Run(){
 	//周期処理
 	while(xDisplay.Run()){
+		//アップデートを描画から分離
+		WINDOW::UpdateAll();
+		stickeies.Each(&DRAWER::Update);
+		externals.Each(&DRAWER::Update);
+
 		//バッファのクリア
 		glClear(GL_COLOR_BUFFER_BIT |
 		GL_DEPTH_BUFFER_BIT |

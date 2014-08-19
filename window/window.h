@@ -60,6 +60,7 @@ public:
 	static void AtJS(const JS_EVENT&);
 
 
+	static void UpdateAll(); //窓の場合描画内容をディスプレイリストに格納する
 	static void DrawAll(const COMPLEX<4>&);
 	static void DrawTransparentAll(const COMPLEX<4>&);
 
@@ -140,6 +141,7 @@ private:
 	static WINDOW* lookingWindow;
 	static const float baseDistance;
 	static float distance;
+	static const float scale; //窓表示スケール[m/px]
 
 };
 

@@ -13,6 +13,10 @@ WINDOW* WINDOW::lookingWindow(0);
 const float WINDOW::baseDistance(0.7);
 float WINDOW::distance;
 
+void WINDOW::UpdateAll(){
+	//再描画する必要があれば再描画してディスプレイリストへ格納
+}
+
 void WINDOW::DrawAll(const COMPLEX<4>& pose){
 	//仮想画面上の視線の先を算出
 	VECTOR<3> viewLine((const double[]){ 0, 0, 1 });
@@ -85,8 +89,20 @@ void WINDOW::DrawTransparentAll(const COMPLEX<4>& pose){
 
 
 
-
+const float WINDOW::scale(0.0011);
 
 void WINDOW::Draw(){
+	//描画位置算出
+	const float h(position.x * scale + lookingPoint.x);
+	const float v(position.y * scale - lookingPoint.y);
+	if(M_PI*0.5 <= h*h + v*v){
+		//エイリアスやどのみち見えない領域は描画しない
+		return;
+	}
+
+
+
+
+	GL::TEXTURE::BINDER binder(texture);
 }
 

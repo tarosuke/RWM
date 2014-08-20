@@ -11,53 +11,14 @@
 #include "../toolbox/complex/complex.h"
 #include "../view/view.h"
 #include "../gl/texture.h"
-
+#include "event.h"
 
 
 class WINDOW{
 public:
-	class EVENT{
-		EVENT();
-		EVENT(const EVENT&);
-		void operator=(const EVENT&);
-	public:
-		time_t timestamp;
-		static const unsigned ShiftKey = 1;
-		static const unsigned CtrlKey = 2;
-		static const unsigned AltKey = 4;
-		unsigned modifiers; //モディファイアキーの状態
-		const void* orgEvent;
-
-		EVENT(unsigned mod, const void* oe);
-		virtual ~EVENT();
-
-		virtual void Handle()const=0;
-	};
-	class MOUSE_EVENT : public EVENT{
-	public:
-		float x; //窓内相対
-		float y;
-		float hScroll; //水平スクロール量
-		float vScroll; //垂直スクロール量
-		unsigned button; //操作されたボタン
-		unsigned buttonState; //ボタンの状態
-		unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
-		WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
-	};
-	class KEY_EVENT : public EVENT{
-		unsigned charCode; //文字コード
-		unsigned keyCode; //キーコード(あれば。なければ0)
-	};
-	class JS_EVENT : public EVENT{
-		unsigned upButton; //前回からの間に放されたボタン
-		unsigned downButton; //前回からの間に押されたボタン
-		unsigned buttonState; //現在のボタンの状況
-		unsigned movedAxis; //前回から変化があった軸
-		float axis[8]; //各軸の値(-1.0〜+1.0)
-	};
-	static void AtMouse(const MOUSE_EVENT&);
-	static void AtKey(const KEY_EVENT&);
-	static void AtJS(const JS_EVENT&);
+	static void AtMouse(MOUSE_EVENT&);
+	static void AtKey(KEY_EVENT&);
+	static void AtJS(JS_EVENT&);
 
 
 	static void UpdateAll(const COMPLEX<4>&);
@@ -74,6 +35,7 @@ public:
 	virtual void OnClick(const MOUSE_EVENT&){}; //クリックとその回数
 	//キーイベント
 	virtual void OnKeyDown(const KEY_EVENT&){}; //キーが押された
+	virtual void OnKeyRepeat(const KEY_EVENT&){}; //キーリピート
 	virtual void OnKeyUp(const KEY_EVENT&){}; //キーが放された
 	static unsigned long long keyState[];
 	virtual void OnKeyChanged(const unsigned long long){};
@@ -141,6 +103,7 @@ private:
 	unsigned width;
 	unsigned height;
 
+	POINT GetLocalPoint(const POINT&);
 
 	static float motionDistance;
 	static bool lookingFront;

@@ -24,7 +24,7 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 	viewLine.Rotate(pose);
 	const double* const v(viewLine);
 	if(v[2] <= 0){
-		//後ろ向いてるので一切描画しない
+		//後ろ向いてるので処理なし
 		lookingFront = false;
 		return;
 	}
@@ -140,4 +140,39 @@ void WINDOW::Draw(float distance){
 
 	glPopMatrix();
 }
+
+
+WINDOW::POINT WINDOW::GetLocalPoint(const WINDOW::POINT& p){
+	return (POINT){ p.x - position.x, p.y - position.y};
+}
+
+
+////////////////////////////////////////////////////////イベントの一次ハンドラ
+void WINDOW::AtMouse(MOUSE_EVENT& e){
+	if(!lookingWindow){
+		return;
+	}
+	WINDOW& w(*lookingWindow);
+	w.position = w.GetLocalPoint(lookingPoint);
+	e.Handle(w);
+}
+
+void WINDOW::AtKey(KEY_EVENT& e){
+	if(!focused){
+		//イベントを送る先がない
+		return;
+	}
+
+	//TODO:モディファイアキーの処理(状態をEVENTのstaticメンバに保存しとく)
+
+	//イベント転送
+	e.Handle(*focused);
+}
+
+void WINDOW::AtJS(JS_EVENT& e){
+}
+
+
+
+
 

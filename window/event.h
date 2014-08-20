@@ -12,12 +12,12 @@ public:
 	static const unsigned ShiftKey = 1;
 	static const unsigned CtrlKey = 2;
 	static const unsigned AltKey = 4;
-	unsigned modifiers; //モディファイアキーの状態
+	static unsigned modifiers; //モディファイアキーの状態
 	const void* orgEvent;
+	virtual void Handle(WINDOW&)const=0;
 protected:
 	EVENT();
 	virtual ~EVENT();
-	virtual void Handle(WINDOW&)const=0;
 };
 
 class MOUSE_EVENT : public EVENT{
@@ -31,7 +31,6 @@ public:
 	unsigned buttonState; //ボタンの状態
 	unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
 	WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
-	void Handle(WINDOW&)const{};
 };
 class MOUSE_DOWN_EVENT : public MOUSE_EVENT{
 public:
@@ -58,7 +57,6 @@ class KEY_EVENT : public EVENT{
 public:
 	unsigned charCode; //文字コード
 	unsigned keyCode; //キーコード(あれば。なければ0)
-	void Handle(WINDOW&)const{};
 };
 class KEY_DOWN_EVENT : public KEY_EVENT{
 public:

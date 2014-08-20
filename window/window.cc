@@ -163,8 +163,6 @@ void WINDOW::AtKey(KEY_EVENT& e){
 		return;
 	}
 
-	//TODO:モディファイアキーの処理(状態をEVENTのstaticメンバに保存しとく)
-
 	//イベント転送
 	e.Handle(*focused);
 }

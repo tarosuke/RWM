@@ -108,3 +108,38 @@ private:
 	void DecodeSensor(const unsigned char*, int[3]);
 	void Decode(const char*);
 };
+
+
+class RIFT_DK2 : public RIFT{
+	RIFT_DK2();
+	RIFT_DK2(const RIFT_DK2&);
+	void operator=(const RIFT_DK2&);
+public:
+	static VIEW* New();
+private:
+	static FACTORY<VIEW> factory;
+	static const unsigned width = 1080;
+	static const unsigned height = 1920;
+
+	//VIEWとしてのインターフェイス
+	RIFT_DK2(int);
+	~RIFT_DK2();
+
+	// HID
+	const int fd;
+	static const int VendorID = 0x2833;
+	static const int ProductID = 0x0021;
+	static const long keepaliveInterval = 1000;
+	void Keepalive();
+
+	// SENSOR
+	pthread_t sensorThread;
+
+	// 受信処理
+	static void* _SensorThread(void* initialData);
+	void SensorThread();
+
+	//受信データのデコード
+	void DecodeSensor(const unsigned char*, int[3]);
+	void Decode(const char*);
+};

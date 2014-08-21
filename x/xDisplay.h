@@ -29,9 +29,18 @@ private:
 	//画面それ自体の関連
 	Display* xDisplay;
 	Window rootWindowID;
+	unsigned hCenter;
+	unsigned vCenter;
 
 	//画面からの入力設定
 	void InputSetup();
+
+
+
+	//X用イベントハンドラと見せかけてRWMのイベントを作るハンドラ
+	static void AtXKey(const XKeyEvent&);
+	static void AtXMouse(const XButtonEvent&);
+	static void AtXConfigure(const XConfigureEvent&);
 };
 
 

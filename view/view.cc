@@ -64,14 +64,23 @@ void VIEW::Run(){
 		WINDOW::DrawAll(); //非透過窓描画
 
 		//頭の向きと位置をModel-View行列に反映
-		COMPLEX<4>::ROTATION r;
-		p.direction.GetRotation(r);
-		glPushMatrix();
+		const COMPLEX<4>::ROTATION r(p.direction);
 		const double* const pp(p.position);
+		glPushMatrix();
 		glRotated(-r.angle * 180 / M_PI, r.axis[0], r.axis[1], r.axis[2]);
 		glTranslated(-pp[0], -pp[1], -pp[2]);
 
 		externals.Each(&DRAWER::Draw); //externalを描画
+
+#if 1
+		//動作確認用の地面っぽい平面
+		glColor4f(1,1,1,1);
+		glBegin(GL_POLYGON);
+		glVertex3f(0, -1.6, -10);
+		glVertex3f(8.66, -1.6, 5);
+		glVertex3f(-8.66, -1.6, 5);
+		glEnd();
+#endif
 
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す

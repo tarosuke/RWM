@@ -254,7 +254,7 @@ RIFT::P2 RIFT::GetTrueCoord(float u, float v){
 
 
 void RIFT::PreDraw(){
-	const float tf(GetTanFov());
+	const float tf(GetTanFov() * nearDistance);
 	const int hw(width / 2);
 	const float ar((float)width / height);
 
@@ -270,7 +270,7 @@ void RIFT::PreDraw(){
 }
 
 void RIFT::PostDraw(){
-	const float tf(GetTanFov());
+	const float tf(GetTanFov() * nearDistance);
 	const int hw(width / 2);
 	const float ar((float)width / height);
 
@@ -294,9 +294,7 @@ void RIFT::PostDraw(){
 	assert(glGetError() == GL_NO_ERROR);
 	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
 	assert(glGetError() == GL_NO_ERROR);
-	#if !DISTORFIX
 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
-	#endif
 	assert(glGetError() == GL_NO_ERROR);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

@@ -208,15 +208,10 @@ bool XDISPLAY::Run(){
 		case ConfigureNotify:
 			AtXConfigure(e.xconfigure);
 			break;
-#if 0
 		case MappingNotify:
-#if 1
 			XRefreshKeyboardMapping(&e.xmapping);
-#else
-			WINDOW::AtMappingEvent(e.xmapping);
-#endif
+			//TODO:小窓への転送
 			break;
-#endif
 		default:
 			if(e.type == damageBase + XDamageNotify){
 				//XDamageのイベント

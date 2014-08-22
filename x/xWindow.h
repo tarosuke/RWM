@@ -20,5 +20,6 @@ public:
 	static void AtXMap(const XMapEvent&);
 	static void AtXUnmap(const XUnmapEvent&);
 	static void AtXDamage(const XEvent&);
+	static void AtXConfigure(const XConfigureEvent&);
 };
 

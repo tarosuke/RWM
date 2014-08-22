@@ -16,8 +16,8 @@ public:
 	const void* orgEvent;
 	virtual void Handle(WINDOW&)const=0;
 protected:
-	EVENT();
-	virtual ~EVENT();
+	EVENT(){};
+	virtual ~EVENT(){};
 };
 
 class MOUSE_EVENT : public EVENT{
@@ -31,6 +31,8 @@ public:
 	unsigned buttonState; //ボタンの状態
 	unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
 	WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
+protected:
+	MOUSE_EVENT(){};
 };
 class MOUSE_DOWN_EVENT : public MOUSE_EVENT{
 public:

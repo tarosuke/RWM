@@ -12,6 +12,8 @@
 
 #include "xDisplay.h"
 #include "../view/view.h"
+#include "../window/event.h"
+#include "xWindow.h"
 
 
 
@@ -81,6 +83,21 @@ XDISPLAY::~XDISPLAY(){
 void XDISPLAY::InputSetup(){
 	printf("rootWindowID:%lu.\n", rootWindowID);
 
+	//根窓の大きさ取得
+	Window dw;
+	int di;
+	unsigned du;
+	unsigned width;
+	unsigned height;
+	XGetGeometry(
+		xDisplay,
+		rootWindowID,
+		&dw, &di, &di,
+		&width, &height,
+		&du, &du);
+	hCenter = width / 2;
+	vCenter = height / 2;
+
 	//rootのサブウインドウをキャプチャ
 	XCompositeRedirectSubwindows(
 		xDisplay, rootWindowID, CompositeRedirectManual);
@@ -115,7 +132,7 @@ void XDISPLAY::InputSetup(){
 		Window* w(wl);
 		for(unsigned n(0); n < num; n++, w++){
 			//TODO:XWINDOWを作ったらコメントアウト
-//			XWINDOW::AtXCreate(xDisplay, *w, hCenter, vCenter);
+			XWINDOW::AtXCreate(xDisplay, *w, hCenter, vCenter);
 		}
 		XFree(wl);
 	}
@@ -146,6 +163,9 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 
 
+void XDISPLAY::AtXKey(const XKeyEvent&){}
+void XDISPLAY::AtXMouse(const XButtonEvent&){}
+void XDISPLAY::AtXConfigure(const XConfigureEvent&){}
 
 
 
@@ -155,8 +175,54 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 
 bool XDISPLAY::Run(){
-	static unsigned remain(60 * 10);
-	return !!--remain; //TODO:イベントに基づいて終了できるようにする
+	//Xのイベントを取得してEVENTを起こす
+	XEvent e;
+	while(XPending(xDisplay)){
+		XNextEvent(xDisplay, &e);
+		switch(e.type){
+		case CreateNotify:
+			if(e.xcreatewindow.window != rootWindowID &&
+				e.xcreatewindow.parent == rootWindowID){
+				XWINDOW::AtXCreate(e.xcreatewindow, hCenter, vCenter);
+			}
+			break;
+		case MapNotify:
+			XWINDOW::AtXMap(e.xmap);
+			break;
+		case DestroyNotify:
+			XWINDOW::AtXDestroy(e.xdestroywindow);
+			break;
+		case UnmapNotify:
+			XWINDOW::AtXUnmap(e.xunmap);
+			break;
+		case KeyPress:
+		case KeyRelease:
+			AtXKey(e.xkey);
+			break;
+		case ButtonPress:
+			AtXMouse(e.xbutton);
+			break;
+		case ButtonRelease:
+			AtXMouse(e.xbutton);
+			break;
+		case ConfigureNotify:
+			AtXConfigure(e.xconfigure);
+			break;
+		case MappingNotify:
+			XRefreshKeyboardMapping(&e.xmapping);
+			//TODO:小窓への転送
+			break;
+		default:
+			if(e.type == damageBase + XDamageNotify){
+				//XDamageのイベント
+				XWINDOW::AtXDamage(e);
+			}else{
+				//その他のイベント(裏画面へ転送)
+			}
+			break;
+		}
+	}
+	return true;
 }
 
 void XDISPLAY::Update(){

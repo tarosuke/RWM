@@ -38,9 +38,12 @@ private:
 
 
 	//X用イベントハンドラと見せかけてRWMのイベントを作るハンドラ
-	static void AtXKey(const XKeyEvent&);
-	static void AtXMouse(const XButtonEvent&);
-	static void AtXConfigure(const XConfigureEvent&);
+	unsigned modifyState;
+	void AtXKeyUp(const XKeyEvent&);
+	void AtXKeyDown(const XKeyEvent&);
+	void AtXKey(class KEY_EVENT&, const XKeyEvent&);
+	void AtXMouse(const XButtonEvent&);
+	void AtXConfigure(const XConfigureEvent&);
 };
 
 

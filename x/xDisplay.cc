@@ -74,6 +74,8 @@ XDISPLAY::XDISPLAY(const char* server) : xDisplay(XOpenDisplay(server)){
 		throw "入力用画面と接続できませんでした。";
 	}
 	rootWindowID = RootWindow(xDisplay, 0);
+
+	InputSetup();
 }
 
 XDISPLAY::~XDISPLAY(){
@@ -82,6 +84,8 @@ XDISPLAY::~XDISPLAY(){
 
 void XDISPLAY::InputSetup(){
 	printf("rootWindowID:%lu.\n", rootWindowID);
+
+	modifyState = 0;
 
 	//根窓の大きさ取得
 	Window dw;
@@ -163,7 +167,29 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 
 
-void XDISPLAY::AtXKey(const XKeyEvent&){}
+void XDISPLAY::AtXKeyDown(const XKeyEvent& xe){
+	KEY_DOWN_EVENT e;
+	AtXKey(e, xe);
+}
+void XDISPLAY::AtXKeyUp(const XKeyEvent& xe){
+	KEY_UP_EVENT e;
+	AtXKey(e, xe);
+}
+void XDISPLAY::AtXKey(KEY_EVENT& e, const XKeyEvent& xe){
+	//イベント変換
+	e.modifiers = xe.state & ShiftMask ? EVENT::ShiftKey : 0;
+	e.modifiers |= xe.state & ControlMask ? EVENT::CtrlKey : 0;
+	e.modifiers |= xe.state & Mod1Mask ? EVENT::AltKey : 0;
+	e.keyCode = xe.keycode;
+	e.charCode = XLookupKeysym(
+		const_cast<XKeyEvent*>(&xe),
+				   xe.state & ShiftMask ? 1 : 0);
+	e.orgEvent = &xe;
+
+	//イベント回送
+	WINDOW::AtKey(e);
+}
+
 void XDISPLAY::AtXMouse(const XButtonEvent&){}
 void XDISPLAY::AtXConfigure(const XConfigureEvent&){}
 
@@ -196,8 +222,10 @@ bool XDISPLAY::Run(){
 			XWINDOW::AtXUnmap(e.xunmap);
 			break;
 		case KeyPress:
+			AtXKeyDown(e.xkey);
+			break;
 		case KeyRelease:
-			AtXKey(e.xkey);
+			AtXKeyUp(e.xkey);
 			break;
 		case ButtonPress:
 			AtXMouse(e.xbutton);

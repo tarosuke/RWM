@@ -16,8 +16,8 @@ public:
 	const void* orgEvent;
 	virtual void Handle(WINDOW&)const=0;
 protected:
-	EVENT();
-	virtual ~EVENT();
+	EVENT(){};
+	virtual ~EVENT(){};
 };
 
 class MOUSE_EVENT : public EVENT{

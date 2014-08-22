@@ -6,3 +6,4 @@ void XWINDOW::AtXDestroy(const XDestroyWindowEvent&){}
 void XWINDOW::AtXMap(const XMapEvent&){}
 void XWINDOW::AtXUnmap(const XUnmapEvent&){}
 void XWINDOW::AtXDamage(const XEvent&){}
+void XWINDOW::AtXConfigure(const XConfigureEvent& e){}

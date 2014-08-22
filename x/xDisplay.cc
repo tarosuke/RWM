@@ -159,14 +159,6 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 }
 
 
-
-
-
-
-
-
-
-
 void XDISPLAY::AtXKeyDown(const XKeyEvent& xe){
 	KEY_DOWN_EVENT e;
 	AtXKey(e, xe);
@@ -183,20 +175,32 @@ void XDISPLAY::AtXKey(KEY_EVENT& e, const XKeyEvent& xe){
 	e.keyCode = xe.keycode;
 	e.charCode = XLookupKeysym(
 		const_cast<XKeyEvent*>(&xe),
-				   xe.state & ShiftMask ? 1 : 0);
+		 xe.state & ShiftMask ? 1 : 0);
 	e.orgEvent = &xe;
 
 	//イベント回送
 	WINDOW::AtKey(e);
 }
 
-void XDISPLAY::AtXMouse(const XButtonEvent&){}
-void XDISPLAY::AtXConfigure(const XConfigureEvent&){}
-
-
-
-
-
+void XDISPLAY::AtXMouseDown(const XButtonEvent& xe){
+	MOUSE_DOWN_EVENT e;
+	AtXMouse(e, xe);
+}
+void XDISPLAY::AtXMouseUp(const XButtonEvent& xe){
+	MOUSE_UP_EVENT e;
+	AtXMouse(e, xe);
+}
+void XDISPLAY::AtXMouse(MOUSE_EVENT& e, const XButtonEvent& xe){
+	e.x =
+	e.y = 0.0; //Rift上の座標には意味がない
+	e.hScroll =
+	e.vScroll = 0; //TODO:スクロールのサポート
+	e.buttonState = xe.button;
+	e.button =
+	e.clicks = 0;
+	e.orgEvent = static_cast<const void*>(&xe);
+	WINDOW::AtMouse(e);
+}
 
 
 
@@ -228,13 +232,13 @@ bool XDISPLAY::Run(){
 			AtXKeyUp(e.xkey);
 			break;
 		case ButtonPress:
-			AtXMouse(e.xbutton);
+			AtXMouseDown(e.xbutton);
 			break;
 		case ButtonRelease:
-			AtXMouse(e.xbutton);
+			AtXMouseUp(e.xbutton);
 			break;
 		case ConfigureNotify:
-			AtXConfigure(e.xconfigure);
+			XWINDOW::AtXConfigure(e.xconfigure);
 			break;
 		case MappingNotify:
 			XRefreshKeyboardMapping(&e.xmapping);

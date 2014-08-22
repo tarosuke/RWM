@@ -22,7 +22,7 @@ dmds= $(addprefix objs/, $(mods))
 objs = $(addsuffix .o, $(dmds))
 deps = $(addsuffix .d, $(dmds))
 
-rwmObjs = objs/rift_dk1.o
+rwmObjs = objs/rift_dk2.o objs/rift_dk1.o
 
 
 

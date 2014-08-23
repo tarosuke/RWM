@@ -161,10 +161,8 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 void XDISPLAY::AtXKeyDown(const XKeyEvent& xe){
 	const unsigned testState(ShiftMask | ControlMask);
-	if(xe.type == KeyRelease &&
-		(xe.state & testState) == testState &&
-		xe.keycode == 0x16){
-		VIEW::Quit();
+	if((xe.state & testState) == testState && xe.keycode == 0x16){
+		keep = false;
 		return;
 	}
 	KEY_DOWN_EVENT e;
@@ -182,7 +180,7 @@ void XDISPLAY::AtXKey(KEY_EVENT& e, const XKeyEvent& xe){
 	e.keyCode = xe.keycode;
 	e.charCode = XLookupKeysym(
 		const_cast<XKeyEvent*>(&xe),
-		 xe.state & ShiftMask ? 1 : 0);
+		xe.state & ShiftMask ? 1 : 0);
 	e.orgEvent = &xe;
 
 	//イベント回送
@@ -210,6 +208,7 @@ void XDISPLAY::AtXMouse(MOUSE_EVENT& e, const XButtonEvent& xe){
 }
 
 
+bool XDISPLAY::keep(true);
 
 bool XDISPLAY::Run(){
 	//Xのイベントを取得してEVENTを起こす
@@ -261,7 +260,7 @@ bool XDISPLAY::Run(){
 			break;
 		}
 	}
-	return true;
+	return keep;
 }
 
 void XDISPLAY::Update(){

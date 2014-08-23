@@ -35,7 +35,8 @@ private:
 	//画面からの入力設定
 	void InputSetup();
 
-
+	//続行フラグ
+	static bool keep;
 
 	//X用イベントハンドラと見せかけてRWMのイベントを作るハンドラ
 	unsigned modifyState;

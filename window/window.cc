@@ -76,7 +76,6 @@ void WINDOW::DrawAll(){
 	glTranslatef(lookingPoint.x, lookingPoint.y, 0);
 
 
-
 	//フォーカス窓描画
 	if(focused){
 		glColor4f(1,1,1,1); //白、不透明
@@ -96,10 +95,12 @@ void WINDOW::DrawTransparentAll(){
 	float d(baseDistance);
 	for(WINDOW::Q::ITOR i(WINDOW::windowList, WINDOW::Q::ITOR::backward); i; --i){
 		WINDOW* const w(i);
-		if(w != focused){
-			(*w).Draw(d);
+		if((*w).visible){
+			if(w != focused){
+				(*w).Draw(d);
+			}
+			d += 0.03;
 		}
-		d += 0.03;
 	}
 }
 
@@ -172,5 +173,41 @@ void WINDOW::AtJS(JS_EVENT& e){
 
 
 
+
+
+void WINDOW::Assign(const IMAGE& o){
+	texture.Assign(o);
+}
+
+
+void WINDOW::Update(const IMAGE& o, int x, int y){
+	texture.Update(o, x, y);
+}
+
+
+void WINDOW::Move(float x, float y){
+	position = (POINT){ x, y };
+}
+
+void WINDOW::Resize(unsigned w, unsigned h){
+	width = w;
+	height = h;
+}
+
+
+WINDOW::WINDOW(float h, float v, int wi, int hi) :
+	node(*this),
+	visible(false),
+	position((POINT){ h, v }),
+	width(wi),
+	height(hi){}
+WINDOW::WINDOW(float h, float v, const IMAGE& image) :
+	node(*this),
+	texture(image),
+	visible(true),
+	position((POINT){ h, v }),
+	width(image.Width()),
+	height(image.Height()){
+}
 
 

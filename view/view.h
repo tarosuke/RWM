@@ -38,7 +38,7 @@ public:
 	static VIEW& New() throw(const char*);
 
 	void Run();
-
+	static void Quit(){};
 
 	virtual ~VIEW(){};
 

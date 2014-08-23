@@ -160,6 +160,13 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 
 
 void XDISPLAY::AtXKeyDown(const XKeyEvent& xe){
+	const unsigned testState(ShiftMask | ControlMask);
+	if(xe.type == KeyRelease &&
+		(xe.state & testState) == testState &&
+		xe.keycode == 0x16){
+		VIEW::Quit();
+		return;
+	}
 	KEY_DOWN_EVENT e;
 	AtXKey(e, xe);
 }

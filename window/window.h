@@ -12,6 +12,7 @@
 #include "../view/view.h"
 #include "../gl/texture.h"
 #include "event.h"
+#include "../image/image.h"
 
 
 class WINDOW{
@@ -58,7 +59,7 @@ protected:
 	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
 	 * なので作ってから設定する必要がある。
 	 */
-	WINDOW();
+//	WINDOW();
 	/** 新規窓(位置、サイズ付き)
 	 * 新規に窓を精製する。
 	 * 初期状態はフォーカスなし、テクスチャ未割り当て、不可視
@@ -72,7 +73,17 @@ protected:
 	 */
 	WINDOW(float h, float v, const IMAGE&);
 
-	virtual ~WINDOW();
+	virtual ~WINDOW(){};
+
+
+	void SetVisibility(bool v){ visible = v; };
+	bool IsVisible(){ return visible; };
+	unsigned Width(){ return width; };
+	unsigned Height(){ return height; };
+	void Assign(const IMAGE&);
+	void Update(const IMAGE&, int x, int y);
+	void Move(float x, float y);
+	void Resize(unsigned w, unsigned h);
 private:
 	typedef TOOLBOX::QUEUE<WINDOW> Q;
 
@@ -80,11 +91,10 @@ private:
 	static Q invisibleWindowList;
 	Q::NODE node;
 
-
-
 	static WINDOW* focused;
 	void Draw(float);
 	GL::TEXTURE texture; //描画内容を保持
+	bool visible;
 
 
 	class POINT{

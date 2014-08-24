@@ -205,28 +205,29 @@ void RIFT_DK2::Decode(const char* buff){
 void RIFT_DK2::PreDraw(){
 	const float tf(GetTanFov() * nearDistance);
 	const int hh(height / 2);
-	const float ar((float)width / height);
+	const float ar((float)height / width);
 
 	//左目
 	glViewport(0, 0, width, hh);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum((-ar - inset) * tf , (ar - inset) * tf, -tf, tf,
+	glFrustum(-tf, tf, (-ar - inset) * tf , (ar - inset) * tf,
 		nearDistance, farDistance);
 
 	//Model-View行列初期化
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	glRotatef(90,0,0,1);
+	glTranslatef(-0.03, 0, 0);
 
 	//記録と描画
 	displayList.StartRecord(true);
-	glRotatef(90,0,0,1);
 }
 
 void RIFT_DK2::PostDraw(){
 	const float tf(GetTanFov() * nearDistance);
 	const int hh(height / 2);
-	const float ar((float)width / height);
+	const float ar((float)height / width);
 
 	displayList.EndRecord(); //記録完了
 
@@ -234,12 +235,13 @@ void RIFT_DK2::PostDraw(){
 	glViewport(0, hh, width, hh);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum((-ar + inset) * tf , (ar + inset) * tf, -tf, tf,
+	glFrustum(-tf, tf, (-ar + inset) * tf , (ar + inset) * tf,
 		nearDistance, farDistance);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-//	glTranslatef(-0.03, 0, 0);
+	glRotatef(90,0,0,1);
+	glTranslatef(0.03, 0, 0);
 	displayList.Playback();
 
 #if 0

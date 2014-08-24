@@ -112,17 +112,17 @@ const char* RIFT::fragmentShaderSource(_binary_rift_fragment_glsl_start);
 
 #define MaxFloat (3.40282347e+38F)
 #define G (9.80665)
-RIFT::RIFT(unsigned w, unsigned h) :
+	RIFT::RIFT(unsigned w, unsigned h) :
 	VIEW(w, h),
+	width(w),
+	height(h),
 	averageRatio(initialAverageRatio),
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
 	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),
 	magFront((const double[]){ 0, 0, 1 }),
 	magReady(false),
-	magneticField((const double[3]){ 0.0, 0.0, 0.01 }),
-	width(w),
-	height(h){
+	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
 
 	if(GLEW_OK != glewInit()){
 		throw "GLEWが使えません";
@@ -264,6 +264,10 @@ void RIFT::PreDraw(){
 	glLoadIdentity();
 	glFrustum((-ar - inset) * tf , (ar - inset) * tf, -tf, tf,
 		nearDistance, farDistance);
+
+	//Model-View行列初期化
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	//記録と描画
 	displayList.StartRecord(true);

@@ -46,7 +46,7 @@ private:
 
 	//加速度センサ(絶対座標系)
 	VECTOR<3> velocity; //移動速度
-	VECTOR<3> gravity; //平均加速度(機体座標系)
+	VECTOR<3> gravity; //平均加速度(絶対座標系)
 
 	//磁気センサ
 	VECTOR<3> magMax; //磁気センサの最大値
@@ -63,6 +63,7 @@ private:
 	void UpdateAccelaretion(const int[3], double);
 	void UpdateMagneticField(const int[3]);
 	void UpdateTemperature(float){};
+	static const VECTOR<3> vertical;
 	void ErrorCorrection();
 
 	const int fd;

@@ -5,6 +5,7 @@
 #include "view.h"
 #include "../rift/rift.h"
 #include "../window/window.h"
+#include "snow.h"
 
 
 
@@ -53,10 +54,6 @@ void VIEW::Run(){
 		//(投影行列初期化も含めた)描画前処理
 		PreDraw();
 
-		//Model-View行列初期化
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
 		glColor3f(1, 1, 1);
 
@@ -80,6 +77,9 @@ void VIEW::Run(){
 		glVertex3f(8.66, -1.6, 5);
 		glVertex3f(-8.66, -1.6, 5);
 		glEnd();
+#if 1
+		SNOW::DrawAll();
+#endif
 #endif
 
 		//透過窓描画

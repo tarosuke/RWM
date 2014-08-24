@@ -20,6 +20,21 @@ protected:
 	void UpdateMagneticField(const int[3]);
 	void UpdateTemperature(float){};
 
+	//画面の大きさなど
+	const unsigned width;
+	const unsigned height;
+	static const float inset = 0.1453 + 0.04;
+	static const float nearDistance = 0.1;
+	static const float farDistance = 5000;
+
+	//マルチパスレンダリング用
+	static const char* vertexShaderSource;
+	static const char* fragmentShaderSource;
+	int deDistorShaderProgram;
+	GL::DisplayList displayList;
+	unsigned framebufferTexture;
+	unsigned deDistorTexture;
+
 private:
 	const POSE& Pose() const{ return pose; };
 	POSE pose;
@@ -46,32 +61,16 @@ private:
 	float temperature;
 
 	/////VIEW関連
-	int deDistorShaderProgram;
-	static const char* vertexShaderSource;
-	static const char* fragmentShaderSource;
 	struct P2{
 		float u;
 		float v;
 	};
 	P2 GetTrueCoord(float u, float v);
 	static float D(float l);
-	unsigned framebufferTexture;
-	unsigned deDistorTexture;
-
-	//画面の大きさなど
-	const unsigned width;
-	const unsigned height;
-	static const float inset = 0.1453 + 0.04;
-	static const float nearDistance = 0.1;
-	static const float farDistance = 5000;
 
 	//描画前＆描画後
 	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
-
-	//再描画用
-	GL::DisplayList displayList;
-
 };
 
 
@@ -142,4 +141,8 @@ private:
 	//受信データのデコード
 	void DecodeSensor(const unsigned char*, int[3]);
 	void Decode(const char*);
+
+	//描画前＆描画後
+	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始
+	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 };

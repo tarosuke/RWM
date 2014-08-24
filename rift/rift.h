@@ -13,7 +13,7 @@ class RIFT : public VIEW{
 	void operator=(const RIFT&);
 public:
 protected:
-	RIFT(unsigned w, unsigned h);
+	RIFT(int fd, unsigned w, unsigned h);
 
 	void UpdateAngularVelocity(const int[3], double);
 	void UpdateAccelaretion(const int[3], double);
@@ -27,6 +27,15 @@ protected:
 	static const float nearDistance = 0.1;
 	static const float farDistance = 5000;
 
+	/////センサ関連
+	const int fd;
+	static const long keepaliveInterval = 1000;
+	void Keepalive();
+
+
+
+
+
 	//マルチパスレンダリング用
 	static const char* vertexShaderSource;
 	static const char* fragmentShaderSource;
@@ -38,8 +47,6 @@ protected:
 private:
 	const POSE& Pose() const{ return pose; };
 	POSE pose;
-
-	/////センサ関連
 
 	//補正のファストスタート処理
 	static const int initialAverageRatio = 3;
@@ -90,11 +97,8 @@ private:
 	~RIFT_DK1();
 
 	// HID
-	const int fd;
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
-	static const long keepaliveInterval = 1000;
-	void Keepalive();
 
 	// SENSOR
 	pthread_t sensorThread;
@@ -125,11 +129,8 @@ private:
 	~RIFT_DK2();
 
 	// HID
-	const int fd;
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0021;
-	static const long keepaliveInterval = 1000;
-	void Keepalive();
 
 	// SENSOR
 	pthread_t sensorThread;

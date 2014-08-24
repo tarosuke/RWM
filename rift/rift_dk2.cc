@@ -59,8 +59,7 @@ VIEW* RIFT_DK2::New(){
 
 
 RIFT_DK2::RIFT_DK2(int f) :
-	RIFT(width, height),
-	fd(f){
+	RIFT(f, width, height){
 
 #if 0
 	//過去の磁化情報があれば取得
@@ -93,15 +92,6 @@ RIFT_DK2::~RIFT_DK2(){
 	settings.Store("magMin", &magMin);
 	settings.Store("magFront", &magFront);
 #endif
-}
-
-void RIFT_DK2::Keepalive(){
-	static const char keepaliveCommand[5] ={
-		8, 0, 0,
-		(char)(keepaliveInterval & 0xff),
-		(char)(keepaliveInterval >> 8)
-	};
-	ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
 }
 
 void RIFT_DK2::SensorThread(){

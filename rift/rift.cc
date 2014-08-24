@@ -7,6 +7,12 @@
 #include <math.h>
 #include <float.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/file.h>
+#include <assert.h>
+#include <linux/types.h>
+#include <linux/input.h>
+#include <linux/hidraw.h>
 
 #include "rift.h"
 
@@ -112,10 +118,11 @@ const char* RIFT::fragmentShaderSource(_binary_rift_fragment_glsl_start);
 
 #define MaxFloat (3.40282347e+38F)
 #define G (9.80665)
-	RIFT::RIFT(unsigned w, unsigned h) :
+RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	VIEW(w, h),
 	width(w),
 	height(h),
+	fd(fd),
 	averageRatio(initialAverageRatio),
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
@@ -327,3 +334,14 @@ void RIFT::PostDraw(){
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+
+void RIFT::Keepalive(){
+	static const char keepaliveCommand[5] ={
+		8, 0, 0,
+		(char)(keepaliveInterval & 0xff),
+		(char)(keepaliveInterval >> 8)
+	};
+	ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
+}
+

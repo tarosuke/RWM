@@ -32,7 +32,10 @@ protected:
 	static const long keepaliveInterval = 1000;
 	void Keepalive();
 
-
+	//受信データのデコード
+	void DecodeSensor(const unsigned char*, int[3]);
+	void Decode(const char*);
+	
 
 
 
@@ -106,10 +109,6 @@ private:
 	// 受信処理
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
-
-	//受信データのデコード
-	void DecodeSensor(const unsigned char*, int[3]);
-	void Decode(const char*);
 };
 
 
@@ -138,10 +137,6 @@ private:
 	// 受信処理
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
-
-	//受信データのデコード
-	void DecodeSensor(const unsigned char*, int[3]);
-	void Decode(const char*);
 
 	//描画前＆描画後
 	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始

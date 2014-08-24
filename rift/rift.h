@@ -63,6 +63,7 @@ private:
 	void UpdateAccelaretion(const int[3], double);
 	void UpdateMagneticField(const int[3]);
 	void UpdateTemperature(float){};
+	void ErrorCorrection();
 
 	const int fd;
 	static const long keepaliveInterval = 1000;

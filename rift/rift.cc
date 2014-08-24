@@ -104,6 +104,18 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 }
 
 
+void RIFT::ErrorCorrection(){
+	COMPLEX<4> diff;
+
+
+	diff *= pose.direction;
+	pose.direction = diff;
+}
+
+
+
+
+
 
 /////VIEW関連
 
@@ -467,6 +479,7 @@ void RIFT::SensorThread(){
 			const int rb(read(fd, buff, 256));
 			if(62 == rb){
 				Decode(buff);
+				ErrorCorrection();
 			}else{
 				printf("%5d bytes dropped.\n", rb);
 			}

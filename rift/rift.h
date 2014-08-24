@@ -13,12 +13,12 @@ class RIFT : public VIEW{
 	void operator=(const RIFT&);
 public:
 protected:
-	RIFT(unsigned w, unsigned h);
+	RIFT(int fd, unsigned w, unsigned h);
+	virtual ~RIFT();
 
-	void UpdateAngularVelocity(const int[3], double);
-	void UpdateAccelaretion(const int[3], double);
-	void UpdateMagneticField(const int[3]);
-	void UpdateTemperature(float){};
+	//デバイスファイル取得
+	static const int VendorID = 0x2833;
+	static int OpenDeviceFile(const int pid);
 
 	//画面の大きさなど
 	const unsigned width;
@@ -39,8 +39,6 @@ private:
 	const POSE& Pose() const{ return pose; };
 	POSE pose;
 
-	/////センサ関連
-
 	//補正のファストスタート処理
 	static const int initialAverageRatio = 3;
 	static const int maxAverageRatio = 10000;
@@ -59,6 +57,26 @@ private:
 
 	// 温度センサ[℃]
 	float temperature;
+
+	/////センサ関連
+	void UpdateAngularVelocity(const int[3], double);
+	void UpdateAccelaretion(const int[3], double);
+	void UpdateMagneticField(const int[3]);
+	void UpdateTemperature(float){};
+
+	const int fd;
+	static const long keepaliveInterval = 1000;
+	void Keepalive();
+
+	//受信データのデコード
+	void DecodeSensor(const unsigned char*, int[3]);
+	void Decode(const char*);
+
+	// 受信処理
+	pthread_t sensorThread;
+	static void* _SensorThread(void* initialData);
+	void SensorThread();
+
 
 	/////VIEW関連
 	struct P2{
@@ -90,22 +108,7 @@ private:
 	~RIFT_DK1();
 
 	// HID
-	const int fd;
-	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
-	static const long keepaliveInterval = 1000;
-	void Keepalive();
-
-	// SENSOR
-	pthread_t sensorThread;
-
-	// 受信処理
-	static void* _SensorThread(void* initialData);
-	void SensorThread();
-
-	//受信データのデコード
-	void DecodeSensor(const unsigned char*, int[3]);
-	void Decode(const char*);
 };
 
 
@@ -125,22 +128,7 @@ private:
 	~RIFT_DK2();
 
 	// HID
-	const int fd;
-	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0021;
-	static const long keepaliveInterval = 1000;
-	void Keepalive();
-
-	// SENSOR
-	pthread_t sensorThread;
-
-	// 受信処理
-	static void* _SensorThread(void* initialData);
-	void SensorThread();
-
-	//受信データのデコード
-	void DecodeSensor(const unsigned char*, int[3]);
-	void Decode(const char*);
 
 	//描画前＆描画後
 	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始

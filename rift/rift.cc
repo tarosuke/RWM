@@ -17,28 +17,32 @@
 #include "rift.h"
 
 
+#define MaxFloat (3.40282347e+38F)
+#define G (9.80665)
+
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	COMPLEX<4> delta(angles, 0.0001 * dt);
 	pose.direction *= delta;
 }
 
 void RIFT::UpdateAccelaretion(const int axis[3], double dt){
-	//加速度情報取得
-	VECTOR<3> acc(axis, 0.0001);
-
-	//重力加速度分離
-	VECTOR<3> g(acc);
-	const double ratio(1.0 / averageRatio);
-	g *= ratio;
-	gravity *= 1.0 - ratio;
-	gravity += g;
-
-	//重力を除去
-	acc -= gravity;
-
 	//位置や速度を求める
 	if(dt <= 0.02){ //dtが異常に大きい時はデータが欠損しているので位置更新しない
+		//加速度情報取得
+		VECTOR<3> acc(axis, 0.0001);
 		acc.Rotate(pose.direction); //絶対座標系へ変換
+
+		//重力加速度分離
+		VECTOR<3> g(acc);
+		const double ratio(1.0 / averageRatio);
+		g *= ratio;
+		gravity *= 1.0 - ratio;
+		gravity += g;
+
+		//重力を除去
+		acc -= gravity;
+
+		//速度、位置を算出
 		acc *= dt;
 		velocity += acc;
 		VECTOR<3> v(velocity);
@@ -56,7 +60,7 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 			}
 		}
 		velocity *= 0.999;
-		pose.position *= 0.99;
+		pose.position *= 0.999;
 	}
 }
 
@@ -104,6 +108,29 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 }
 
 
+const VECTOR<3> RIFT::vertical((const double[3]){0,-1,0});
+void RIFT::ErrorCorrection(){
+	COMPLEX<4> diff;
+
+	//重力補正
+	COMPLEX<4> gdiff(gravity, vertical);
+	gdiff.Normalize();
+	gdiff *= 0.0001;
+	gravity.Rotate(gdiff);
+	diff *= gdiff;
+
+	//磁気補正
+
+
+
+	diff *= pose.direction;
+	pose.direction = diff;
+}
+
+
+
+
+
 
 /////VIEW関連
 
@@ -116,8 +143,6 @@ extern "C"{
 const char* RIFT::vertexShaderSource(_binary_rift_vertex_glsl_start);
 const char* RIFT::fragmentShaderSource(_binary_rift_fragment_glsl_start);
 
-#define MaxFloat (3.40282347e+38F)
-#define G (9.80665)
 RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	VIEW(w, h),
 	width(w),
@@ -467,6 +492,7 @@ void RIFT::SensorThread(){
 			const int rb(read(fd, buff, 256));
 			if(62 == rb){
 				Decode(buff);
+				ErrorCorrection();
 			}else{
 				printf("%5d bytes dropped.\n", rb);
 			}

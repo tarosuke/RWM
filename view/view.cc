@@ -71,7 +71,7 @@ void VIEW::Run(){
 
 #if 1
 		//動作確認用の地面っぽい平面
-		glColor4f(1,1,1,1);
+		glColor4f(1,1,1,0.2);
 		glBegin(GL_POLYGON);
 		glVertex3f(0, -1.6, -10);
 		glVertex3f(8.66, -1.6, 5);

@@ -122,14 +122,35 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	VIEW(w, h),
 	width(w),
 	height(h),
-	fd(fd),
 	averageRatio(initialAverageRatio),
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
 	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),
 	magFront((const double[]){ 0, 0, 1 }),
 	magReady(false),
-	magneticField((const double[3]){ 0.0, 0.0, 0.01 }){
+	magneticField((const double[3]){ 0.0, 0.0, 0.01 }),
+	fd(fd){
+
+#if 0
+	//過去の磁化情報があれば取得
+	settings.Fetch("magMax", &magMax);
+	settings.Fetch("magMin", &magMin);
+	settings.Fetch("magFront", &magFront);
+#endif
+
+	//スケジューリングポリシーを設定
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+
+	//デバイスを閉じないカーネルバグ対策で最初に一発Keepalive
+	Keepalive();
+
+	//センサデータ取得開始
+	pthread_create(&sensorThread, &attr, _SensorThread, (void*)this);
+
+
+
 
 	if(GLEW_OK != glewInit()){
 		throw "GLEWが使えません";
@@ -232,6 +253,25 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 }
+
+
+RIFT::~RIFT(){
+	pthread_cancel(sensorThread);
+	pthread_join(sensorThread, 0);
+	close(fd);
+
+	//磁化情報を保存
+#if 0
+	settings.Store("magMax", &magMax);
+	settings.Store("magMin", &magMin);
+	settings.Store("magFront", &magFront);
+#endif
+}
+
+
+
+
+
 
 
 float RIFT::D(float dd){

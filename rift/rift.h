@@ -14,11 +14,7 @@ class RIFT : public VIEW{
 public:
 protected:
 	RIFT(int fd, unsigned w, unsigned h);
-
-	void UpdateAngularVelocity(const int[3], double);
-	void UpdateAccelaretion(const int[3], double);
-	void UpdateMagneticField(const int[3]);
-	void UpdateTemperature(float){};
+	virtual ~RIFT();
 
 	//画面の大きさなど
 	const unsigned width;
@@ -26,23 +22,6 @@ protected:
 	static const float inset = 0.1453 + 0.04;
 	static const float nearDistance = 0.1;
 	static const float farDistance = 5000;
-
-	/////センサ関連
-	const int fd;
-	static const long keepaliveInterval = 1000;
-	void Keepalive();
-
-	//受信データのデコード
-	void DecodeSensor(const unsigned char*, int[3]);
-	void Decode(const char*);
-
-	// SENSOR
-	pthread_t sensorThread;
-
-	// 受信処理
-	static void* _SensorThread(void* initialData);
-	void SensorThread();
-
 
 	//マルチパスレンダリング用
 	static const char* vertexShaderSource;
@@ -74,6 +53,26 @@ private:
 
 	// 温度センサ[℃]
 	float temperature;
+
+	/////センサ関連
+	void UpdateAngularVelocity(const int[3], double);
+	void UpdateAccelaretion(const int[3], double);
+	void UpdateMagneticField(const int[3]);
+	void UpdateTemperature(float){};
+
+	const int fd;
+	static const long keepaliveInterval = 1000;
+	void Keepalive();
+
+	//受信データのデコード
+	void DecodeSensor(const unsigned char*, int[3]);
+	void Decode(const char*);
+
+	// 受信処理
+	pthread_t sensorThread;
+	static void* _SensorThread(void* initialData);
+	void SensorThread();
+
 
 	/////VIEW関連
 	struct P2{

@@ -55,38 +55,8 @@ VIEW* RIFT_DK1::New(){
 }
 
 
-RIFT_DK1::RIFT_DK1(int f) :
-	RIFT(f, width, height){
-
-#if 0
-	//過去の磁化情報があれば取得
-	settings.Fetch("magMax", &magMax);
-	settings.Fetch("magMin", &magMin);
-	settings.Fetch("magFront", &magFront);
-#endif
-
-	//スケジューリングポリシーを設定
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-
-	//デバイスを閉じないカーネルバグ対策で最初に一発Keepalive
-	Keepalive();
-
-	//センサデータ取得開始
-	pthread_create(&sensorThread, &attr, _SensorThread, (void*)this);
-}
+RIFT_DK1::RIFT_DK1(int f) : RIFT(f, width, height){}
 
 
 RIFT_DK1::~RIFT_DK1(){
-	pthread_cancel(sensorThread);
-	pthread_join(sensorThread, 0);
-	close(fd);
-
-	//磁化情報を保存
-#if 0
-	settings.Store("magMax", &magMax);
-	settings.Store("magMin", &magMin);
-	settings.Store("magFront", &magFront);
-#endif
 }

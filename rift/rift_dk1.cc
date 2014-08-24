@@ -17,36 +17,10 @@ FACTORY<VIEW> RIFT_DK1::factory(New);
 
 
 VIEW* RIFT_DK1::New(){
-	//Riftのセンサを準備
-	for(int i(0); i < 99; i++){
-		char name[32];
-		snprintf(name, 32, "/dev/hidraw%d", i);
-		const int fd(open(name, O_RDWR | O_NONBLOCK));
-		if(fd < 0){
-			//開けなかった
-			continue;
-		}
-
-		struct hidraw_devinfo info;
-		if(ioctl(fd, HIDIOCGRAWINFO, &info) < 0){
-			//ioctlできない=riftではない
-			close(fd);
-			continue;
-		}
-		if(VendorID != info.vendor || ProductID != info.product){
-			//riftではない
-			close(fd);
-			continue;
-		}
-
-		if(flock(fd, LOCK_EX | LOCK_NB) < 0){
-			//使用中
-			close(fd);
-			continue;
-		}
-
+	const int fd(OpenDeviceFile(ProductID));
+	if(0 <= fd){
 		//確保完了
-		printf("Oculus Rift DK1:%s.\n", name);
+		puts("Oculus Rift DK1 found.\n");
 		return new RIFT_DK1(fd);
 	}
 

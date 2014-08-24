@@ -16,6 +16,10 @@ protected:
 	RIFT(int fd, unsigned w, unsigned h);
 	virtual ~RIFT();
 
+	//デバイスファイル取得
+	static const int VendorID = 0x2833;
+	static int OpenDeviceFile(const int pid);
+
 	//画面の大きさなど
 	const unsigned width;
 	const unsigned height;
@@ -104,7 +108,6 @@ private:
 	~RIFT_DK1();
 
 	// HID
-	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
 };
 
@@ -125,7 +128,6 @@ private:
 	~RIFT_DK2();
 
 	// HID
-	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0021;
 
 	//描画前＆描画後

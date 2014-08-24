@@ -35,8 +35,13 @@ protected:
 	//受信データのデコード
 	void DecodeSensor(const unsigned char*, int[3]);
 	void Decode(const char*);
-	
 
+	// SENSOR
+	pthread_t sensorThread;
+
+	// 受信処理
+	static void* _SensorThread(void* initialData);
+	void SensorThread();
 
 
 	//マルチパスレンダリング用
@@ -102,13 +107,6 @@ private:
 	// HID
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0001;
-
-	// SENSOR
-	pthread_t sensorThread;
-
-	// 受信処理
-	static void* _SensorThread(void* initialData);
-	void SensorThread();
 };
 
 
@@ -130,13 +128,6 @@ private:
 	// HID
 	static const int VendorID = 0x2833;
 	static const int ProductID = 0x0021;
-
-	// SENSOR
-	pthread_t sensorThread;
-
-	// 受信処理
-	static void* _SensorThread(void* initialData);
-	void SensorThread();
 
 	//描画前＆描画後
 	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始

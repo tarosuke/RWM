@@ -94,42 +94,6 @@ RIFT_DK2::~RIFT_DK2(){
 #endif
 }
 
-void RIFT_DK2::SensorThread(){
-	//優先度設定
-	pthread_setschedprio(
-		sensorThread,
-		sched_get_priority_max(SCHED_FIFO));
-
-	//Riftからのデータ待ち、処理
-	fd_set readset;
-
-	FD_ZERO(&readset);
-	FD_SET(fd, &readset);
-
-	for(;; pthread_testcancel()){
-		int result(select(
-			fd + 1, &readset, NULL, NULL, NULL));
-
-		if(result && FD_ISSET( fd, &readset )){
-			char buff[256];
-			const int rb(read(fd, buff, 256));
-			if(62 == rb){
-				Decode(buff);
-			}else{
-				printf("%5d bytes dropped.\n", rb);
-			}
-		}
-
-		//KeepAliveを送信
-		Keepalive();
-	}
-}
-void* RIFT_DK2::_SensorThread(void* initialData){
-	//オブジェクトを設定して監視開始
-	(*(RIFT_DK2*)initialData).SensorThread();
-	return 0;
-}
-
 void RIFT_DK2::PreDraw(){
 	const float tf(GetTanFov() * nearDistance);
 	const int hh(height / 2);

@@ -11,6 +11,7 @@
 #include <linux/hidraw.h>
 
 #include "rift.h"
+#include "../settings/settings.h"
 
 
 FACTORY<VIEW> RIFT_DK1::factory(New);

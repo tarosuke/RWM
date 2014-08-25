@@ -6,7 +6,7 @@
 #define _DB_
 
 
-#include "gdbm.h"
+#include <gdbm/gdbm.h>
 
 
 class DB{

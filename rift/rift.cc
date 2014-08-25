@@ -15,6 +15,7 @@
 #include <linux/hidraw.h>
 
 #include "rift.h"
+#include "../settings/settings.h"
 
 
 #define MaxFloat (3.40282347e+38F)
@@ -156,12 +157,13 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	magneticField((const double[3]){ 0.0, 0.0, 0.01 }),
 	fd(fd){
 
-#if 0
 	//過去の磁化情報があれば取得
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
 	settings.Fetch("magFront", &magFront);
-#endif
+	printf("magx:%lf->%lf.\n", magMin[0], magMax[0]);
+	printf("magy:%lf->%lf.\n", magMin[1], magMax[1]);
+	printf("magz:%lf->%lf.\n", magMin[2], magMax[2]);
 
 	//スケジューリングポリシーを設定
 	pthread_attr_t attr;
@@ -286,11 +288,9 @@ RIFT::~RIFT(){
 	close(fd);
 
 	//磁化情報を保存
-#if 0
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
 	settings.Store("magFront", &magFront);
-#endif
 }
 
 

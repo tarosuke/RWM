@@ -84,26 +84,23 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		offset *= 0.5;
 		mag -= offset;
 
-		//各軸ゲイン調整
-		// 		double* const g(mag);
-		// 		g[0] /= d[0];
-		// 		g[1] /= d[1];
-		// 		g[2] /= d[2];
-		mag.Normalize();
+		//絶対座標系に変換
+		mag.Rotate(pose.direction);
 
 		//平均化処理
-		const double r(1.0 / averageRatio);
-		mag *= r;
-		// const double* const h(mag);
-		// printf("magRatio:%u %lf %lf %lf.\n", magAverageRatio, h[1], h[2], h[3]);
-		magneticField *= 1.0 - r;
+		mag *= 1.0 / averageRatio;
 		magneticField += mag;;
+		magneticField.Normalize();;
 	}else{
 		//キャリブレーション可能判定
 		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
 			magReady = true;
 			averageRatio = initialAverageRatio;
 			puts("magnetic azimuth correction READY.");
+		}else{
+			printf("magx:%lf.\n", magMax[0]-magMin[0]);
+			printf("magy:%lf.\n", magMax[1]-magMin[1]);
+			printf("magz:%lf.\n", magMax[2]-magMin[2]);
 		}
 	}
 }
@@ -121,8 +118,17 @@ void RIFT::ErrorCorrection(){
 	diff *= gdiff;
 
 	//磁気補正
-
-
+#if 0
+	COMPLEX<4> mdiff(magneticField, vNorth);
+	mdiff.FilterAxis(2);
+	mdiff.Normalize();
+	mdiff *= 0.0001;
+	magneticField.Rotate(mdiff);
+	diff *= mdiff;
+#else
+	const double* v(magneticField);
+	printf("mag:%lf %lf %lf.\n", v[0], v[1], v[2]);
+#endif
 
 	diff *= pose.direction;
 	pose.direction = diff;
@@ -152,7 +158,7 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
 	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),
-	magFront((const double[]){ 0, 0, 1 }),
+	vNorth((const double[]){ 0, 0, 1 }),
 	magReady(false),
 	magneticField((const double[3]){ 0.0, 0.0, 0.01 }),
 	fd(fd){
@@ -160,7 +166,7 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	//過去の磁化情報があれば取得
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
-	settings.Fetch("magFront", &magFront);
+	settings.Fetch("vNorth", &vNorth);
 	printf("magx:%lf->%lf.\n", magMin[0], magMax[0]);
 	printf("magy:%lf->%lf.\n", magMin[1], magMax[1]);
 	printf("magz:%lf->%lf.\n", magMin[2], magMax[2]);
@@ -290,7 +296,7 @@ RIFT::~RIFT(){
 	//磁化情報を保存
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
-	settings.Store("magFront", &magFront);
+	settings.Store("vNorth", &vNorth);
 }
 
 

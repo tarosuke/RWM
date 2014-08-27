@@ -51,9 +51,10 @@ private:
 	//磁気センサ
 	VECTOR<3> magMax; //磁気センサの最大値
 	VECTOR<3> magMin; //磁気センサの最小値
-	VECTOR<3> magFront; //正面にする方位
+	VECTOR<3> vNorth; //北にする方位
 	bool magReady; //磁化情報取得完了
-	VECTOR<3> magneticField; //磁気の向き(機体座標系)
+	VECTOR<3> magneticField; //磁気の向き(絶対座標系)
+	VECTOR<3> prevMagneticField; //一つ前の磁気の向き(絶対座標系)
 
 	// 温度センサ[℃]
 	float temperature;

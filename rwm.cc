@@ -9,6 +9,7 @@ int main(int argc, char *argv[]){
 	try{
 		VIEW& v(VIEW::New());
 		v.Run();
+		delete &v;
 	}
 	catch(const char* m){
 		printf("エラー：%s.\n", m);

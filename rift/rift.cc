@@ -84,23 +84,19 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		offset *= 0.5;
 		mag -= offset;
 
-		//各軸ゲイン調整
-		// 		double* const g(mag);
-		// 		g[0] /= d[0];
-		// 		g[1] /= d[1];
-		// 		g[2] /= d[2];
+		//絶対座標系に変換
+		mag.Rotate(pose.direction);
+		double* v(mag);
+		v[1] = 0; //邪魔なので鉛直を消去
 		mag.Normalize();
 
 		//平均化処理
-		const double r(1.0 / averageRatio);
-		mag *= r;
-		// const double* const h(mag);
-		// printf("magRatio:%u %lf %lf %lf.\n", magAverageRatio, h[1], h[2], h[3]);
-		magneticField *= 1.0 - r;
+		mag *= 1.0 / averageRatio;
 		magneticField += mag;;
+		magneticField.Normalize();;
 	}else{
 		//キャリブレーション可能判定
-		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
+		if(6000 < abs(d[0]) && 6000 < abs(d[1]) && 6000 < abs(d[2])){
 			magReady = true;
 			averageRatio = initialAverageRatio;
 			puts("magnetic azimuth correction READY.");
@@ -121,8 +117,12 @@ void RIFT::ErrorCorrection(){
 	diff *= gdiff;
 
 	//磁気補正
-
-
+	COMPLEX<4> mdiff(magneticField, vNorth);
+	mdiff.FilterAxis(2);
+	mdiff.Normalize();
+	mdiff *= 0.0001;
+	magneticField.Rotate(mdiff);
+	diff *= mdiff;
 
 	diff *= pose.direction;
 	pose.direction = diff;
@@ -152,7 +152,7 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
 	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),
-	magFront((const double[]){ 0, 0, 1 }),
+	vNorth((const double[]){ -1, 0, 0 }),
 	magReady(false),
 	magneticField((const double[3]){ 0.0, 0.0, 0.01 }),
 	fd(fd){
@@ -160,7 +160,7 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	//過去の磁化情報があれば取得
 	settings.Fetch("magMax", &magMax);
 	settings.Fetch("magMin", &magMin);
-	settings.Fetch("magFront", &magFront);
+	settings.Fetch("vNorth", &vNorth);
 	printf("magx:%lf->%lf.\n", magMin[0], magMax[0]);
 	printf("magy:%lf->%lf.\n", magMin[1], magMax[1]);
 	printf("magz:%lf->%lf.\n", magMin[2], magMax[2]);
@@ -290,7 +290,7 @@ RIFT::~RIFT(){
 	//磁化情報を保存
 	settings.Store("magMax", &magMax);
 	settings.Store("magMin", &magMin);
-	settings.Store("magFront", &magFront);
+	settings.Store("vNorth", &vNorth);
 }
 
 
@@ -445,10 +445,10 @@ void RIFT::Decode(const char* buff){
 		DecodeSensor((unsigned char*)buff + 8 + 16 * i, sample[i].accel);
 		DecodeSensor((unsigned char*)buff + 16 + 16 * i, sample[i].rotate);
 	}
-	//磁気センサのデータ取得(座標系が違うのでY-Zを交換)
+	//磁気センサのデータ取得
 	mag[0] = *(short*)&buff[56];
-	mag[1] = *(short*)&buff[60];
-	mag[2] = *(short*)&buff[58];
+	mag[1] = *(short*)&buff[58];
+	mag[2] = *(short*)&buff[60];
 
 	static unsigned short prevTime;
 	const unsigned short deltaT(timestamp - prevTime);

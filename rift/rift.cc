@@ -86,6 +86,9 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 
 		//絶対座標系に変換
 		mag.Rotate(pose.direction);
+		double* v(mag);
+		v[1] = 0; //邪魔なので鉛直を消去
+		mag.Normalize();
 
 		//平均化処理
 		mag *= 1.0 / averageRatio;
@@ -93,14 +96,10 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		magneticField.Normalize();;
 	}else{
 		//キャリブレーション可能判定
-		if(7000 < abs(d[0]) && 7000 < abs(d[1]) && 7000 < abs(d[2])){
+		if(6000 < abs(d[0]) && 6000 < abs(d[1]) && 6000 < abs(d[2])){
 			magReady = true;
 			averageRatio = initialAverageRatio;
 			puts("magnetic azimuth correction READY.");
-		}else{
-			printf("magx:%lf.\n", magMax[0]-magMin[0]);
-			printf("magy:%lf.\n", magMax[1]-magMin[1]);
-			printf("magz:%lf.\n", magMax[2]-magMin[2]);
 		}
 	}
 }
@@ -118,17 +117,12 @@ void RIFT::ErrorCorrection(){
 	diff *= gdiff;
 
 	//磁気補正
-#if 0
 	COMPLEX<4> mdiff(magneticField, vNorth);
 	mdiff.FilterAxis(2);
 	mdiff.Normalize();
 	mdiff *= 0.0001;
 	magneticField.Rotate(mdiff);
 	diff *= mdiff;
-#else
-	const double* v(magneticField);
-	printf("mag:%lf %lf %lf.\n", v[0], v[1], v[2]);
-#endif
 
 	diff *= pose.direction;
 	pose.direction = diff;
@@ -158,7 +152,7 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
 	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),
-	vNorth((const double[]){ 0, 0, 1 }),
+	vNorth((const double[]){ -1, 0, 0 }),
 	magReady(false),
 	magneticField((const double[3]){ 0.0, 0.0, 0.01 }),
 	fd(fd){
@@ -451,10 +445,10 @@ void RIFT::Decode(const char* buff){
 		DecodeSensor((unsigned char*)buff + 8 + 16 * i, sample[i].accel);
 		DecodeSensor((unsigned char*)buff + 16 + 16 * i, sample[i].rotate);
 	}
-	//磁気センサのデータ取得(座標系が違うのでY-Zを交換)
+	//磁気センサのデータ取得
 	mag[0] = *(short*)&buff[56];
-	mag[1] = *(short*)&buff[60];
-	mag[2] = *(short*)&buff[58];
+	mag[1] = *(short*)&buff[58];
+	mag[2] = *(short*)&buff[60];
 
 	static unsigned short prevTime;
 	const unsigned short deltaT(timestamp - prevTime);

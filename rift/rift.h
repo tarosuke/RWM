@@ -42,7 +42,8 @@ private:
 	//補正のファストスタート処理
 	static const int initialAverageRatio = 3;
 	static const int maxAverageRatio = 10000;
-	float averageRatio;
+	int  averageRatio;
+	double correctionGain;
 
 	//加速度センサ(絶対座標系)
 	VECTOR<3> velocity; //移動速度
@@ -54,7 +55,7 @@ private:
 	VECTOR<3> vNorth; //北にする方位
 	bool magReady; //磁化情報取得完了
 	VECTOR<3> magneticField; //磁気の向き(絶対座標系)
-	VECTOR<3> prevMagneticField; //一つ前の磁気の向き(絶対座標系)
+//	VECTOR<3> prevMagneticField; //一つ前の磁気の向き(絶対座標系)
 
 	// 温度センサ[℃]
 	float temperature;

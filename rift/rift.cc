@@ -35,9 +35,8 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 
 		//重力加速度分離
 		VECTOR<3> g(acc);
-		const double ratio(1.0 / averageRatio);
-		g *= ratio;
-		gravity *= 1.0 - ratio;
+		g *= correctionGain;
+		gravity *= 1.0 - correctionGain;
 		gravity += g;
 
 		//重力を除去
@@ -91,7 +90,7 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		mag.Normalize();
 
 		//平均化処理
-		mag *= 1.0 / averageRatio;
+		mag *= correctionGain;
 		magneticField += mag;;
 		magneticField.Normalize();;
 	}else{
@@ -112,7 +111,7 @@ void RIFT::ErrorCorrection(){
 	//重力補正
 	COMPLEX<4> gdiff(gravity, vertical);
 	gdiff.Normalize();
-	gdiff *= 0.0001;
+	gdiff *= correctionGain;
 	gravity.Rotate(gdiff);
 	diff *= gdiff;
 
@@ -120,12 +119,17 @@ void RIFT::ErrorCorrection(){
 	COMPLEX<4> mdiff(magneticField, vNorth);
 	mdiff.FilterAxis(2);
 	mdiff.Normalize();
-	mdiff *= 0.0001;
+	mdiff *= correctionGain;
 	magneticField.Rotate(mdiff);
 	diff *= mdiff;
 
 	diff *= pose.direction;
 	pose.direction = diff;
+
+	//平均化、補正レートの更新
+	if(averageRatio < maxAverageRatio){
+		correctionGain = 1.0 / ++averageRatio;
+	}
 }
 
 
@@ -149,6 +153,7 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	width(w),
 	height(h),
 	averageRatio(initialAverageRatio),
+	correctionGain(1.0/averageRatio),
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),
 	magMin((const double[]){ MaxFloat, MaxFloat, MaxFloat }),

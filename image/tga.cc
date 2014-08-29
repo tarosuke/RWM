@@ -1,6 +1,11 @@
 #include "tga.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <sys/mman.h>
 
 
 void TGA::Dump(const void* rawTga){
@@ -19,3 +24,28 @@ void TGA::Dump(const void* rawTga){
 	printf("attribute:%x.\n", r.attribute);
 }
 
+const TGA::RAW* TGAFile::Map(const char* path) throw(const char*){
+	fd = open(path, O_RDONLY);
+	if(fd < 0){
+		throw "TGAFile:ファイルが開けなかった。";
+	}
+
+	struct stat stat;
+	fstat(fd, &stat);
+	len = stat.st_size;
+
+	raw = (const RAW*)mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+	if(!raw){
+		throw "TGAFile:ファイルをマップできなかった。";
+	}
+	return raw;
+}
+
+TGAFile::~TGAFile(){
+	if(0 <= fd){
+		close(fd);
+	}
+	if(raw){
+		munmap(const_cast<void*>((const void*)raw), len);
+	}
+}

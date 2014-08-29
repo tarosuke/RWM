@@ -5,6 +5,9 @@
 
 
 class TGA : public IMAGE{
+	TGA();
+	TGA(const TGA&);
+	void operator=(const TGA&);
 public:
 	struct RAW{
 		unsigned char IDLen;
@@ -28,6 +31,22 @@ public:
 		(*static_cast<const RAW*>(rawTGA)).colorDepth){ Dump(rawTGA); };
 private:
 
-	void Dump(const void*);
+	static RAW& Map(const char*);
+	static void Dump(const void*);
+};
+
+class TGAFile : public TGA{
+	TGAFile();
+	TGAFile(const TGAFile&);
+	void operator=(const TGAFile&);
+public:
+	TGAFile(const char* path) : TGA((void*)Map(path)){};
+	~TGAFile();
+private:
+	int fd;
+	const RAW* raw;
+	unsigned len;
+
+	const RAW* Map(const char*)throw(const char*);
 };
 

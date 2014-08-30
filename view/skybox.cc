@@ -25,18 +25,25 @@ void SKYBOX::Register(const IMAGE& org){
 	const unsigned d(image.Depth());
 	char* const b((char*)image.WritableBuffer());
 assert(b);
-	//「下」を上下逆にして左へ二つ移動
-	for(unsigned y(0); y < h / 3; ++y){
-		const char* src(&b[(((2 * h) / 3 + y) * w + w / 4) * d]);
-		char* dst(&b[((h - y) * w - 1) * d]);
-		for(unsigned x(0); x < w / 4; ++x, src += d, dst -= d){
+
+	const unsigned l(w / 4); //天箱の各辺の長さ[px]
+	const char* src;
+	char* dst;
+
+	//「下」を上下逆にして二つ移動して「上」と並ばないようにする
+	for(unsigned y(0); y < l; ++y){
+		src = &b[((2 * l + y) * w + l) * d];
+		dst = &b[((h - y) * w - 1) * d];
+		for(unsigned x(0); x < l; ++x, src += d, dst -= d){
 			memcpy(dst, src, d);
 		}
 	}
 
 	//テクスチャアトラスの周辺を繋がるようにコピー
+	//左上辺から左上右
+	for(unsigned n(0); n < l; ++n){
 
-
+	}
 
 
 

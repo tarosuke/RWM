@@ -27,6 +27,7 @@ void SKYBOX::Register(const IMAGE& org){
 assert(b);
 
 	const unsigned l(w / 4); //天箱の各辺の長さ[px]
+	const unsigned ls(w * d); //一行のバイト数
 	const char* src;
 	char* dst;
 
@@ -41,10 +42,17 @@ assert(b);
 
 	//テクスチャアトラスの周辺を繋がるようにコピー
 	//左上辺から左上右
-	for(unsigned n(0); n < l; ++n){
-
+	src = &b[l * ls];
+	dst = &b[(l - 1) * d];
+	for(unsigned n(0); n < l; ++n, src += d, dst += ls){
+		*dst = *src;
 	}
-
+	//上左編から左上下
+	src = &b[l * d];
+	dst = &b[(l - 1) * ls];
+	for(unsigned n(0); n < l; ++n, src += ls, dst += d){
+		*dst = *src;
+	}
 
 
 
@@ -82,48 +90,53 @@ void SKYBOX::Record(){
 void SKYBOX::Draw() const{
 //	displayList.Playback();
 	GL::TEXTURE::BINDER((*this).texture);
-	const float p(500);
+	static const float p(500);
+	static const float q(1.0 / 4);
+	static const float t(1.0 / 3);
+	static const float h[4] = { 0, q, 2*q, 3*q };
+	static const float v[3] = { 0, t, 2*t };
+
 	glBegin(GL_TRIANGLE_STRIP);
-	glTexCoord2f(2.0/4, 1.0/3);
+	glTexCoord2f(h[2], v[1]);
 	glVertex3f(p, p, -p);
-	glTexCoord2f(2.0/4, 0.0/3);
+	glTexCoord2f(h[2], v[0]);
 	glVertex3f(p, p, p);
-	glTexCoord2f(1.0/4, 1.0/3);
+	glTexCoord2f(h[1], v[1]);
 	glVertex3f(-p, p, -p);
-	glTexCoord2f(1.0/4, 0.0/3);
+	glTexCoord2f(h[1], v[0]);
 	glVertex3f(-p, p, p);
 	glVertex3f(-p, p, p);
 
-	glTexCoord2f(0.0/4, 1.0/3);
+	glTexCoord2f(h[0], v[1]);
 	glVertex3f(-p, p, p);
 	glVertex3f(-p, p, p);
-	glTexCoord2f(0.0/4, 2.0/3);
+	glTexCoord2f(h[0], v[2]);
 	glVertex3f(-p, -p, p);
-	glTexCoord2f(1.0/4, 1.0/3);
+	glTexCoord2f(h[1], v[1]);
 	glVertex3f(-p, p, -p);
-	glTexCoord2f(1.0/4, 2.0/3);
+	glTexCoord2f(h[1], v[2]);
 	glVertex3f(-p, -p, -p);
-	glTexCoord2f(2.0/4, 1.0/3);
+	glTexCoord2f(h[2], v[1]);
 	glVertex3f(p, p, -p);
-	glTexCoord2f(2.0/4, 2.0/3);
+	glTexCoord2f(h[2], v[2]);
 	glVertex3f(p, -p, -p);
-	glTexCoord2f(3.0/4, 1.0/3);
+	glTexCoord2f(h[3], v[1]);
 	glVertex3f(p, p, p);
-	glTexCoord2f(3.0/4, 2.0/3);
+	glTexCoord2f(h[3], v[2]);
 	glVertex3f(p, -p, p);
-	glTexCoord2f(4.0/4, 1.0/3);
+	glTexCoord2f(4.0/4, v[1]);
 	glVertex3f(-p, p, p);
-	glTexCoord2f(4.0/4, 2.0/3);
+	glTexCoord2f(4.0/4, v[2]);
 	glVertex3f(-p, -p, p);
 	glVertex3f(-p, -p, p);
 
 
-	glTexCoord2f(3.0/4, 2.0/3);
+	glTexCoord2f(h[3], v[2]);
 	glVertex3f(p, -p, p);
 	glVertex3f(p, -p, p);
-	glTexCoord2f(3.0/4, 3.0/3);
+	glTexCoord2f(h[3], 3.0/3);
 	glVertex3f(p, -p, -p);
-	glTexCoord2f(4.0/4, 2.0/3);
+	glTexCoord2f(4.0/4, v[2]);
 	glVertex3f(-p, -p, p);
 	glTexCoord2f(4.0/4, 3.0/3);
 	glVertex3f(-p, -p, -p);

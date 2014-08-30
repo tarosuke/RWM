@@ -6,7 +6,7 @@ public:
 	IMAGE();
 	IMAGE(const IMAGE&);
 	IMAGE(const IMAGE&, int x, int y, unsigned w, unsigned h);
-	IMAGE(const void*, unsigned w, unsigned h, unsigned d);
+	IMAGE(const void*, unsigned w, unsigned h, unsigned bytesDepth);
 	virtual ~IMAGE();
 
 	void operator=(const IMAGE&);

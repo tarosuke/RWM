@@ -9,6 +9,7 @@
 int main(int argc, char *argv[]){
 	try{
 		VIEW& v(VIEW::New());
+// 		SKYBOX skybox("/home/tarosuke/pics/rwm/Above_The_Sea.tga");
 // 		SKYBOX skybox("/home/tarosuke/pics/rwm/Above_The_Sea-small.tga");
 		SKYBOX skybox("/home/tarosuke/pics/rwm/Cubic30.tga");
 // 		SKYBOX skybox("/home/tarosuke/pics/rwm/image05.tga");

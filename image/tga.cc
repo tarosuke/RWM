@@ -38,6 +38,14 @@ const TGA::RAW* TGAFile::Map(const char* path) throw(const char*){
 	if(!raw){
 		throw "TGAFile:ファイルをマップできなかった。";
 	}
+
+	//サイズチェック
+	const unsigned mayBeSize(
+		(*raw).width * (*raw).height * (*raw).colorDepth + sizeof(RAW));
+	if(len < mayBeSize || mayBeSize * 2 < len){
+		throw "TGAFile:ファイルサイズに異常がある。";
+	}
+
 	return raw;
 }
 

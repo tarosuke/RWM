@@ -15,7 +15,7 @@ private:
 	GL::TEXTURE texture;
 	GL::DisplayList displayList;
 
+	void Register(const class IMAGE&);
 	void Draw() const;
-	void Record();
 };
 

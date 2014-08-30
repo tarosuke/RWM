@@ -17,6 +17,5 @@ private:
 
 	void Register(const class IMAGE&);
 	void Draw() const;
-	void Record();
 };
 

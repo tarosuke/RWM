@@ -21,15 +21,12 @@ void SKYBOX::Register(const IMAGE& image){
 	//テクスチャを割り当てる
 	texture.Assign(image);
 
-	//TODO:DisplayListに記録する
-
 	//VIEWの描画対象にする(暫定)
 	VIEW::RegisterExternals(*this);
-}
 
-void SKYBOX::Draw() const{
-//	displayList.Playback();
-	GL::TEXTURE::BINDER((*this).texture);
+	//DisplayListに記録する
+	GL::DisplayList::Recorder recorder(displayList);
+	GL::TEXTURE::BINDER binder(texture);
 	static const float p(500);
 	static const float q(1.0 / 4);
 	static const float t(1.0 / 3);
@@ -82,5 +79,9 @@ void SKYBOX::Draw() const{
 	glVertex3f(-p, -p, -p);
 
 	glEnd();
+}
+
+void SKYBOX::Draw() const{
+	displayList.Playback();
 }
 

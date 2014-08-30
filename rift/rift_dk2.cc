@@ -58,6 +58,7 @@ void RIFT_DK2::PreDraw(){
 
 	//記録と描画
 	displayList.StartRecord(true);
+	glScalef(1.0, 0.5, 1.0);
 }
 
 void RIFT_DK2::PostDraw(){

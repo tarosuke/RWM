@@ -8,7 +8,8 @@
 
 SKYBOX::SKYBOX(const char* path){
 	TGAFile tga(path); //TODO:IMAGE側にファクトリっぽいものが必要
-	texture.Assign(tga);
+	IMAGE image(tga);
+	texture.Assign(image);
 
 	Record();
 	VIEW::RegisterExternals(*this);

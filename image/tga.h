@@ -28,7 +28,8 @@ public:
 		(*static_cast<const RAW*>(rawTGA)).data,
 		(*static_cast<const RAW*>(rawTGA)).width,
 		(*static_cast<const RAW*>(rawTGA)).height,
-		(*static_cast<const RAW*>(rawTGA)).colorDepth){ Dump(rawTGA); };
+		((*static_cast<const RAW*>(rawTGA)).colorDepth + 7) >> 3){
+			Dump(rawTGA); };
 private:
 
 	static RAW& Map(const char*);

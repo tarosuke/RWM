@@ -3,11 +3,13 @@
 #include <unistd.h>
 
 #include "view/view.h"
+#include "view/skybox.h"
 
 
 int main(int argc, char *argv[]){
 	try{
 		VIEW& v(VIEW::New());
+		SKYBOX skybox("/home/tarosuke/pics/rwm/Above_The_Sea-small.tga");
 		v.Run();
 		delete &v;
 	}

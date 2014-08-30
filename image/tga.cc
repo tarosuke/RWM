@@ -41,8 +41,9 @@ const TGA::RAW* TGAFile::Map(const char* path) throw(const char*){
 
 	//サイズチェック
 	const unsigned mayBeSize(
-		(*raw).width * (*raw).height * (*raw).colorDepth + sizeof(RAW));
+		(*raw).width * (*raw).height * (*raw).colorDepth/8 + sizeof(RAW));
 	if(len < mayBeSize || mayBeSize * 2 < len){
+		printf("size:%u mayBe:%u.\n", len, mayBeSize);
 		throw "TGAFile:ファイルサイズに異常がある。";
 	}
 

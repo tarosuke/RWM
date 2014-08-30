@@ -58,7 +58,7 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
-		WINDOW::DrawAll(); //非透過窓描画
+//		WINDOW::DrawAll(); //非透過窓描画
 
 		//頭の向きと位置をModel-View行列に反映
 		const COMPLEX<4>::ROTATION r(p.direction);
@@ -69,7 +69,8 @@ void VIEW::Run(){
 
 		externals.Each(&DRAWER::Draw); //externalを描画
 
-#if 1
+#if 0
+#if 0
 		//動作確認用の地面っぽい平面
 		glColor4f(1,1,1,0.2);
 		glBegin(GL_POLYGON);
@@ -77,6 +78,7 @@ void VIEW::Run(){
 		glVertex3f(8.66, -1.6, 5);
 		glVertex3f(-8.66, -1.6, 5);
 		glEnd();
+#endif
 #if 1
 		SNOW::DrawAll();
 #endif
@@ -85,7 +87,7 @@ void VIEW::Run(){
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
-		WINDOW::DrawTransparentAll(); //透過窓描画
+//		WINDOW::DrawTransparentAll(); //透過窓描画
 		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
 		//描画後処理

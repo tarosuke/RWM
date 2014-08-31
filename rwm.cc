@@ -7,24 +7,34 @@
 
 
 int main(int argc, char *argv[]){
+	//オプションの変数
+	const char* skyboxPath(0);
+
+	//コマンドライン解釈
+	for(unsigned n(1); n < argc; ++n){
+		const char* const arg(argv[n]);
+		if('-' != *arg){
+			printf("オプション：%s は解釈できない。\n", arg);
+			return -1;
+		}
+		switch(arg[1]){
+		case 'S' :
+			skyboxPath = &arg[2];
+			break;
+		default :
+			printf("オプション：%s は解釈できない。\n", arg);
+			return -1;
+			break;
+		}
+	}
+
+	//wOCE本体
 	try{
-		SKYBOX* sb(0);
 		VIEW& v(VIEW::New());
-		try{
-			//天箱(skybox)
-			const char* path("/home/tarosuke/pics/rwm/Cubic30.tga");
-// 			const char* path("/home/tarosuke/pics/rwm/Above_The_Sea.tga");
-// 			const char* path("/home/tarosuke/pics/rwm/Above_The_Sea-small.tga");
-// 			const char* path("/home/tarosuke/pics/rwm/image05.tga");
-			sb = new SKYBOX(path);
-		}
-		catch(...){
-			//空箱は必須ではないので失敗してもそのまま進行
-			//TODO:将来的にはtoastでエラー表示
-		}
+		SKYBOX* sb(SKYBOX::New(skyboxPath));
 		v.Run();
-		delete &v;
 		if(sb){ delete sb; }
+		delete &v;
 	}
 	catch(const char* m){
 		printf("エラー：%s.\n", m);

@@ -12,6 +12,7 @@
 template<> FACTORY<VIEW>* FACTORY<VIEW>::start(0);
 TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::stickeies;
 TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::externals;
+TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::skyboxes;
 
 
 VIEW& VIEW::New() throw(const char*){
@@ -68,6 +69,12 @@ void VIEW::Run(){
 		glTranslated(-pp[0], -pp[1], -pp[2]);
 
 		externals.Each(&DRAWER::Draw); //externalを描画
+
+		//天箱は最初のだけ描画
+		DRAWER* const sb(skyboxes.Peek());
+		if(sb){
+			(*sb).Draw();
+		}
 
 #if 0
 #if 0

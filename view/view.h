@@ -45,6 +45,7 @@ public:
 	//描画オブジェクトの登録
 	static void RegisterStickies(DRAWER& d){ d.Add(stickeies); };
 	static void RegisterExternals(DRAWER& d){ d.Add(externals); };
+	static void RegisterSkybox(DRAWER& d){ d.Add(skyboxes); };
 
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
@@ -70,6 +71,7 @@ private:
 	//描画対象物
 	static TOOLBOX::QUEUE<DRAWER> stickeies;
 	static TOOLBOX::QUEUE<DRAWER> externals;
+	static TOOLBOX::QUEUE<DRAWER> skyboxes;;
 
 	static float fov;
 	static float tanFov;

@@ -1,4 +1,5 @@
 RWM
 ===
 
-Window Manager for true 3D computing environment
+True 3D computing environment
+

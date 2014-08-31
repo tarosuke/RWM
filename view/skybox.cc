@@ -2,12 +2,26 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "../gl/gl.h"
 #include "skybox.h"
 #include "../image/image.h"
 #include "../image/tga.h"
 
+
+SKYBOX* SKYBOX::New(const char* path){
+	SKYBOX* sb(0); //デフォルトスカイボックス
+	try{
+		sb = new SKYBOX(path);
+	}
+	catch(...){
+	}
+	if(path && !sb){
+		printf("SKYBOX:画像(%s)を読めなかった。\n", path);
+	}
+	return sb;
+}
 
 const GL::TEXTURE::PARAMS SKYBOX::textureParams = {
 	wrap_s : GL_CLAMP_TO_EDGE,

@@ -4,10 +4,12 @@
 
 #include "view/view.h"
 #include "view/skybox.h"
+#include "settings/settings.h"
 
 
 int main(int argc, char *argv[]){
 	//オプションの変数
+	const char* skyboxKey("defaultSkybox");
 	const char* skyboxPath(0);
 
 	//コマンドライン解釈
@@ -28,12 +30,24 @@ int main(int argc, char *argv[]){
 		}
 	}
 
+	//設定ファイル読み込み
+	if(!skyboxPath){
+		static char sbp[256];
+		settings.Fetch(skyboxKey, sbp, 255);
+		sbp[255] = 0;
+		skyboxPath = sbp;
+	}
+
 	//wOCE本体
 	try{
 		VIEW& v(VIEW::New());
 		SKYBOX* sb(SKYBOX::New(skyboxPath));
 		v.Run();
-		if(sb){ delete sb; }
+		if(sb){
+			delete sb;
+			//天箱設定を保存
+			settings.Store(skyboxKey, skyboxPath, 255);
+		}
 		delete &v;
 	}
 	catch(const char* m){

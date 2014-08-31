@@ -8,13 +8,23 @@
 
 int main(int argc, char *argv[]){
 	try{
+		SKYBOX* sb(0);
 		VIEW& v(VIEW::New());
-// 		SKYBOX skybox("/home/tarosuke/pics/rwm/Above_The_Sea.tga");
-// 		SKYBOX skybox("/home/tarosuke/pics/rwm/Above_The_Sea-small.tga");
-		SKYBOX skybox("/home/tarosuke/pics/rwm/Cubic30.tga");
-// 		SKYBOX skybox("/home/tarosuke/pics/rwm/image05.tga");
+		try{
+			//天箱(skybox)
+			const char* path("/home/tarosuke/pics/rwm/Cubic30.tga");
+// 			const char* path("/home/tarosuke/pics/rwm/Above_The_Sea.tga");
+// 			const char* path("/home/tarosuke/pics/rwm/Above_The_Sea-small.tga");
+// 			const char* path("/home/tarosuke/pics/rwm/image05.tga");
+			sb = new SKYBOX(path);
+		}
+		catch(...){
+			//空箱は必須ではないので失敗してもそのまま進行
+			//TODO:将来的にはtoastでエラー表示
+		}
 		v.Run();
 		delete &v;
+		if(sb){ delete sb; }
 	}
 	catch(const char* m){
 		printf("エラー：%s.\n", m);

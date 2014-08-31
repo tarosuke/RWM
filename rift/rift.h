@@ -35,6 +35,8 @@ protected:
 	unsigned framebufferTexture;
 	unsigned deDistorTexture;
 
+	virtual void SetupDeDistoreTexture()=0;
+
 private:
 	const POSE& Pose() const{ return pose; };
 	POSE pose;
@@ -113,6 +115,12 @@ private:
 
 	// HID
 	static const int ProductID = 0x0001;
+
+	//描画前＆描画後
+	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
+	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
+
+	void SetupDeDistoreTexture(){};
 };
 
 
@@ -135,6 +143,8 @@ private:
 	static const int ProductID = 0x0021;
 
 	//描画前＆描画後
-	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始
+	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
+
+	void SetupDeDistoreTexture(){};
 };

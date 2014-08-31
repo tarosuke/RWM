@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
+#include <stdio.h>
+
 #include "view.h"
 #include "../rift/rift.h"
 #include "../window/window.h"
@@ -67,7 +69,7 @@ void VIEW::Run(){
 		glPushMatrix();
 		glRotated(-r.angle * 180 / M_PI, r.axis[0], r.axis[1], r.axis[2]);
 		glTranslated(-pp[0], -pp[1], -pp[2]);
-
+printf("%lf %lf %lf.\n", pp[0], pp[1], pp[2]);
 		externals.Each(&DRAWER::Draw); //externalを描画
 
 		//天箱は最初のだけ描画
@@ -76,7 +78,7 @@ void VIEW::Run(){
 			(*sb).Draw();
 		}
 
-#if 0
+#if 1
 #if 0
 		//動作確認用の地面っぽい平面
 		glColor4f(1,1,1,0.2);
@@ -86,8 +88,19 @@ void VIEW::Run(){
 		glVertex3f(-8.66, -1.6, 5);
 		glEnd();
 #endif
-#if 1
+#if 0
 		SNOW::DrawAll();
+#endif
+#if 1
+		glColor4f(1,1,1,0.2);
+		glLineWidth(7);
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(-0.2, -0.3, -0.5);
+		glVertex3f(0.2, -0.3, -0.5);
+		glVertex3f(0.3, -0.1, 0.2);
+		glVertex3f(-0.3, -0.1, 0.2);
+		glVertex3f(-0.2, -0.3, -0.5);
+		glEnd();
 #endif
 #endif
 

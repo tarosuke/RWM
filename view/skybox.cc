@@ -9,6 +9,14 @@
 #include "../image/tga.h"
 
 
+const GL::TEXTURE::PARAMS SKYBOX::textureParams = {
+	wrap_s : GL_CLAMP_TO_EDGE,
+	wrap_t : GL_CLAMP_TO_EDGE,
+	filter_mag : GL_NEAREST,
+	filter_min : GL_NEAREST,
+	texture_mode : GL_REPLACE,
+};
+
 SKYBOX::SKYBOX(const char* path){
 	Register(TGAFile(path));
 }
@@ -19,7 +27,7 @@ SKYBOX::SKYBOX(const IMAGE& image){
 
 void SKYBOX::Register(const IMAGE& image){
 	//テクスチャを割り当てる
-	texture.Assign(image);
+	texture.Assign(image, textureParams);
 
 	//DisplayListに記録する
 	{

@@ -18,6 +18,9 @@ public:
 	template<typename T> void Store(const char* key, const T* body){
 		Store_(key, body, sizeof(T));
 	};
+	template<typename T> void Store(const char* key, const T* body, unsigned len){
+		Store_(key, body, len);
+	};
 	template<typename T> bool Fetch(
 		const char* key, T* body, unsigned maxLen = 0){
 		return Fetch_(key, body, sizeof(T));

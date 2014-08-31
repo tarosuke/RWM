@@ -71,7 +71,7 @@ void WINDOW::DrawAll(){
 		return;
 	}
 
-	//VIEW更新
+	//視線の先を中心に
 	glPushMatrix();
 	glTranslatef(lookingPoint.x, lookingPoint.y, 0);
 
@@ -82,6 +82,7 @@ void WINDOW::DrawAll(){
 		(*focused).Draw(baseDistance);
 	}
 
+	glPopMatrix();
 }
 
 void WINDOW::DrawTransparentAll(){
@@ -89,6 +90,10 @@ void WINDOW::DrawTransparentAll(){
 		//後ろ向いてるので一切描画しない
 		return;
 	}
+
+	//視線の先を中心に
+	glPushMatrix();
+	glTranslatef(lookingPoint.x, lookingPoint.y, 0);
 
 	//非フォーカス
 	glColor4f(1,1,1,0.7); //白、半透明
@@ -102,6 +107,8 @@ void WINDOW::DrawTransparentAll(){
 			d += 0.03;
 		}
 	}
+
+	glPopMatrix();
 }
 
 

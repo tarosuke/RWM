@@ -33,10 +33,12 @@ IMAGE::IMAGE(const IMAGE& org, int x, int y, unsigned w, unsigned h) :
 		for(unsigned xd(0); xd < w; ++xd){
 			void* const d(GetPoint(xd, yd));
 			const void* const s(org.GetConstPoint(x + xd, y + yd));
-			if(s && d){
-				memcpy(d, s, depth);
-			}else if(d){
-				memset(d, 0, depth);
+			if(d){
+				if(s){
+					memcpy(d, s, depth);
+				}else{
+					memset(d, 0, depth);
+				}
 			}
 		}
 	}
@@ -96,10 +98,12 @@ void IMAGE::Update(const IMAGE& org, int x, int y){
 		for(unsigned xx(0); xx < org.width; ++xx){
 			void* const d(GetPoint(xx + x, yy + y));
 			const void* const s(org.GetConstPoint(xx, yy));
-			if(s && d){
-				memcpy(d, s, depth);
-			}else if(d){
-				memset(d, 0, depth);
+			if(d){
+				if(s){
+					memcpy(d, s, depth);
+				}else{
+					memset(d, 0, depth);
+				}
 			}
 		}
 	}

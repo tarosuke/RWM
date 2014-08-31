@@ -31,7 +31,9 @@ VIEW* RIFT_DK1::New(){
 
 
 RIFT_DK1::RIFT_DK1(int f) : RIFT(f, width, height){}
+RIFT_DK1::~RIFT_DK1(){}
 
-
-RIFT_DK1::~RIFT_DK1(){
+void RIFT_DK1::PreDraw(){
+}
+void RIFT_DK1::PostDraw(){
 }

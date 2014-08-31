@@ -34,8 +34,7 @@ VIEW* RIFT_DK2::New(){
 
 
 RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){}
-RIFT_DK2::~RIFT_DK2(){
-}
+RIFT_DK2::~RIFT_DK2(){}
 
 
 void RIFT_DK2::PreDraw(){

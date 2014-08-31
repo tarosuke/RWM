@@ -9,6 +9,8 @@ public:
 	IMAGE(const void*, unsigned w, unsigned h, unsigned bytesDepth);
 	virtual ~IMAGE();
 
+	void Update(const IMAGE&, int x, int y);
+
 	void operator=(const IMAGE&);
 
 	unsigned Pixels() const{ return width * height; };
@@ -24,4 +26,9 @@ private:
 	unsigned width;
 	unsigned height;
 	unsigned depth;
+
+	bool IsInRange(unsigned x, unsigned y) const;
+	unsigned GetOffset(unsigned x, unsigned y) const;
+	void* GetPoint(unsigned, unsigned);
+	const void* GetConstPoint(unsigned, unsigned) const;
 };

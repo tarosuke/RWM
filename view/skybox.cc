@@ -39,7 +39,16 @@ SKYBOX::SKYBOX(const IMAGE& image){
 	Register(image);
 }
 
-void SKYBOX::Register(const IMAGE& image){
+void SKYBOX::Register(const IMAGE& org){
+	//並び替えて詰め直す
+	const unsigned hu(org.Width() / 4);
+	const unsigned vu(org.Height() / 3);
+	IMAGE image(org, 0, 0, 4 * hu, 3 * vu);
+	{
+		IMAGE down(org, hu, 2 * vu, hu, vu);
+		image.Update(down, 0, 0);
+	}
+
 	//テクスチャを割り当てる
 	texture.Assign(image, textureParams);
 
@@ -88,14 +97,14 @@ void SKYBOX::Register(const IMAGE& image){
 		glVertex3f(-p, -p, p);
 
 
-		glTexCoord2f(h[2], v[3]);
+		glTexCoord2f(h[1], v[1]);
 		glVertex3f(p, -p, p);
 		glVertex3f(p, -p, p);
-		glTexCoord2f(h[2], v[2]);
+		glTexCoord2f(h[1], v[0]);
 		glVertex3f(p, -p, -p);
-		glTexCoord2f(h[1], v[3]);
+		glTexCoord2f(h[0], v[1]);
 		glVertex3f(-p, -p, p);
-		glTexCoord2f(h[1], v[2]);
+		glTexCoord2f(h[0], v[0]);
 		glVertex3f(-p, -p, -p);
 
 		glEnd();

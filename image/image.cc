@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "image.h"
 
@@ -27,11 +28,17 @@ IMAGE::IMAGE(const IMAGE& org, int x, int y, unsigned w, unsigned h) :
 	height(h),
 	depth(org.Depth()){
 
-	const char* const ob((const char*)(org.buffer ? org.buffer : org.constBuffer));
-	char* b((char*)buffer);
-
-	for(unsigned v(0); v < h; ++v){
-		memcpy(&b[v * w * depth], &ob[((y + v) * org.width + x) * depth], w);
+	//TODO:もうちょっとマシなアルゴリズムに書き換える
+	for(unsigned yd(0); yd < h; ++yd){
+		for(unsigned xd(0); xd < w; ++xd){
+			void* const d(GetPoint(xd, yd));
+			const void* const s(org.GetConstPoint(x + xd, y + yd));
+			if(s && d){
+				memcpy(d, s, depth);
+			}else if(d){
+				memset(d, 0, depth);
+			}
+		}
 	}
 }
 
@@ -59,4 +66,43 @@ void IMAGE::operator=(const IMAGE& org){
 	height = org.height;
 	depth = org.depth;
 	memcpy(buffer, org.buffer ? org.buffer : org.constBuffer, s);
+}
+
+
+bool IMAGE::IsInRange(unsigned x, unsigned y) const{
+	return x < width && y < height;
+}
+unsigned IMAGE::GetOffset(unsigned x, unsigned y) const{
+	return (y * width + x) * depth;
+}
+void* IMAGE::GetPoint(unsigned x, unsigned y){
+	if(!IsInRange(x, y)){ return 0; }
+	return (void*)((char*)buffer + GetOffset(x, y));
+}
+const void* IMAGE::GetConstPoint(unsigned x, unsigned y) const{
+	if(!IsInRange(x, y)){ return 0; }
+	return (const void*)((const char*)Buffer() + GetOffset(x, y));
+}
+
+
+
+
+void IMAGE::Update(const IMAGE& org, int x, int y){
+	if(!buffer){
+		throw "IMAGE:constなIMAGEをUpdateしようとした。";
+	}
+
+
+	//TODO:もっとマシなアルゴリズムに書き換える
+	for(unsigned yy(0); yy < org.height; ++yy){
+		for(unsigned xx(0); xx < org.width; ++xx){
+			void* const d(GetPoint(xx + x, yy + y));
+			const void* const s(org.GetConstPoint(xx, yy));
+			if(s && d){
+				memcpy(d, s, depth);
+			}else if(d){
+				memset(d, 0, depth);
+			}
+		}
+	}
 }

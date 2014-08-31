@@ -43,7 +43,7 @@ void SKYBOX::Register(const IMAGE& org){
 	//並び替えて詰め直す
 	const unsigned hu(org.Width() / 4);
 	const unsigned vu(org.Height() / 3);
-	IMAGE image(org, 0, 0, 4 * hu, 3 * vu);
+	IMAGE image(org, 0, 0, 4 * hu, 2 * vu);
 	{
 		IMAGE down(org, hu, 2 * vu, hu, vu);
 		image.Update(down, 0, 0);
@@ -58,9 +58,9 @@ void SKYBOX::Register(const IMAGE& org){
 		GL::TEXTURE::BINDER binder(texture);
 		static const float p(500);
 		static const float q(1.0 / 4);
-		static const float t(1.0 / 3);
+		static const float t(1.0 / 2);
 		static const float h[5] = { 0, q, 2*q, 3*q, 4*q };
-		static const float v[4] = { 0, t, 2*t, 3*t };
+		static const float v[3] = { 0, t, 2*t };
 
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2f(h[2], v[1]);

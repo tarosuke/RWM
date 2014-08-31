@@ -85,8 +85,6 @@ const void* IMAGE::GetConstPoint(unsigned x, unsigned y) const{
 }
 
 
-
-
 void IMAGE::Update(const IMAGE& org, int x, int y){
 	if(!buffer){
 		throw "IMAGE:constなIMAGEをUpdateしようとした。";

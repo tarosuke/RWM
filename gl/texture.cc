@@ -10,16 +10,16 @@ namespace GL{
 
 	unsigned TEXTURE::BINDER::lastBinded(0);
 	TEXTURE::BINDER::BINDER(const TEXTURE& t) : prevBinded(lastBinded){
-//		if(lastBinded != t.tid){
+		if(lastBinded != t.tid){
 			glBindTexture(GL_TEXTURE_2D, t.tid);
 			lastBinded = t.tid;
-//		}
+		}
 	}
 	TEXTURE::BINDER::~BINDER(){
-//		if(prevBinded != lastBinded){
-//			glBindTexture(GL_TEXTURE_2D, prevBinded);
-//			lastBinded = prevBinded;
-//		}
+		if(prevBinded != lastBinded){
+			glBindTexture(GL_TEXTURE_2D, prevBinded);
+			lastBinded = prevBinded;
+		}
 	}
 
 

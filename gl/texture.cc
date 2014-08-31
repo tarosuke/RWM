@@ -24,28 +24,41 @@ namespace GL{
 
 
 
-	TEXTURE::TEXTURE() : tid(0), empty(true){
+	const TEXTURE::PARAMS TEXTURE::defaultParams = {
+		wrap_s : GL_REPEAT,
+		wrap_t : GL_REPEAT,
+		filter_mag : GL_LINEAR,
+		filter_min : GL_LINEAR,
+		texture_mode : GL_REPLACE,
+	};
+
+	TEXTURE::TEXTURE(const PARAMS& p) : tid(0), empty(true){
 		glGenTextures(1, const_cast<unsigned*>(&tid));
 	}
 
-	TEXTURE::TEXTURE(unsigned w, unsigned h, bool a) : tid(0), empty(true){
+	TEXTURE::TEXTURE(
+		unsigned w,
+		unsigned h,
+		bool a,
+		const PARAMS& p) : tid(0), empty(true){
 		glGenTextures(1, const_cast<unsigned*>(&tid));
 		BINDER b(*this);
 		glTexStorage2D(GL_TEXTURE_2D, 0, a ? GL_RGBA : GL_RGB, w, h);
-		SetupAttributes();
+		SetupAttributes(p);
 		empty = false;
 	}
 
-	TEXTURE::TEXTURE(const class IMAGE& image) : tid(0), empty(true){
+	TEXTURE::TEXTURE(
+		const class IMAGE& image, const PARAMS& p) : tid(0), empty(true){
 		glGenTextures(1, const_cast<unsigned*>(&tid));
-		Assign(image);
+		Assign(image, p);
 	}
 
 	TEXTURE::~TEXTURE(){
 		glDeleteTextures(1, &tid);
 	}
 
-	void TEXTURE::Assign(const IMAGE& image){
+	void TEXTURE::Assign(const IMAGE& image, const PARAMS& p){
 		BINDER b(*this);
 
 		const unsigned d(image.Depth());
@@ -58,15 +71,15 @@ namespace GL{
 		empty = false;
 
 		//属性を設定
-		SetupAttributes();
+		SetupAttributes(p);
 	}
 
-	void TEXTURE::SetupAttributes(){
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	void TEXTURE::SetupAttributes(const PARAMS& p){
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, p.wrap_s);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, p.wrap_t);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,p.filter_mag);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,p.filter_min);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, p.texture_mode);
 	}
 
 	void TEXTURE::Update(const IMAGE& image, int x, int y){

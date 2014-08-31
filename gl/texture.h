@@ -4,6 +4,7 @@
 class IMAGE;
 namespace GL{
 	class TEXTURE{
+// 		TEXTURE();
 		TEXTURE(const TEXTURE&);
 		void operator=(const TEXTURE&);
 	public:
@@ -18,17 +19,29 @@ namespace GL{
 			static unsigned lastBinded;
 			const unsigned prevBinded;
 		};
-		TEXTURE();
-		TEXTURE(unsigned w, unsigned h, bool alpha=false);
-		TEXTURE(const IMAGE&);
+		struct PARAMS{
+			int wrap_s;
+			int wrap_t;
+			int filter_mag;
+			int filter_min;
+			int texture_mode;
+		};
+		TEXTURE(const PARAMS& p=defaultParams);
+		TEXTURE(unsigned w,
+			unsigned h,
+			bool alpha=false,
+			const PARAMS& p=defaultParams);
+		TEXTURE(const IMAGE&, const PARAMS& p=defaultParams);
 		~TEXTURE();
 
-		void Assign(const IMAGE&);
+		void Assign(const IMAGE&, const PARAMS& p=defaultParams);
 		void Update(const IMAGE&, int x, int y);
 	private:
 		const unsigned tid;
 		bool empty;
-		void SetupAttributes();
+		void SetupAttributes(const PARAMS&);
+
+		static const PARAMS defaultParams;
 	};
 }
 

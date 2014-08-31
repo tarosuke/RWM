@@ -53,7 +53,7 @@ void RIFT_DK2::PreDraw(){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glRotatef(90,0,0,1);
-	glTranslatef(-0.03, 0, 0);
+	glTranslatef(0.03, 0, 0);
 
 	//記録と描画
 	displayList.StartRecord(true);
@@ -77,7 +77,7 @@ void RIFT_DK2::PostDraw(){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glRotatef(90,0,0,1);
-	glTranslatef(0.03, 0, 0);
+	glTranslatef(-0.03, 0, 0);
 	displayList.Playback();
 
 #if 0

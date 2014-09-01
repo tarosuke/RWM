@@ -33,7 +33,10 @@ VIEW* RIFT_DK2::New(){
 }
 
 
-RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){}
+RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){
+	//歪み情報テクスチャを作る
+	SetupDeDistoreTexture();
+}
 RIFT_DK2::~RIFT_DK2(){}
 
 
@@ -80,41 +83,58 @@ void RIFT_DK2::PostDraw(){
 	glTranslatef(-0.03, 0, 0);
 	displayList.Playback();
 
-#if 0
-	//Riftの歪み除去
-	glGetError();
-	glViewport(0, 0, width, height);
-	assert(glGetError() == GL_NO_ERROR);
-	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-	assert(glGetError() == GL_NO_ERROR);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
-	assert(glGetError() == GL_NO_ERROR);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_STENCIL_TEST);
-
-	//フラグメントシェーダによる歪み除去
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, deDistorTexture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-	glUseProgram(deDistorShaderProgram);
-	glUniform1i(glGetUniformLocation(deDistorShaderProgram, "buffer"), 0);
-	glUniform1i(glGetUniformLocation(deDistorShaderProgram, "de_distor"), 1);
-	glBegin(GL_TRIANGLE_STRIP);
-	glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
-	glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
-	glTexCoord2f(1, 0); glVertex3f(1, -1, 0.5);
-	glTexCoord2f(1, 1); glVertex3f(1, 1, 0.5);
-	glEnd();
-	glUseProgram(0);
-	assert(glGetError() == GL_NO_ERROR);
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, 0);
-#endif
+	//収差補正
+	DeDistore();
 }
+
+
+
+void RIFT_DK2::SetupDeDistoreTexture(){
+	struct DISTORE_ELEMENT{
+		float u;
+		float v;
+	}__attribute__((packed)) *body(
+		(DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
+	assert(body);
+	const unsigned hh(height / 2);
+	const float bs((float)(height - 1)/height);
+	for(unsigned v(0); v < hh; v++){
+		for(unsigned u(0); u < width; u++){
+			DISTORE_ELEMENT& b(body[v * width + u]);
+			DISTORE_ELEMENT& d(body[(height - v - 1) * width + u]);
+			P2 tc = {(float)u / width, (float)v / hh};
+			static const P2 cc = { 0.5, 0.5 + inset };
+			P2 fe = { tc.u - cc.u, tc.v - cc.v };
+			float dd(fe.u*fe.u*4 + fe.v*fe.v);
+			dd = 1.0 + 0.625 * dd + 0.5 * dd*dd + 0.125 * dd*dd*dd;
+			fe.u *= dd;
+			fe.v *= dd;
+			tc.u = fe.u + cc.u;
+			tc.v = fe.v + cc.v;
+
+			b.u = tc.u;
+			b.v = tc.v * 0.5;
+			d.u = tc.u;
+			d.v = bs - tc.v * 0.5;
+		}
+	}
+
+	glGenTextures(1, &deDistorTexture);
+	glBindTexture(GL_TEXTURE_2D, deDistorTexture);
+	glTexParameteri(
+		GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(
+		GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	assert(glGetError() == GL_NO_ERROR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RG16F,
+	      width, height, 0, GL_RG, GL_FLOAT, body);
+	free(body);
+	assert(glGetError() == GL_NO_ERROR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
 

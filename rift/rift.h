@@ -35,7 +35,12 @@ protected:
 	unsigned framebufferTexture;
 	unsigned deDistorTexture;
 
-	virtual void SetupDeDistoreTexture()=0;
+	struct P2{
+		float u;
+		float v;
+	};
+	P2 GetTrueCoord(float u, float v);
+	void DeDistore();
 
 private:
 	const POSE& Pose() const{ return pose; };
@@ -85,16 +90,9 @@ private:
 
 
 	/////VIEW関連
-	struct P2{
-		float u;
-		float v;
-	};
-	P2 GetTrueCoord(float u, float v);
 	static float D(float l);
 
 	//描画前＆描画後
-	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始
-	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 };
 
 
@@ -120,7 +118,7 @@ private:
 	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 
-	void SetupDeDistoreTexture(){};
+	void SetupDeDistoreTexture();
 };
 
 
@@ -146,5 +144,5 @@ private:
 	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 
-	void SetupDeDistoreTexture(){};
+	void SetupDeDistoreTexture();
 };

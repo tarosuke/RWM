@@ -60,7 +60,7 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 			}
 		}
 		velocity *= 0.999;
-		pose.position *= 0.999;
+		pose.position *= 0.995;
 	}
 }
 
@@ -237,53 +237,6 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 		GL_TEXTURE_BORDER_COLOR,
 		(const float[]){ 0, 0, 0, 1 });
 	assert(glGetError() == GL_NO_ERROR);
-
-	//歪み情報テクスチャを作る
-	struct DISTORE_ELEMENT{
-		float u;
-		float v;
-	}__attribute__((packed)) *body(
-		(DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
-	assert(body);
-	const float rightSide((float)(width - 1)/width);
-	const float halfRight((float)(width/2 - 2)/width);
-	for(unsigned v(0); v < height; v++){
-		for(unsigned u(0); u < width / 2; u++){
-			DISTORE_ELEMENT& b(body[v*width + u]);
-			DISTORE_ELEMENT& d(body[v*width + width-u-1]);
-			P2 tc(GetTrueCoord(u, v));
-			tc.u /= width;
-			tc.v /= height;
-			if(tc.u < 0.0 || halfRight <= tc.u ||
-				tc.v < 0.0 || 1.0 <= tc.v){
-				// 範囲外
-				b.u = d.u = b.v = d.v = -2.0;
-			}else{
-				// 座標を書き込む
-				b.u = tc.u;
-				d.u = rightSide - tc.u;
-				b.v =
-				d.v = tc.v;
-			}
-		}
-	}
-
-	glGenTextures(1, &deDistorTexture);
-	glBindTexture(GL_TEXTURE_2D, deDistorTexture);
-	glTexParameteri(
-		GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(
-		GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	assert(glGetError() == GL_NO_ERROR);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RG16F,
-	      width, height, 0, GL_RG, GL_FLOAT, body);
-	free(body);
-	assert(glGetError() == GL_NO_ERROR);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
 }
 
 
@@ -299,6 +252,43 @@ RIFT::~RIFT(){
 }
 
 
+void RIFT::DeDistore(){
+	//Riftの歪み除去
+	glGetError();
+	glViewport(0, 0, width, height);
+	assert(glGetError() == GL_NO_ERROR);
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	assert(glGetError() == GL_NO_ERROR);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
+	assert(glGetError() == GL_NO_ERROR);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+
+	//フラグメントシェーダによる歪み除去
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, deDistorTexture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	glUseProgram(deDistorShaderProgram);
+	glUniform1i(glGetUniformLocation(deDistorShaderProgram, "buffer"), 0);
+	glUniform1i(glGetUniformLocation(deDistorShaderProgram, "de_distor"), 1);
+	//視野いっぱいにフレームバッファテクスチャを貼り付ける
+	glBegin(GL_TRIANGLE_STRIP);
+	glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
+	glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
+	glTexCoord2f(1, 0); glVertex3f(1, -1, 0.5);
+	glTexCoord2f(1, 1); glVertex3f(1, 1, 0.5);
+	glEnd();
+	glUseProgram(0);
+	assert(glGetError() == GL_NO_ERROR);
+
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 
 
 
@@ -330,80 +320,6 @@ RIFT::P2 RIFT::GetTrueCoord(float u, float v){
 }
 
 
-void RIFT::PreDraw(){
-	const float tf(GetTanFov() * nearDistance);
-	const int hw(width / 2);
-	const float ar((float)width / height);
-
-	//左目
-	glViewport(0, 0, hw, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum((-ar - inset) * tf , (ar - inset) * tf, -tf, tf,
-		nearDistance, farDistance);
-
-	//Model-View行列初期化
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	//記録と描画
-	displayList.StartRecord(true);
-}
-
-void RIFT::PostDraw(){
-	const float tf(GetTanFov() * nearDistance);
-	const int hw(width / 2);
-	const float ar((float)width / height);
-
-	displayList.EndRecord(); //記録完了
-
-	//右目
-	glViewport(hw, 0, hw, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum((-ar + inset) * tf , (ar + inset) * tf, -tf, tf,
-		  nearDistance, farDistance);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glTranslatef(-0.03, 0, 0);
-	displayList.Playback();
-
-	//Riftの歪み除去
-	glGetError();
-	glViewport(0, 0, width, height);
-	assert(glGetError() == GL_NO_ERROR);
-	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-	assert(glGetError() == GL_NO_ERROR);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, width, height, 0);
-	assert(glGetError() == GL_NO_ERROR);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_STENCIL_TEST);
-
-	//フラグメントシェーダによる歪み除去
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, deDistorTexture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-	glUseProgram(deDistorShaderProgram);
-	glUniform1i(glGetUniformLocation(deDistorShaderProgram, "buffer"), 0);
-	glUniform1i(glGetUniformLocation(deDistorShaderProgram, "de_distor"), 1);
-	glBegin(GL_TRIANGLE_STRIP);
-	glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.5);
-	glTexCoord2f(0, 1); glVertex3f(-1, 1, 0.5);
-	glTexCoord2f(1, 0); glVertex3f(1, -1, 0.5);
-	glTexCoord2f(1, 1); glVertex3f(1, 1, 0.5);
-	glEnd();
-	glUseProgram(0);
-	assert(glGetError() == GL_NO_ERROR);
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
 
 
 void RIFT::Keepalive(){

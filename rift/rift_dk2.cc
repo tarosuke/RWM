@@ -112,10 +112,14 @@ void RIFT_DK2::SetupDeDistoreTexture(){
 			tc.u = fe.u + cc.u;
 			tc.v = fe.v + cc.v;
 
-			b.u = tc.u;
-			b.v = tc.v * 0.5;
-			d.u = tc.u;
-			d.v = bs - tc.v * 0.5;
+			if(0 <= tc.u && tc.u < 1.0 && 0 <= tc.v && tc.v < 1.0){
+				b.u = tc.u;
+				b.v = tc.v * 0.5;
+				d.u = tc.u;
+				d.v = bs - tc.v * 0.5;
+			}else{
+				b.u = d.u = b.v = d.v = -2.0;
+			}
 		}
 	}
 

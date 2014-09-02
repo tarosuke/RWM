@@ -84,10 +84,7 @@ void RIFT_DK1::PostDraw(){
 
 
 void RIFT_DK1::SetupDeDistoreTexture(){
-	struct DISTORE_ELEMENT{
-		float u;
-		float v;
-	}__attribute__((packed)) *body(
+	DISTORE_ELEMENT *body(
 		(DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
 	assert(body);
 	const float rightSide((float)(width - 1)/width);
@@ -103,31 +100,19 @@ void RIFT_DK1::SetupDeDistoreTexture(){
 				tc.v < 0.0 || 1.0 <= tc.v){
 				// 範囲外
 				b.u = d.u = b.v = d.v = -2.0;
-				}else{
-					// 座標を書き込む
-					b.u = tc.u;
-					d.u = rightSide - tc.u;
-					b.v =
-					d.v = tc.v;
-				}
+			}else{
+				// 座標を書き込む
+				b.u = tc.u;
+				d.u = rightSide - tc.u;
+				b.v =
+				d.v = tc.v;
+			}
 		}
 	}
 
-	glGenTextures(1, &deDistorTexture);
-	glBindTexture(GL_TEXTURE_2D, deDistorTexture);
-	glTexParameteri(
-		GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(
-		GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	assert(glGetError() == GL_NO_ERROR);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RG16F,
-	      width, height, 0, GL_RG, GL_FLOAT, body);
+	//テクスチャ登録
+	RegisterDeDistoreCoords(body);
 	free(body);
-	assert(glGetError() == GL_NO_ERROR);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 

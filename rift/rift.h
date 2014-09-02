@@ -17,7 +17,6 @@ protected:
 	virtual ~RIFT();
 
 	//デバイスファイル取得
-	static const int VendorID = 0x2833;
 	static int OpenDeviceFile(const int pid);
 
 	//画面の大きさなど
@@ -42,7 +41,15 @@ protected:
 	P2 GetTrueCoord(float u, float v);
 	void DeDistore();
 
+	struct DISTORE_ELEMENT{
+		float u;
+		float v;
+	}__attribute__((packed));
+	void RegisterDeDistoreCoords(const DISTORE_ELEMENT*);
+
 private:
+	static const int VendorID = 0x2833;
+
 	const POSE& Pose() const{ return pose; };
 	POSE pose;
 

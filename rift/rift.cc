@@ -21,6 +21,9 @@
 #define MaxFloat (3.40282347e+38F)
 #define G (9.80665)
 
+
+/////ヘッドトラッカー関連
+
 void RIFT::UpdateAngularVelocity(const int angles[3], double dt){
 	COMPLEX<4> delta(angles, 0.0001 * dt);
 	pose.direction *= delta;
@@ -130,6 +133,151 @@ void RIFT::ErrorCorrection(){
 	if(averageRatio < maxAverageRatio){
 		correctionGain = 1.0 / ++averageRatio;
 	}
+}
+
+
+void RIFT::Keepalive(){
+	static const char keepaliveCommand[5] ={
+		8, 0, 0,
+		(char)(keepaliveInterval & 0xff),
+		(char)(keepaliveInterval >> 8)
+	};
+	ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
+}
+
+void RIFT::DecodeSensor(const unsigned char* buff, int v[3]){
+	struct {int x:21;} s;
+
+	v[0] = s.x =
+		((unsigned)buff[0] << 13) |
+		((unsigned)buff[1] << 5) |
+		((buff[2] & 0xfb) >> 3);
+	v[1] = s.x =
+		(((unsigned)buff[2] & 0x07) << 18) |
+		((unsigned)buff[3] << 10) |
+		((unsigned)buff[4] << 2) |
+		((buff[5] & 0xc0) >> 6);
+	v[2] = s.x =
+		(((unsigned)buff[5] & 0x3f) << 15) |
+		((unsigned)buff[6] << 7) |
+		(buff[7] >> 1);
+}
+
+void RIFT::Decode(const char* buff){
+	struct{
+		int accel[3];
+		int rotate[3];
+	}sample[3];
+	int mag[3];
+
+	//NOTE:リトルエンディアン機で動かす前提
+	const unsigned char numOfSamples(buff[1]);
+	const unsigned short timestamp(*(unsigned short*)&buff[2]);
+	//	const short temp(*(short*)&buff[6]);
+
+	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
+	for(unsigned char i(0); i < samples; i++){
+		DecodeSensor((unsigned char*)buff + 8 + 16 * i, sample[i].accel);
+		DecodeSensor((unsigned char*)buff + 16 + 16 * i, sample[i].rotate);
+	}
+	//磁気センサのデータ取得
+	mag[0] = *(short*)&buff[56];
+	mag[1] = *(short*)&buff[58];
+	mag[2] = *(short*)&buff[60];
+
+	static unsigned short prevTime;
+	const unsigned short deltaT(timestamp - prevTime);
+	prevTime = timestamp;
+
+	const double qtime(1.0/1000.0);
+	const double dt(qtime * deltaT / numOfSamples);
+
+	// 各サンプル値で状況を更新
+	for(unsigned char i(0); i < samples; i++){
+		UpdateAngularVelocity(sample[i].rotate, dt);
+		UpdateAccelaretion(sample[i].accel, dt);
+	}
+
+	// 磁界値取得
+	UpdateMagneticField(mag);
+
+	//温度取得
+	UpdateTemperature(0.01 * *(short*)&buff[6]);
+
+}
+
+
+void RIFT::SensorThread(){
+	//優先度設定
+	pthread_setschedprio(
+		sensorThread,
+		sched_get_priority_max(SCHED_FIFO));
+
+	//Riftからのデータ待ち、処理
+	fd_set readset;
+
+	FD_ZERO(&readset);
+	FD_SET(fd, &readset);
+
+	for(;; pthread_testcancel()){
+		int result(select(fd + 1, &readset, NULL, NULL, NULL));
+
+		if(result && FD_ISSET( fd, &readset )){
+			char buff[256];
+			const int rb(read(fd, buff, 256));
+			if(62 == rb){
+				Decode(buff);
+				ErrorCorrection();
+			}else{
+				printf("%5d bytes dropped.\n", rb);
+			}
+		}
+
+		//KeepAliveを送信
+		Keepalive();
+	}
+}
+void* RIFT::_SensorThread(void* initialData){
+	//オブジェクトを設定して監視開始
+	(*(RIFT*)initialData).SensorThread();
+	return 0;
+}
+
+int RIFT::OpenDeviceFile(const int pid){
+	//Riftのセンサを準備
+	for(int i(0); i < 99; i++){
+		char name[32];
+		snprintf(name, 32, "/dev/hidraw%d", i);
+		const int fd(open(name, O_RDWR | O_NONBLOCK));
+		if(fd < 0){
+			//開けなかった
+			continue;
+		}
+
+		struct hidraw_devinfo info;
+		if(ioctl(fd, HIDIOCGRAWINFO, &info) < 0){
+			//ioctlできない=riftではない
+			close(fd);
+			continue;
+		}
+		if(VendorID != info.vendor || pid != info.product){
+			//riftではない
+			close(fd);
+			continue;
+		}
+
+		if(flock(fd, LOCK_EX | LOCK_NB) < 0){
+			//使用中
+			close(fd);
+			continue;
+		}
+
+		//確保完了
+		return fd;
+	}
+
+	//なかった
+	return -1;
 }
 
 
@@ -321,149 +469,20 @@ RIFT::P2 RIFT::GetTrueCoord(float u, float v){
 
 
 
-
-void RIFT::Keepalive(){
-	static const char keepaliveCommand[5] ={
-		8, 0, 0,
-		(char)(keepaliveInterval & 0xff),
-		(char)(keepaliveInterval >> 8)
-	};
-	ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
-}
-
-void RIFT::DecodeSensor(const unsigned char* buff, int v[3]){
-	struct {int x:21;} s;
-
-	v[0] = s.x =
-	((unsigned)buff[0] << 13) |
-	((unsigned)buff[1] << 5) |
-	((buff[2] & 0xfb) >> 3);
-	v[1] = s.x =
-	(((unsigned)buff[2] & 0x07) << 18) |
-	((unsigned)buff[3] << 10) |
-	((unsigned)buff[4] << 2) |
-	((buff[5] & 0xc0) >> 6);
-	v[2] = s.x =
-	(((unsigned)buff[5] & 0x3f) << 15) |
-	((unsigned)buff[6] << 7) |
-	(buff[7] >> 1);
-}
-
-void RIFT::Decode(const char* buff){
-	struct{
-		int accel[3];
-		int rotate[3];
-	}sample[3];
-	int mag[3];
-
-	//NOTE:リトルエンディアン機で動かす前提
-	const unsigned char numOfSamples(buff[1]);
-	const unsigned short timestamp(*(unsigned short*)&buff[2]);
-	//	const short temp(*(short*)&buff[6]);
-
-	const uint samples(numOfSamples > 2 ? 3 : numOfSamples);
-	for(unsigned char i(0); i < samples; i++){
-		DecodeSensor((unsigned char*)buff + 8 + 16 * i, sample[i].accel);
-		DecodeSensor((unsigned char*)buff + 16 + 16 * i, sample[i].rotate);
-	}
-	//磁気センサのデータ取得
-	mag[0] = *(short*)&buff[56];
-	mag[1] = *(short*)&buff[58];
-	mag[2] = *(short*)&buff[60];
-
-	static unsigned short prevTime;
-	const unsigned short deltaT(timestamp - prevTime);
-	prevTime = timestamp;
-
-	const double qtime(1.0/1000.0);
-	const double dt(qtime * deltaT / numOfSamples);
-
-	// 各サンプル値で状況を更新
-	for(unsigned char i(0); i < samples; i++){
-		UpdateAngularVelocity(sample[i].rotate, dt);
-		UpdateAccelaretion(sample[i].accel, dt);
-	}
-
-	// 磁界値取得
-	UpdateMagneticField(mag);
-
-	//温度取得
-	UpdateTemperature(0.01 * *(short*)&buff[6]);
-
-}
-
-
-void RIFT::SensorThread(){
-	//優先度設定
-	pthread_setschedprio(
-		sensorThread,
-		sched_get_priority_max(SCHED_FIFO));
-
-	//Riftからのデータ待ち、処理
-	fd_set readset;
-
-	FD_ZERO(&readset);
-	FD_SET(fd, &readset);
-
-	for(;; pthread_testcancel()){
-		int result(select(fd + 1, &readset, NULL, NULL, NULL));
-
-		if(result && FD_ISSET( fd, &readset )){
-			char buff[256];
-			const int rb(read(fd, buff, 256));
-			if(62 == rb){
-				Decode(buff);
-				ErrorCorrection();
-			}else{
-				printf("%5d bytes dropped.\n", rb);
-			}
-		}
-
-		//KeepAliveを送信
-		Keepalive();
-	}
-}
-void* RIFT::_SensorThread(void* initialData){
-	//オブジェクトを設定して監視開始
-	(*(RIFT*)initialData).SensorThread();
-	return 0;
-}
-
-int RIFT::OpenDeviceFile(const int pid){
-	//Riftのセンサを準備
-	for(int i(0); i < 99; i++){
-		char name[32];
-		snprintf(name, 32, "/dev/hidraw%d", i);
-		const int fd(open(name, O_RDWR | O_NONBLOCK));
-		if(fd < 0){
-			//開けなかった
-			continue;
-		}
-
-		struct hidraw_devinfo info;
-		if(ioctl(fd, HIDIOCGRAWINFO, &info) < 0){
-			//ioctlできない=riftではない
-			close(fd);
-			continue;
-		}
-		if(VendorID != info.vendor || pid != info.product){
-			//riftではない
-			close(fd);
-			continue;
-		}
-
-		if(flock(fd, LOCK_EX | LOCK_NB) < 0){
-			//使用中
-			close(fd);
-			continue;
-		}
-
-		//確保完了
-		return fd;
-	}
-
-	//なかった
-	return -1;
+void RIFT::RegisterDeDistoreCoords(const DISTORE_ELEMENT* body){
+	glGenTextures(1, &deDistorTexture);
+	glBindTexture(GL_TEXTURE_2D, deDistorTexture);
+	glTexParameteri(
+		GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(
+		GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	assert(glGetError() == GL_NO_ERROR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RG16F,
+	      width, height, 0, GL_RG, GL_FLOAT, body);
+	assert(glGetError() == GL_NO_ERROR);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 

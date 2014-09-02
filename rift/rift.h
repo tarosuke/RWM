@@ -17,7 +17,6 @@ protected:
 	virtual ~RIFT();
 
 	//デバイスファイル取得
-	static const int VendorID = 0x2833;
 	static int OpenDeviceFile(const int pid);
 
 	//画面の大きさなど
@@ -35,9 +34,22 @@ protected:
 	unsigned framebufferTexture;
 	unsigned deDistorTexture;
 
-	virtual void SetupDeDistoreTexture()=0;
+	struct P2{
+		float u;
+		float v;
+	};
+	P2 GetTrueCoord(float u, float v);
+	void DeDistore();
+
+	struct DISTORE_ELEMENT{
+		float u;
+		float v;
+	}__attribute__((packed));
+	void RegisterDeDistoreCoords(const DISTORE_ELEMENT*);
 
 private:
+	static const int VendorID = 0x2833;
+
 	const POSE& Pose() const{ return pose; };
 	POSE pose;
 
@@ -85,16 +97,9 @@ private:
 
 
 	/////VIEW関連
-	struct P2{
-		float u;
-		float v;
-	};
-	P2 GetTrueCoord(float u, float v);
 	static float D(float l);
 
 	//描画前＆描画後
-	void PreDraw(); //描画領域、東映行列の設定、displayList記録開始
-	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 };
 
 
@@ -120,7 +125,7 @@ private:
 	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 
-	void SetupDeDistoreTexture(){};
+	void SetupDeDistoreTexture();
 };
 
 
@@ -146,5 +151,5 @@ private:
 	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
 
-	void SetupDeDistoreTexture(){};
+	void SetupDeDistoreTexture();
 };

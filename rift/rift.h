@@ -124,8 +124,6 @@ private:
 	//描画前＆描画後
 	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
-
-	void SetupDeDistoreTexture();
 };
 
 
@@ -150,6 +148,4 @@ private:
 	//描画前＆描画後
 	void PreDraw(); //描画領域、投影行列の設定、displayList記録開始
 	void PostDraw(); //右目用設定、displayList再生による再描画、歪み除去
-
-	void SetupDeDistoreTexture();
 };

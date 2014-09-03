@@ -35,61 +35,6 @@ VIEW* RIFT_DK2::New(){
 
 RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){
 	//歪み情報テクスチャを作る
-	SetupDeDistoreTexture();
-}
-RIFT_DK2::~RIFT_DK2(){}
-
-
-void RIFT_DK2::PreDraw(){
-	const float tf(GetTanFov() * nearDistance);
-	const int hh(height / 2);
-	const float ar((float)height / width);
-
-	//左目
-	glViewport(0, 0, width, hh);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-tf, tf, (-ar - inset) * tf , (ar - inset) * tf,
-		nearDistance, farDistance);
-
-	//Model-View行列初期化
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glRotatef(90,0,0,1);
-	glTranslatef(0.03, 0, 0);
-
-	//記録と描画
-	displayList.StartRecord(true);
-	glScalef(1.0, 0.5, 1.0);
-}
-
-void RIFT_DK2::PostDraw(){
-	const float tf(GetTanFov() * nearDistance);
-	const int hh(height / 2);
-	const float ar((float)height / width);
-
-	displayList.EndRecord(); //記録完了
-
-	//右目
-	glViewport(0, hh, width, hh);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-tf, tf, (-ar + inset) * tf , (ar + inset) * tf,
-		nearDistance, farDistance);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glRotatef(90,0,0,1);
-	glTranslatef(-0.03, 0, 0);
-	displayList.Playback();
-
-	//収差補正
-	DeDistore();
-}
-
-
-
-void RIFT_DK2::SetupDeDistoreTexture(){
 	DISTORE_ELEMENT *body(
 		(DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
 	assert(body);
@@ -99,11 +44,13 @@ void RIFT_DK2::SetupDeDistoreTexture(){
 		for(unsigned u(0); u < width; u++){
 			DISTORE_ELEMENT& b(body[v * width + u]);
 			DISTORE_ELEMENT& d(body[(height - v - 1) * width + u]);
-			P2 tc = {(float)u / width, (float)v / hh};
+
+			P2 tc = {(float)u / hh, (float)v / hh};
 			static const P2 cc = { 0.5, 0.5 + inset };
 			P2 fe = { tc.u - cc.u, tc.v - cc.v };
-			float dd(fe.u*fe.u*4 + fe.v*fe.v);
+			float dd(fe.u*fe.u + fe.v*fe.v);
 			dd = 1.0 + 0.625 * dd + 0.5 * dd*dd + 0.125 * dd*dd*dd;
+// dd = 0;
 			fe.u *= dd;
 			fe.v *= dd;
 			tc.u = fe.u + cc.u;
@@ -125,4 +72,53 @@ void RIFT_DK2::SetupDeDistoreTexture(){
 	free(body);
 }
 
+
+RIFT_DK2::~RIFT_DK2(){}
+
+
+void RIFT_DK2::PreDraw(){
+	const float tf(GetTanFov() * nearDistance);
+	const int hh(height / 2);
+	const float ar((float)hh / width);
+
+	//左目
+	glViewport(0, 0, width, hh);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(-tf, tf, (-ar - inset) * tf , (ar - inset) * tf,
+		nearDistance, farDistance);
+
+	//Model-View行列初期化
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRotatef(90,0,0,1);
+	glTranslatef(0.03, 0, 0);
+
+	//記録と描画
+	displayList.StartRecord(true);
+}
+
+void RIFT_DK2::PostDraw(){
+	const float tf(GetTanFov() * nearDistance);
+	const int hh(height / 2);
+	const float ar((float)hh / width);
+
+	displayList.EndRecord(); //記録完了
+
+	//右目
+	glViewport(0, hh, width, hh);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(-tf, tf, (-ar + inset) * tf , (ar + inset) * tf,
+		nearDistance, farDistance);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRotatef(90,0,0,1);
+	glTranslatef(-0.03, 0, 0);
+	displayList.Playback();
+
+	//収差補正
+	DeDistore();
+}
 

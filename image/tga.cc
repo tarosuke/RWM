@@ -6,6 +6,30 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/mman.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+TGA::TGA(const void* rawTGA) : IMAGE(
+	(*static_cast<const RAW*>(rawTGA)).data,
+	(*static_cast<const RAW*>(rawTGA)).width,
+	(*static_cast<const RAW*>(rawTGA)).height,
+	((*static_cast<const RAW*>(rawTGA)).colorDepth + 7) >> 3){
+	RAW& tga(*(RAW*)rawTGA);
+	if(~tga.attribute & 0x20){
+		//上下逆なので正しい向きの画像を用意する
+		char* nb((char*)malloc(Size()));
+		const unsigned step(Width() * Depth());
+		const char* s((const char*)GetConstPoint(0, Height() - 1));
+		char* d(nb);
+		for(unsigned n(0); n < Height(); ++n, s -= step, d += step){
+			memcpy(d, s, step);
+		}
+		AssignBuffer(nb);
+	}
+
+	Dump(rawTGA);
+};
 
 
 void TGA::Dump(const void* rawTga){

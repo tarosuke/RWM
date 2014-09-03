@@ -24,12 +24,7 @@ public:
 		unsigned char attribute;
 		unsigned char data[0]; //並び准はBGR(A)
 	}__attribute__((packed));
-	TGA(const void* rawTGA) : IMAGE(
-		(*static_cast<const RAW*>(rawTGA)).data,
-		(*static_cast<const RAW*>(rawTGA)).width,
-		(*static_cast<const RAW*>(rawTGA)).height,
-		((*static_cast<const RAW*>(rawTGA)).colorDepth + 7) >> 3){
-			Dump(rawTGA); };
+	TGA(const void* rawTGA);
 private:
 
 	static RAW& Map(const char*);

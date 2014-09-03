@@ -20,15 +20,16 @@ public:
 	unsigned Depth() const{ return depth; };
 	const void* Buffer() const{ return buffer ? buffer : constBuffer; };
 	void* WritableBuffer() const{ return buffer; };
+protected:
+	void AssignBuffer(void*);
+	bool IsInRange(unsigned x, unsigned y) const;
+	unsigned GetOffset(unsigned x, unsigned y) const;
+	void* GetPoint(unsigned, unsigned);
+	const void* GetConstPoint(unsigned, unsigned) const;
 private:
 	void* buffer;
 	const void* constBuffer;
 	unsigned width;
 	unsigned height;
 	unsigned depth;
-
-	bool IsInRange(unsigned x, unsigned y) const;
-	unsigned GetOffset(unsigned x, unsigned y) const;
-	void* GetPoint(unsigned, unsigned);
-	const void* GetConstPoint(unsigned, unsigned) const;
 };

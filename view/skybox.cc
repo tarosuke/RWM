@@ -56,7 +56,7 @@ void SKYBOX::Register(const IMAGE& org){
 	{
 		GL::DisplayList::Recorder recorder(displayList);
 		GL::TEXTURE::BINDER binder(texture);
-		static const float p(500);
+		static const float p(2500);
 		static const float q(1.0 / 4);
 		static const float t(1.0 / 2);
 		static const float h[5] = { 0, q, 2*q, 3*q, 4*q };

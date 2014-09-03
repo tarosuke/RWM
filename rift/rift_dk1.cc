@@ -32,9 +32,40 @@ VIEW* RIFT_DK1::New(){
 
 RIFT_DK1::RIFT_DK1(int f) : RIFT(f, width, height){
 	//歪み情報テクスチャを作る
-	SetupDeDistoreTexture();
+	DISTORE_ELEMENT *body(
+		(DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
+	assert(body);
+	const float rightSide((float)(width - 1)/width);
+	const float halfRight((float)(width/2 - 2)/width);
+	for(unsigned v(0); v < height; v++){
+		for(unsigned u(0); u < width / 2; u++){
+			DISTORE_ELEMENT& b(body[v*width + u]);
+			DISTORE_ELEMENT& d(body[v*width + width-u-1]);
+			P2 tc(GetTrueCoord(u, v));
+			tc.u /= width;
+			tc.v /= height;
+			if(tc.u < 0.0 || halfRight <= tc.u ||
+				tc.v < 0.0 || 1.0 <= tc.v){
+				// 範囲外
+				b.u = d.u = b.v = d.v = -2.0;
+				}else{
+					// 座標を書き込む
+					b.u = tc.u;
+					d.u = rightSide - tc.u;
+					b.v =
+					d.v = tc.v;
+				}
+		}
+	}
+
+	//テクスチャ登録
+	RegisterDeDistoreCoords(body);
+	free(body);
 }
+
+
 RIFT_DK1::~RIFT_DK1(){}
+
 
 void RIFT_DK1::PreDraw(){
 	const float tf(GetTanFov() * nearDistance);
@@ -80,39 +111,4 @@ void RIFT_DK1::PostDraw(){
 	//収差補正
 	DeDistore();
 }
-
-
-
-void RIFT_DK1::SetupDeDistoreTexture(){
-	DISTORE_ELEMENT *body(
-		(DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
-	assert(body);
-	const float rightSide((float)(width - 1)/width);
-	const float halfRight((float)(width/2 - 2)/width);
-	for(unsigned v(0); v < height; v++){
-		for(unsigned u(0); u < width / 2; u++){
-			DISTORE_ELEMENT& b(body[v*width + u]);
-			DISTORE_ELEMENT& d(body[v*width + width-u-1]);
-			P2 tc(GetTrueCoord(u, v));
-			tc.u /= width;
-			tc.v /= height;
-			if(tc.u < 0.0 || halfRight <= tc.u ||
-				tc.v < 0.0 || 1.0 <= tc.v){
-				// 範囲外
-				b.u = d.u = b.v = d.v = -2.0;
-			}else{
-				// 座標を書き込む
-				b.u = tc.u;
-				d.u = rightSide - tc.u;
-				b.v =
-				d.v = tc.v;
-			}
-		}
-	}
-
-	//テクスチャ登録
-	RegisterDeDistoreCoords(body);
-	free(body);
-}
-
 

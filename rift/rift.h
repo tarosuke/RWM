@@ -98,7 +98,7 @@ private:
 	void Keepalive();
 	static void* KeepaliveThread(void*);
 
-	
+
 	/////VIEW関連
 	static float D(float l);
 

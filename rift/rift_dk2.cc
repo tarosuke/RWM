@@ -39,27 +39,22 @@ RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){
 		(DISTORE_ELEMENT*)malloc(width * height * sizeof(DISTORE_ELEMENT)));
 	assert(body);
 	const unsigned hh(height / 2);
-	const float bs((float)(height - 1)/height);
 	for(unsigned v(0); v < hh; v++){
 		for(unsigned u(0); u < width; u++){
 			DISTORE_ELEMENT& b(body[v * width + u]);
 			DISTORE_ELEMENT& d(body[(height - v - 1) * width + u]);
 
-			P2 tc = {(float)u / hh, (float)v / hh};
-			static const P2 cc = { 0.5, 0.5 };
-			P2 fe = { tc.u - cc.u, tc.v - cc.v };
-			float dd(fe.u*fe.u + fe.v*fe.v);
+			P2 tc = {(float)u / hh - (float)0.5, (float)v / hh - (float)0.5};
+			float dd(tc.u*tc.u + tc.v*tc.v);
 			dd = 1.0 + 0.625 * dd + 0.5 * dd*dd + 0.125 * dd*dd*dd;
-			fe.u *= dd;
-			fe.v *= dd;
-			tc.u = fe.u + cc.u;
-			tc.v = fe.v + cc.v;
+			tc.u *= dd;
+			tc.v *= dd;
 
-			if(0 <= tc.u && tc.u < 1.0 && 0 <= tc.v && tc.v < 1.0){
+			if(-0.5 <= tc.v && tc.v < 0.5){
 				b.u = tc.u;
 				b.v = tc.v * 0.5;
 				d.u = tc.u;
-				d.v = bs - tc.v * 0.5;
+				d.v = -tc.v * 0.5;
 			}else{
 				b.u = d.u = b.v = d.v = -2.0;
 			}

@@ -75,16 +75,13 @@ private:
 	float temperature;
 
 	/////センサ関連
+	const int fd;
 	void UpdateAngularVelocity(const int[3], double);
 	void UpdateAccelaretion(const int[3], double);
 	void UpdateMagneticField(const int[3]);
 	void UpdateTemperature(float){};
 	static const VECTOR<3> vertical;
 	void ErrorCorrection();
-
-	const int fd;
-	static const long keepaliveInterval = 1000;
-	void Keepalive();
 
 	//受信データのデコード
 	void DecodeSensor(const unsigned char*, int[3]);
@@ -95,7 +92,13 @@ private:
 	static void* _SensorThread(void* initialData);
 	void SensorThread();
 
+	// Keepalive処理
+	pthread_t keepaliveThread;
+	static const long keepaliveInterval = 1000;
+	void Keepalive();
+	static void* KeepaliveThread(void*);
 
+	
 	/////VIEW関連
 	static float D(float l);
 

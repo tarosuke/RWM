@@ -136,13 +136,22 @@ void RIFT::ErrorCorrection(){
 }
 
 
+void* RIFT::KeepaliveThread(void* instance){
+	//オブジェクトを設定して監視開始
+	(*(RIFT*)instance).Keepalive();
+	return 0;
+}
+
 void RIFT::Keepalive(){
-	static const char keepaliveCommand[5] ={
-		8, 0, 0,
-		(char)(keepaliveInterval & 0xff),
-		(char)(keepaliveInterval >> 8)
-	};
-	ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
+	for(;;){
+		static const char keepaliveCommand[5] ={
+			8, 0, 0,
+			(char)(keepaliveInterval & 0xff),
+			(char)(keepaliveInterval >> 8)
+		};
+		ioctl(fd, HIDIOCSFEATURE(5), keepaliveCommand);
+		usleep(keepaliveInterval * 500);
+	}
 }
 
 void RIFT::DecodeSensor(const unsigned char* buff, int v[3]){
@@ -232,9 +241,6 @@ void RIFT::SensorThread(){
 				printf("%5d bytes dropped.\n", rb);
 			}
 		}
-
-		//KeepAliveを送信
-		Keepalive();
 	}
 }
 void* RIFT::_SensorThread(void* initialData){
@@ -323,13 +329,11 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	pthread_attr_init(&attr);
 	pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
 
-	//デバイスを閉じないカーネルバグ対策で最初に一発Keepalive
-	Keepalive();
+	//Keepaliveスレッド開始
+	pthread_create(&keepaliveThread, &attr, KeepaliveThread, (void*)this);
 
 	//センサデータ取得開始
 	pthread_create(&sensorThread, &attr, _SensorThread, (void*)this);
-
-
 
 
 	if(GLEW_OK != glewInit()){
@@ -391,6 +395,8 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 RIFT::~RIFT(){
 	pthread_cancel(sensorThread);
 	pthread_join(sensorThread, 0);
+	pthread_cancel(keepaliveThread);
+	pthread_join(keepaliveThread, 0);
 	close(fd);
 
 	//磁化情報を保存

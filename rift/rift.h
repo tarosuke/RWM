@@ -22,7 +22,7 @@ protected:
 	//画面の大きさなど
 	const unsigned width;
 	const unsigned height;
-	static const float inset = 0.1453;// + 0.04;
+	static const float inset = 0;//0.1453;// + 0.04;
 	static const float nearDistance = 0.1;
 	static const float farDistance = 5000;
 
@@ -98,7 +98,7 @@ private:
 	void Keepalive();
 	static void* KeepaliveThread(void*);
 
-	
+
 	/////VIEW関連
 	static float D(float l);
 

@@ -50,7 +50,6 @@ RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){
 			P2 fe = { tc.u - cc.u, tc.v - cc.v };
 			float dd(fe.u*fe.u + fe.v*fe.v);
 			dd = 1.0 + 0.625 * dd + 0.5 * dd*dd + 0.125 * dd*dd*dd;
-// dd = 0;
 			fe.u *= dd;
 			fe.v *= dd;
 			tc.u = fe.u + cc.u;

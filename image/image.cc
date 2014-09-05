@@ -71,6 +71,15 @@ void IMAGE::operator=(const IMAGE& org){
 }
 
 
+void IMAGE::AssignBuffer(void* newBuffer){
+	if(buffer){
+		free(buffer);
+	}
+	buffer = newBuffer;
+}
+
+
+
 bool IMAGE::IsInRange(unsigned x, unsigned y) const{
 	return x < width && y < height;
 }

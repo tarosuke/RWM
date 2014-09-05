@@ -46,7 +46,7 @@ RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){
 			DISTORE_ELEMENT& d(body[(height - v - 1) * width + u]);
 
 			P2 tc = {(float)u / hh, (float)v / hh};
-			static const P2 cc = { 0.5, 0.5 + inset };
+			static const P2 cc = { 0.5, 0.5 };
 			P2 fe = { tc.u - cc.u, tc.v - cc.v };
 			float dd(fe.u*fe.u + fe.v*fe.v);
 			dd = 1.0 + 0.625 * dd + 0.5 * dd*dd + 0.125 * dd*dd*dd;
@@ -84,7 +84,7 @@ void RIFT_DK2::PreDraw(){
 	glViewport(0, 0, width, hh);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-tf, tf, (-ar - inset) * tf , (ar - inset) * tf,
+	glFrustum(-tf, tf, -ar * tf , ar * tf,
 		nearDistance, farDistance);
 
 	//Model-View行列初期化
@@ -108,7 +108,7 @@ void RIFT_DK2::PostDraw(){
 	glViewport(0, hh, width, hh);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-tf, tf, (-ar + inset) * tf , (ar + inset) * tf,
+	glFrustum(-tf, tf, -ar * tf , ar * tf,
 		nearDistance, farDistance);
 
 	glMatrixMode(GL_MODELVIEW);

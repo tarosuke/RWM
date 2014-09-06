@@ -34,7 +34,9 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 	if(dt <= 0.02){ //dtが異常に大きい時はデータが欠損しているので位置更新しない
 		//加速度情報取得
 		VECTOR<3> acc(axis, 0.0001);
+		const double scale(acc.Length());
 		acc.Rotate(pose.direction); //絶対座標系へ変換
+		acc *= scale;
 
 		//重力加速度分離
 		VECTOR<3> g(acc);
@@ -46,6 +48,7 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 			//初期キャリブレーション中なので停止
 			velocity *= 0;
 			pose.position *= 0;
+			gravity[1] = G;
 		}else{
 			//重力を除去
 			acc -= gravity;
@@ -70,8 +73,12 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 					p[n] = limit;
 				}
 			}
-			velocity *= 0.999;
-			pose.position *= 0.996;
+
+			double distance(pose.position.Length() * 0.5);
+			double lead(1.0 - distance*distance*distance*distance);
+
+			velocity *= lead;
+			pose.position *= lead;
 		}
 	}
 }
@@ -124,7 +131,9 @@ void RIFT::ErrorCorrection(){
 	COMPLEX<4> gdiff(gravity, vertical);
 	gdiff.Normalize();
 	gdiff *= correctionGain;
+	const double gl(gravity.Length());
 	gravity.Rotate(gdiff);
+	gravity *= gl;
 	diff *= gdiff;
 
 	//磁気補正

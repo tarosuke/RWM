@@ -50,6 +50,9 @@ public:
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
 
+	//起動進捗チェック
+	virtual float InitialProgress()=0;
+
 protected:
 	struct POSE{
 		COMPLEX<4> direction;

@@ -100,7 +100,7 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		//キャリブレーション可能判定
 		if(6000 < abs(d[0]) && 6000 < abs(d[1]) && 6000 < abs(d[2])){
 			magReady = true;
-			averageRatio = initialAverageRatio;
+			averageRatio = 3;
 			puts("magnetic azimuth correction READY.");
 		}
 	}
@@ -131,7 +131,8 @@ void RIFT::ErrorCorrection(){
 
 	//平均化、補正レートの更新
 	if(averageRatio < maxAverageRatio){
-		correctionGain = 1.0 / ++averageRatio;
+		correctionGain = (1.0 + averageRatio - maxAverageRatio) / averageRatio;
+		++averageRatio;
 	}
 }
 
@@ -306,7 +307,7 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	VIEW(w, h),
 	width(w),
 	height(h),
-	averageRatio(initialAverageRatio),
+	averageRatio(1),
 	correctionGain(1.0/averageRatio),
 	gravity((const double[]){ 0.0, -G, 0.0 }),
 	magMax((const double[]){ -MaxFloat, -MaxFloat, -MaxFloat }),

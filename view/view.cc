@@ -36,6 +36,8 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
+
+	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
 }
 
 
@@ -62,7 +64,7 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
-//		WINDOW::DrawAll(); //非透過窓描画
+		WINDOW::DrawAll(); //非透過窓描画
 
 		//頭の向きと位置をModel-View行列に反映
 		const COMPLEX<4>::ROTATION r(p.direction);
@@ -70,7 +72,6 @@ void VIEW::Run(){
 		glPushMatrix();
 		glRotated(-r.angle * 180 / M_PI, r.axis[0], r.axis[1], r.axis[2]);
 		glTranslated(-pp[0]*10, -pp[1]*10, -pp[2]*10);
-// printf("%lf %lf %lf.\n", pp[0], pp[1], pp[2]);
 		externals.Each(&DRAWER::Draw); //externalを描画
 
 		//天箱は最初のだけ描画
@@ -79,9 +80,7 @@ void VIEW::Run(){
 			(*sb).Draw();
 		}
 
-// REFERENCE::DrawAll();
-
-#if 1
+#if 0
 #if 0
 		//動作確認用の地面っぽい平面
 		glColor4f(1,1,1,0.2);
@@ -110,7 +109,7 @@ void VIEW::Run(){
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
-//		WINDOW::DrawTransparentAll(); //透過窓描画
+		WINDOW::DrawTransparentAll(); //透過窓描画
 		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
 		//収差修正用参照物体描画

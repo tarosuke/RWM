@@ -54,7 +54,6 @@ private:
 	POSE pose;
 
 	//補正のファストスタート処理
-	static const int initialAverageRatio = 3;
 	static const int maxAverageRatio = 10000;
 	int  averageRatio;
 	double correctionGain;

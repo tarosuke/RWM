@@ -42,28 +42,37 @@ void RIFT::UpdateAccelaretion(const int axis[3], double dt){
 		gravity *= 1.0 - correctionGain;
 		gravity += g;
 
-		//重力を除去
-		acc -= gravity;
+		if(InitialProgress() < 0.9){
+			//初期キャリブレーション中なので停止
+			velocity *= 0;
+			pose.position *= 0;
+		}else{
+			//重力を除去
+			acc -= gravity;
 
-		//速度、位置を算出
-		acc *= dt;
-		velocity += acc;
-		VECTOR<3> v(velocity);
-		v *= dt;
-		pose.position += v;
+			//速度、位置を算出
+			acc *= dt;
+			velocity += acc;
+			VECTOR<3> v(velocity);
+			v *= dt;
+			pose.position += v;
 
-		//枠を出ていたら止める
-		const float limit(0.4);
-		double* p(pose.position);
-		double* ve(velocity);
-		for(unsigned n(0); n < 3; ++n){
-			if(p[n] < - limit || limit < p[n]){
-				ve[n] = 0;
-				p[n] = p[n] < 0 ? -limit : limit;
+			//枠を出ていたら止める
+			const float limit(1.0);
+			double* p(pose.position);
+			double* ve(velocity);
+			for(unsigned n(0); n < 3; ++n){
+				if(p[n] < -limit){
+					ve[n] = 0;
+					p[n] = -limit;
+				}else if(limit < p[n]){
+					ve[n] = 0;
+					p[n] = limit;
+				}
 			}
+			velocity *= 0.999;
+			pose.position *= 0.996;
 		}
-		velocity *= 0.999;
-		pose.position *= 0.995;
 	}
 }
 
@@ -131,7 +140,7 @@ void RIFT::ErrorCorrection(){
 
 	//平均化、補正レートの更新
 	if(averageRatio < maxAverageRatio){
-		correctionGain = (1.0 + averageRatio - maxAverageRatio) / averageRatio;
+		correctionGain = 0.7 / averageRatio;
 		++averageRatio;
 	}
 }

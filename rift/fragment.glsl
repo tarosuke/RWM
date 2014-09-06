@@ -7,7 +7,13 @@ void main(void){
 	vec4 db = dg * 1.020;
 	dr[3] = dg[3] = db[3] = 1.0;
 
-	vec4 c = vec4(0.5, 0.25, 0, 0);
+	float d;
+	if(gl_TexCoord[0][1] < 0.5){
+		d = 0.25;
+	}else{
+		d = 0.75;
+	}
+	vec4 c = vec4(0.5, d, 0, 0);
 	dr += c;
 	dg += c;
 	db += c;

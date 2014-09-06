@@ -71,7 +71,7 @@ void VIEW::Run(){
 		const double* const pp(p.position);
 		glPushMatrix();
 		glRotated(-r.angle * 180 / M_PI, r.axis[0], r.axis[1], r.axis[2]);
-		glTranslated(-pp[0]*10, -pp[1]*10, -pp[2]*10);
+		glTranslated(-pp[0], -pp[1], -pp[2]);
 		externals.Each(&DRAWER::Draw); //externalを描画
 
 		//天箱は最初のだけ描画

@@ -13,10 +13,12 @@ SNOW SNOW::particles[numOfParticles];
 
 void SNOW::DrawAll(){
 	glDisable(GL_LIGHTING);
-
+glPushMatrix();
+glRotatef(90,-1,0,0);
 	for(unsigned n(0); n < numOfParticles; ++n){
 		particles[n].Run();
 	}
+glPopMatrix();
 }
 
 float SNOW::R(){
@@ -53,8 +55,8 @@ void SNOW::Run(){
 	if(p.y < -1.6 ){
 		p.y += 10.0;
 	}
-	if(p.x < -5) p.x += 10;
-	if(5 < p.x) p.x -= 10;
-	if(p.z < -10) p.z += 10;
-	if(0 < p.z) p.z -= 10;
+	if(p.x < -2.5) p.x += 5;
+	if(2.5 < p.x) p.x -= 5;
+	if(p.z < -2.5) p.z += 5;
+	if(2.5 < p.z) p.z -= 5;
 };

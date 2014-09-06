@@ -131,7 +131,8 @@ void RIFT::ErrorCorrection(){
 
 	//平均化、補正レートの更新
 	if(averageRatio < maxAverageRatio){
-		correctionGain = 0.7 / averageRatio++;
+		correctionGain = (1.0 + averageRatio - maxAverageRatio) / averageRatio;
+		++averageRatio;
 	}
 }
 

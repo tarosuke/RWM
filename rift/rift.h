@@ -12,6 +12,11 @@ class RIFT : public VIEW{
 	RIFT(const RIFT&);
 	void operator=(const RIFT&);
 public:
+	float InitialProgress(){
+		return averageRatio < maxAverageRatio ?
+			(float)averageRatio / maxAverageRatio : 1.0;
+	};
+
 protected:
 	RIFT(int fd, unsigned w, unsigned h);
 	virtual ~RIFT();
@@ -68,7 +73,6 @@ private:
 	VECTOR<3> vNorth; //北にする方位
 	bool magReady; //磁化情報取得完了
 	VECTOR<3> magneticField; //磁気の向き(絶対座標系)
-//	VECTOR<3> prevMagneticField; //一つ前の磁気の向き(絶対座標系)
 
 	// 温度センサ[℃]
 	float temperature;

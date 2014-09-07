@@ -23,7 +23,7 @@ void PARTICLES::Update(){
 	particles.Each(&PARTICLE::Update);
 }
 
-void PARTICLES::Draw()const{
+void PARTICLES::DrawTransparent()const{
 	glDisable(GL_LIGHTING);
 	glPushMatrix();
 	drawList.Playback();

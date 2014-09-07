@@ -104,6 +104,8 @@ void VIEW::Run(){
 #endif
 #endif
 
+		externals.Each(&DRAWER::DrawTransparent); //external(透過)を描画
+
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係

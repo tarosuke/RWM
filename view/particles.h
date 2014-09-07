@@ -11,7 +11,7 @@ public:
 	PARTICLES();
 	~PARTICLES();
 	void Update();
-	void Draw() const;
+	void DrawTransparent() const;
 private:
 	static const unsigned numOfParticles = 1000;
 	class PARTICLE{

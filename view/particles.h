@@ -2,10 +2,10 @@
 #pragma once
 
 
-class SNOW{
+class PARTICLES{
 public:
 	static void DrawAll();
-	SNOW();
+	PARTICLES();
 private:
 	static const unsigned numOfParticles = 1000;
 	struct P{
@@ -14,7 +14,7 @@ private:
 		float z;
 	}__attribute__((packed));
 	static P positions[];
-	static SNOW particles[];
+	static PARTICLES particles[];
 	static float R();
 
 	P& p;

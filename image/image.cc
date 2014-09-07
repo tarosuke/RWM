@@ -51,6 +51,13 @@ IMAGE::IMAGE(const void* org, unsigned w, unsigned h, unsigned d) :
 	height(h),
 	depth(d){}
 
+IMAGE::IMAGE(unsigned w, unsigned h, unsigned d) :
+	buffer(malloc(w * h * d)),
+	constBuffer(0),
+	width(w),
+	height(h),
+	depth(d){}
+
 IMAGE::~IMAGE(){
 	if(buffer){
 		free(buffer);

@@ -4,14 +4,14 @@
 
 #include <GL/gl.h>
 
-#include "snow.h"
+#include "particles.h"
 
 
-SNOW::P SNOW::positions[numOfParticles];
-SNOW SNOW::particles[numOfParticles];
+PARTICLES::P PARTICLES::positions[numOfParticles];
+PARTICLES PARTICLES::particles[numOfParticles];
 
 
-void SNOW::DrawAll(){
+void PARTICLES::DrawAll(){
 	glDisable(GL_LIGHTING);
 glPushMatrix();
 glRotatef(90,-1,0,0);
@@ -21,19 +21,19 @@ glRotatef(90,-1,0,0);
 glPopMatrix();
 }
 
-float SNOW::R(){
+float PARTICLES::R(){
 	return (float)rand() / RAND_MAX;
 };
 
 
 
-SNOW::SNOW() : p(positions[this - particles]){
+PARTICLES::PARTICLES() : p(positions[this - particles]){
 	p.x = R() * 10 - 5;
 	p.y = R() * 10;
 	p.z = R() * 10 - 10;
 }
 
-void SNOW::Run(){
+void PARTICLES::Run(){
 	p.x += R() * 0.005;
 	p.y += R() * 0.005;
 	p.z += R() * 0.005;

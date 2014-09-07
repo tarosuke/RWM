@@ -7,6 +7,7 @@ public:
 	IMAGE(const IMAGE&);
 	IMAGE(const IMAGE&, int x, int y, unsigned w, unsigned h);
 	IMAGE(const void*, unsigned w, unsigned h, unsigned bytesDepth);
+	IMAGE(unsigned w, unsigned h, unsigned bytesDepth);
 	virtual ~IMAGE();
 
 	void Update(const IMAGE&, int x, int y);

@@ -7,7 +7,7 @@
 #include "view.h"
 #include "../rift/rift.h"
 #include "../window/window.h"
-#include "snow.h"
+#include "particles.h"
 #include "reference.h"
 
 
@@ -91,7 +91,7 @@ void VIEW::Run(){
 		glEnd();
 #endif
 #if 1
-		SNOW::DrawAll();
+		PARTICLES::DrawAll();
 #endif
 #if 1
 		glColor4f(1,1,1,0.2);

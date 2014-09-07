@@ -38,6 +38,7 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	glEnable(GL_TEXTURE_2D);
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
+	new PARTICLES;
 }
 
 
@@ -80,7 +81,7 @@ void VIEW::Run(){
 			(*sb).Draw();
 		}
 
-#if 1
+#if 0
 #if 0
 		//動作確認用の地面っぽい平面
 		glColor4f(1,1,1,0.2);
@@ -89,9 +90,6 @@ void VIEW::Run(){
 		glVertex3f(8.66, -1.6, 5);
 		glVertex3f(-8.66, -1.6, 5);
 		glEnd();
-#endif
-#if 1
-		PARTICLES::DrawAll();
 #endif
 #if 1
 		glColor4f(1,1,1,0.2);

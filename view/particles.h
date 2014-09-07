@@ -1,23 +1,33 @@
 
 #pragma once
 
+#include "view.h"
+#include "../toolbox/queue/queue.h"
+#include "../gl/displayList.h"
 
-class PARTICLES{
+
+class PARTICLES : VIEW::DRAWER{
 public:
-	static void DrawAll();
 	PARTICLES();
+	~PARTICLES();
+	void Update();
+	void Draw() const;
 private:
 	static const unsigned numOfParticles = 1000;
-	struct P{
+	class PARTICLE{
+	public:
+		PARTICLE(TOOLBOX::QUEUE<PARTICLE>&);
+		void Update();
+	private:
+		TOOLBOX::NODE<PARTICLE> node;
 		float x;
 		float y;
 		float z;
-	}__attribute__((packed));
-	static P positions[];
-	static PARTICLES particles[];
-	static float R();
+	};
 
-	P& p;
-	void Run();
+	TOOLBOX::QUEUE<PARTICLE> particles;
+	GL::DisplayList drawList;
+
+	static float R();
 };
 

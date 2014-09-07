@@ -7,18 +7,27 @@
 #include "particles.h"
 
 
-PARTICLES::P PARTICLES::positions[numOfParticles];
-PARTICLES PARTICLES::particles[numOfParticles];
-
-
-void PARTICLES::DrawAll(){
-	glDisable(GL_LIGHTING);
-glPushMatrix();
-glRotatef(90,-1,0,0);
+PARTICLES::PARTICLES(){
 	for(unsigned n(0); n < numOfParticles; ++n){
-		particles[n].Run();
+		new PARTICLE(particles);
 	}
-glPopMatrix();
+	VIEW::RegisterExternals(*this);
+}
+
+PARTICLES::~PARTICLES(){
+	//TODO:PARTICLEをdelete
+}
+
+void PARTICLES::Update(){
+	GL::DisplayList::Recorder rec(drawList);
+	particles.Each(&PARTICLE::Update);
+}
+
+void PARTICLES::Draw()const{
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+	drawList.Playback();
+	glPopMatrix();
 }
 
 float PARTICLES::R(){
@@ -27,18 +36,19 @@ float PARTICLES::R(){
 
 
 
-PARTICLES::PARTICLES() : p(positions[this - particles]){
-	p.x = R() * 10 - 5;
-	p.y = R() * 10;
-	p.z = R() * 10 - 10;
+PARTICLES::PARTICLE::PARTICLE(TOOLBOX::QUEUE<PARTICLE>& q) : node(*this){
+	x = R() * 10 - 5;
+	y = R() * 10;
+	z = R() * 10 - 10;
+	q.Add(node);
 }
 
-void PARTICLES::Run(){
-	p.x += R() * 0.005;
-	p.y += R() * 0.005;
-	p.z += R() * 0.005;
+void PARTICLES::PARTICLE::Update(){
+	x += R() * 0.005;
+	y += R() * 0.005;
+	z += R() * 0.005;
 
-	const float r(3 / sqrt(p.x*p.x+p.y*p.y+p.z*p.z));
+	const float r(3 / sqrt(x*x+y*y+z*z));
 
 	if(1.0 <= r){
 		glPointSize(r);
@@ -48,15 +58,15 @@ void PARTICLES::Run(){
 		glColor4f(1, 1, 1, r);
 	}
 	glBegin(GL_POINTS);
-	glVertex3f(p.x, p.y, p.z);
+	glVertex3f(x, y, z);
 	glEnd();
 
-	p.y -= 0.025;
-	if(p.y < -1.6 ){
-		p.y += 10.0;
+	y -= 0.025;
+	if(y < -1.6 ){
+		y += 10.0;
 	}
-	if(p.x < -2.5) p.x += 5;
-	if(2.5 < p.x) p.x -= 5;
-	if(p.z < -2.5) p.z += 5;
-	if(2.5 < p.z) p.z -= 5;
+	if(x < -2.5) x += 5;
+	if(2.5 < x) x -= 5;
+	if(z < -2.5) z += 5;
+	if(2.5 < z) z -= 5;
 };

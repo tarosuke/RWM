@@ -22,7 +22,8 @@ public:
 		virtual void Update(){};
 
 		//内容描画(通常/透過)
-		virtual void Draw() const=0;
+		virtual void Draw() const{};
+		virtual void DrawTransparent() const{};
 
 		//登録と解除
 		void Add(TOOLBOX::QUEUE<DRAWER>& q){ node.Attach(q); };

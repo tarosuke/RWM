@@ -1,4 +1,6 @@
 
+#include <math.h>
+
 #include "lightball.h"
 
 
@@ -12,7 +14,7 @@ LIGHTBALL::LIGHTBALL(unsigned size) : IMAGE(size, size, 4){
 
 				const float dx(x - 0.5 * size);
 				const float dy(y - 0.5 * size);
-				const float t(255 - (2*dx*dx+dy*dy) / size*size);
+				const float t(255 - 511*sqrt(dx*dx+dy*dy) / size);
 				px[3] = t < 0 ? 0 : 255 < t ? 255 : t;
 			}
 		}

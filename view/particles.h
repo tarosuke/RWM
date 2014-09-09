@@ -4,11 +4,12 @@
 #include "view.h"
 #include "../toolbox/queue/queue.h"
 #include "../gl/displayList.h"
+#include "../gl/texture.h"
 
 
 class PARTICLES : VIEW::DRAWER{
 public:
-	PARTICLES(float size);
+	PARTICLES(float size, const class IMAGE* particleImage = 0);
 	~PARTICLES();
 	void Update();
 	void DrawTransparent() const;
@@ -28,6 +29,7 @@ private:
 
 	TOOLBOX::QUEUE<PARTICLE> particles;
 	GL::DisplayList drawList;
+	GL::TEXTURE* sprite;
 
 	float size;
 	static const float minSize = 3;

@@ -30,6 +30,7 @@ namespace GL{
 		filter_mag : GL_LINEAR,
 		filter_min : GL_LINEAR,
 		texture_mode : GL_REPLACE,
+		pointSprite : false,
 	};
 
 	TEXTURE::TEXTURE(const PARAMS& p) : tid(0), empty(true){
@@ -64,9 +65,9 @@ namespace GL{
 		const unsigned d(image.Depth());
 		glTexImage2D(
 			GL_TEXTURE_2D, 0,
-			d <= 24 ? GL_RGB : GL_RGBA,
+			d <= 3 ? GL_RGB : GL_RGBA,
 			image.Width(), image.Height(), 0,
-			d <= 24 ? GL_BGR : GL_BGRA,
+			d <= 3 ? GL_BGR : GL_BGRA,
 			GL_UNSIGNED_BYTE, const_cast<void*>(image.Buffer()));
 		empty = false;
 
@@ -80,6 +81,10 @@ namespace GL{
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,p.filter_mag);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,p.filter_min);
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, p.texture_mode);
+
+		if(p.pointSprite){
+			glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+		}
 	}
 
 	void TEXTURE::Update(const IMAGE& image, int x, int y){

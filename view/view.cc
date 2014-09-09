@@ -9,6 +9,7 @@
 #include "../window/window.h"
 #include "particles.h"
 #include "reference.h"
+#include "../image/lightball.h"
 
 
 
@@ -38,7 +39,8 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	glEnable(GL_TEXTURE_2D);
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
-	new PARTICLES(32);
+	LIGHTBALL lb;
+	new PARTICLES(32, &lb);
 }
 
 

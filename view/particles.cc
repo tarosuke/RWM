@@ -67,9 +67,9 @@ glPopMatrix();
 
 void PARTICLES::DrawTransparent()const{
 	glDisable(GL_LIGHTING);
-	glPushMatrix();
+//	glPushMatrix();
 	drawList.Playback();
-	glPopMatrix();
+//	glPopMatrix();
 }
 
 float PARTICLES::R(){
@@ -80,9 +80,9 @@ float PARTICLES::R(){
 
 PARTICLES::PARTICLE::PARTICLE(PARTICLES& p) :
 	node(*this),particles(p){
-	x = R() * 10 - 5;
+	x = R() * 1000 - 500;
 	y = R() * 500;
-	z = R() * 10 - 10;
+	z = R() * 2 - 5;
 	p.particles.Add(node);
 }
 
@@ -105,8 +105,8 @@ void PARTICLES::PARTICLE::Update(){
 	if(y < -1.6 ){
 		y += 500.0;
 	}
-	if(x < -2.5) x += 5;
-	if(2.5 < x) x -= 5;
-	if(z < -2.5) z += 5;
-	if(2.5 < z) z -= 5;
+	if(x < -500) x += 1000;
+	if(500 < x) x -= 1000;
+// 	if(z < -2.5) z += 5;
+// 	if(2.5 < z) z -= 5;
 };

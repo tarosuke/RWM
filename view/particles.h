@@ -13,20 +13,27 @@ public:
 	~PARTICLES();
 	void Update();
 	void DrawTransparent() const;
-private:
-	static const unsigned numOfParticles = 1000;
+protected:
 	class PARTICLE{
+		PARTICLE();
+		PARTICLE(const PARTICLE&);
+		void operator=(const PARTICLE&);
 	public:
-		PARTICLE(PARTICLES&);
-		void Update();
-	private:
-		TOOLBOX::NODE<PARTICLE> node;
+		PARTICLE(PARTICLES&,float,float,float);
+		virtual ~PARTICLE(){};
+		virtual void Update()=0;
+		void Draw();
+	protected:
 		float x;
 		float y;
 		float z;
+	private:
+		TOOLBOX::NODE<PARTICLE> node;
 		PARTICLES& particles;
 	};
 
+	static float R();
+private:
 	TOOLBOX::QUEUE<PARTICLE> particles;
 	GL::DisplayList drawList;
 	GL::TEXTURE* sprite;
@@ -35,7 +42,5 @@ private:
 	static const float minSize = 3;
 
 	static const float distanceAttenuation[];
-
-	static float R();
 };
 

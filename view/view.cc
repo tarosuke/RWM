@@ -7,7 +7,7 @@
 #include "view.h"
 #include "../rift/rift.h"
 #include "../window/window.h"
-#include "particles.h"
+#include "particleRiver.h"
 #include "reference.h"
 #include "../image/lightball.h"
 
@@ -40,7 +40,7 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
 	LIGHTBALL lb;
-	new PARTICLES(64, &lb);
+	new PARTICLESRIVER(64, &lb, 1000, -500, 500, -2, -1, -500, 500);
 }
 
 

@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 #include "../gl/gl.h"
 
@@ -26,11 +27,6 @@ PARTICLES::PARTICLES(float size, const IMAGE* pImage) : sprite(0), size(size){
 		glEnable(GL_TEXTURE_2D);
 		sprite = new GL::TEXTURE(*pImage, spriteParams);
 	}
-
-	//パーティクル生成
-	for(unsigned n(0); n < numOfParticles; ++n){
-		new PARTICLE(*this);
-	}
 	VIEW::RegisterExternals(*this);
 }
 
@@ -48,20 +44,19 @@ void PARTICLES::Update(){
 	glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, distanceAttenuation);
 	glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, minSize);
 	glPointSize(size);
-glPushMatrix();
-glRotatef(90, -1, 0, 0);
 
 	if(sprite){
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_POINT_SPRITE);
 		GL::TEXTURE::BINDER b(*sprite);
 		particles.Each(&PARTICLE::Update);
+		particles.Each(&PARTICLE::Draw);
 		glDisable(GL_POINT_SPRITE);
 	}else{
 		particles.Each(&PARTICLE::Update);
+		particles.Each(&PARTICLE::Draw);
 	}
 
-glPopMatrix();
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
 
@@ -78,19 +73,10 @@ float PARTICLES::R(){
 
 
 
-PARTICLES::PARTICLE::PARTICLE(PARTICLES& p) :
-	node(*this),particles(p){
-	x = R() * 1000 - 500;
-	y = R() * 500;
-	z = R() * 2 - 5;
-	p.particles.Add(node);
-}
+PARTICLES::PARTICLE::PARTICLE(PARTICLES& p, float x, float y, float z) :
+	x(x), y(y), z(z), node(*this), particles(p){ p.particles.Add(node); }
 
-void PARTICLES::PARTICLE::Update(){
-	x += R() * 0.005;
-	y += R() * 0.005;
-	z += R() * 0.005;
-
+void PARTICLES::PARTICLE::Draw(){
 	const float r(particles.size / sqrt(x*x+y*y+z*z));
 	if(minSize <= r){
 		glColor3f(1, 1, 1);
@@ -100,13 +86,4 @@ void PARTICLES::PARTICLE::Update(){
 	glBegin(GL_POINTS);
 	glVertex3f(x, y, z);
 	glEnd();
-
-	y -= 0.125;
-	if(y < -1.6 ){
-		y += 500.0;
-	}
-	if(x < -500) x += 1000;
-	if(500 < x) x -= 1000;
-// 	if(z < -2.5) z += 5;
-// 	if(2.5 < z) z -= 5;
 };

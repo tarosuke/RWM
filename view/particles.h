@@ -39,7 +39,7 @@ private:
 	GL::TEXTURE* sprite;
 
 	float size;
-	static const float minSize = 3;
+	static const float minSize = 1;
 
 	static const float distanceAttenuation[];
 };

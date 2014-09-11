@@ -15,7 +15,8 @@ public:
 		unsigned numOfParticles,
 		float xMin, float xMax,
 		float yMin, float yMax,
-		float zMin, float zMax);
+		float zMin, float zMax,
+		float xv, float yv, float zv);
 private:
 	class P : public PARTICLE{
 	public:
@@ -30,5 +31,11 @@ private:
 		float min;
 		float max;
 	}x, y, z;
+	struct VELOCITY{
+		VELOCITY(float x, float y, float z) : x(x), y(y), z(z){};
+		float x;
+		float y;
+		float z;
+	}velocity;
 };
 

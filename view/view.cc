@@ -40,7 +40,7 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
 	LIGHTBALL lb;
-	new PARTICLESRIVER(64, &lb, 1000, -500, 500, -2, -1, -500, 500);
+	new PARTICLESRIVER(32, &lb, 5000, -500, 500, -2, -1, -500, 500, 0, 0, -0.02);
 }
 
 

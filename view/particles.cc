@@ -81,7 +81,7 @@ void PARTICLES::PARTICLE::Draw(){
 	if(minSize <= r){
 		glColor3f(1, 1, 1);
 	}else{
-		glColor4f(1, 1, 1, minSize / r);
+		glColor4f(1, 1, 1, r / minSize);
 	}
 	glBegin(GL_POINTS);
 	glVertex3f(x, y, z);

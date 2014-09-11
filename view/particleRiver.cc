@@ -13,11 +13,13 @@ PARTICLESRIVER::PARTICLESRIVER(
 	unsigned numOfParticles,
 	float xMin, float xMax,
 	float yMin, float yMax,
-	float zMin, float zMax) :
+	float zMin, float zMax,
+	float xv, float yv, float zv) :
 	PARTICLES(size, sprite),
 	x(xMin, xMax),
 	y(yMin, yMax),
-	z(zMin, zMax){
+	z(zMin, zMax),
+	velocity(xv, yv, zv){
 
 	for(unsigned n(0); n < numOfParticles; ++n){
 		new P(*this);
@@ -38,22 +40,17 @@ float PARTICLESRIVER::P::R(float min, float max){
 
 
 void PARTICLESRIVER::P::Update(){
-	x *= 0.999;
-	z *= 0.999;
+	//移動
+	x += particles.velocity.x;
+	y += particles.velocity.y;
+	z += particles.velocity.z;
 
-#if 0
-	x += R() * 0.005;
-	y += R() * 0.005;
-	z += R() * 0.005;
-
-	y -= 0.125;
-	if(y < -1.6 ){
-		y += 500.0;
-	}
-	if(x < -500) x += 1000;
-	if(500 < x) x -= 1000;
-	// 	if(z < -2.5) z += 5;
-	// 	if(2.5 < z) z -= 5;
-#endif
+	//境界条件
+	if(x < particles.x.min) x = particles.x.max;
+	if(y < particles.y.min) y = particles.y.max;
+	if(z < particles.z.min) z = particles.z.max;
+	if(particles.x.max < x) x = particles.x.min;
+	if(particles.y.max < y) y = particles.y.min;
+	if(particles.z.max < z) z = particles.z.min;
 }
 

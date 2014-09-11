@@ -13,6 +13,8 @@ public:
 	~PARTICLES();
 	void Update();
 	void DrawTransparent() const;
+	void SetColor(float r, float g, float b, float a = 1);
+
 protected:
 	class PARTICLE{
 		PARTICLE();
@@ -42,5 +44,15 @@ private:
 	static const float minSize = 1;
 
 	static const float distanceAttenuation[];
+
+	union{
+		struct{
+			float r;
+			float g;
+			float b;
+			float a;
+		};
+		float raw[4];
+	}color;
 };
 

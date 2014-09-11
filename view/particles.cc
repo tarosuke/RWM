@@ -22,6 +22,9 @@ GL::TEXTURE::PARAMS spriteParams = {
 
 
 PARTICLES::PARTICLES(float size, const IMAGE* pImage) : sprite(0), size(size){
+	//初期職設定
+	color.r = color.g = color.b = color.a = 1;
+
 	//ポイントスプライト用テクスチャ確保
 	if(pImage){
 		glEnable(GL_TEXTURE_2D);
@@ -62,9 +65,14 @@ void PARTICLES::Update(){
 
 void PARTICLES::DrawTransparent()const{
 	glDisable(GL_LIGHTING);
-//	glPushMatrix();
 	drawList.Playback();
-//	glPopMatrix();
+}
+
+void PARTICLES::SetColor(float r, float g, float b, float a){
+	color.r = r;
+	color.g = g;
+	color.b = b;
+	color.a = a;
 }
 
 float PARTICLES::R(){
@@ -79,9 +87,13 @@ PARTICLES::PARTICLE::PARTICLE(PARTICLES& p, float x, float y, float z) :
 void PARTICLES::PARTICLE::Draw(){
 	const float r(particles.size / sqrt(x*x+y*y+z*z));
 	if(minSize <= r){
-		glColor3f(1, 1, 1);
+		glColor4fv(particles.color.raw);
 	}else{
-		glColor4f(1, 1, 1, r / minSize);
+		glColor4f(
+			particles.color.r,
+			particles.color.g,
+			particles.color.b,
+			particles.color.a * r / minSize);
 	}
 	glBegin(GL_POINTS);
 	glVertex3f(x, y, z);

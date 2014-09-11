@@ -25,6 +25,7 @@ namespace GL{
 			int filter_mag;
 			int filter_min;
 			int texture_mode;
+			bool pointSprite;
 		};
 		TEXTURE(const PARAMS& p=defaultParams);
 		TEXTURE(unsigned w,

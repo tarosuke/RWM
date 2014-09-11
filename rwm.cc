@@ -4,6 +4,7 @@
 
 #include "view/view.h"
 #include "view/skybox.h"
+#include "rift/rift.h"
 #include "settings/settings.h"
 
 
@@ -21,7 +22,12 @@ int main(int argc, char *argv[]){
 		}
 		switch(arg[1]){
 		case 'S' :
+			//スカイボックス指定
 			skyboxPath = &arg[2];
+			break;
+		case 'M' :
+			//磁化情報削除
+			RIFT::noReadMag = true;
 			break;
 		default :
 			printf("オプション：%s は解釈できない。\n", arg);

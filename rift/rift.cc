@@ -320,6 +320,7 @@ extern "C"{
 };
 const char* RIFT::vertexShaderSource(_binary_rift_vertex_glsl_start);
 const char* RIFT::fragmentShaderSource(_binary_rift_fragment_glsl_start);
+bool RIFT::noReadMag(false);
 
 RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	VIEW(w, h),
@@ -336,12 +337,14 @@ RIFT::RIFT(int fd, unsigned w, unsigned h) :
 	fd(fd){
 
 	//過去の磁化情報があれば取得
-	settings.Fetch("magMax", &magMax);
-	settings.Fetch("magMin", &magMin);
-	settings.Fetch("vNorth", &vNorth);
-	printf("magx:%lf->%lf.\n", magMin[0], magMax[0]);
-	printf("magy:%lf->%lf.\n", magMin[1], magMax[1]);
-	printf("magz:%lf->%lf.\n", magMin[2], magMax[2]);
+	if(!noReadMag){
+		settings.Fetch("magMax", &magMax);
+		settings.Fetch("magMin", &magMin);
+		settings.Fetch("vNorth", &vNorth);
+		printf("magx:%lf->%lf.\n", magMin[0], magMax[0]);
+		printf("magy:%lf->%lf.\n", magMin[1], magMax[1]);
+		printf("magz:%lf->%lf.\n", magMin[2], magMax[2]);
+	}
 
 	//スケジューリングポリシーを設定
 	pthread_attr_t attr;

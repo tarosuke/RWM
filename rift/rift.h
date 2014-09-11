@@ -12,6 +12,10 @@ class RIFT : public VIEW{
 	RIFT(const RIFT&);
 	void operator=(const RIFT&);
 public:
+	//オプション
+	static bool noReadMag; //磁化情報を読まない(再キャリブレーション)
+
+	//初期化進捗取得
 	float InitialProgress(){
 		return averageRatio < maxAverageRatio ?
 			(float)averageRatio / maxAverageRatio : 1.0;

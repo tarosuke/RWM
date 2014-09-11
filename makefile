@@ -5,7 +5,7 @@ all: rwm
 
 ####################################################################### VALUES
 
-COPTS += -Wall -Werror -IX11
+COPTS += -Wall -Werror -ggdb -IX11
 
 
 libs = GL GLU GLEW m X11 Xmu Xi Xext Xcomposite Xdamage stdc++ gdbm pthread

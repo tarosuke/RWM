@@ -3,7 +3,7 @@
 #include "image.h"
 
 
-class LIGHTBALL : IMAGE{
+class LIGHTBALL : public IMAGE{
 public:
 	LIGHTBALL(unsigned size = 32);
 };

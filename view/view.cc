@@ -38,6 +38,12 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 
+	//天箱の色を初期値に
+	skyboxColor.r =
+	skyboxColor.g =
+	skyboxColor.b = 1;
+	skyboxColor.a = 0; //起動デモの終わりで見えるようにする。
+
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
 	LIGHTBALL lb;
 	PARTICLES* const p(new PARTICLESRIVER(64, &lb, 5000, -500, 500, -2, -1, -500, 500, 0, 0, -0.02));
@@ -81,6 +87,11 @@ void VIEW::Run(){
 		//天箱は最初のだけ描画
 		DRAWER* const sb(skyboxes.Peek());
 		if(sb){
+			glColor4f(
+				skyboxColor.r,
+				skyboxColor.g,
+				skyboxColor.b,
+				skyboxColor.a);
 			(*sb).Draw();
 		}
 
@@ -123,7 +134,6 @@ void VIEW::Run(){
 
 		//VSYNCを待って表示
 		xDisplay.Update();
-
 	}
 }
 

@@ -12,6 +12,7 @@ int main(int argc, char *argv[]){
 	//オプションの変数
 	const char* skyboxKey("defaultSkybox");
 	const char* skyboxPath(0);
+	bool noSkybox(false);
 
 	//コマンドライン解釈
 	for(unsigned n(1); n < argc; ++n){
@@ -21,8 +22,12 @@ int main(int argc, char *argv[]){
 			return -1;
 		}
 		switch(arg[1]){
+		case 's' :
+			//天箱なし
+			noSkybox = true;
+			break;
 		case 'S' :
-			//スカイボックス指定
+			//天箱指定
 			skyboxPath = &arg[2];
 			break;
 		case 'M' :
@@ -47,7 +52,10 @@ int main(int argc, char *argv[]){
 	//wOCE本体
 	try{
 		VIEW& v(VIEW::New());
-		SKYBOX* sb(SKYBOX::New(skyboxPath));
+		SKYBOX* sb(0);
+		if(!noSkybox && skyboxPath){
+			sb = SKYBOX::New(skyboxPath);
+		}
 		v.Run();
 		if(sb){
 			delete sb;

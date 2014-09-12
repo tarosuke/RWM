@@ -51,6 +51,14 @@ public:
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
 
+	//天箱の色を設定
+	void SetSkyboxColor(float r, float g, float b, float a){
+		skyboxColor.r = r;
+		skyboxColor.g = g;
+		skyboxColor.b = b;
+		skyboxColor.a = a;
+	};
+
 	//起動進捗チェック
 	virtual float InitialProgress()=0;
 
@@ -79,6 +87,13 @@ private:
 
 	static float fov;
 	static float tanFov;
+
+	struct{
+		float r;
+		float g;
+		float b;
+		float a;
+	}skyboxColor;
 };
 
 

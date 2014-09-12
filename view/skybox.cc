@@ -62,8 +62,6 @@ void SKYBOX::Register(const IMAGE& org){
 		static const float h[5] = { 0, q, 2*q, 3*q, 4*q };
 		static const float v[3] = { 0, t, 2*t };
 
-		glColor3f(1,1,1);
-
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2f(h[2], v[1]);
 		glVertex3f(p, p, -p);

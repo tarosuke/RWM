@@ -94,6 +94,16 @@ private:
 		float b;
 		float a;
 	}skyboxColor;
+
+	class READY : public DRAWER{
+	public:
+		READY(VIEW&);
+	private:
+		static const unsigned faiFrames = 100;
+		unsigned fai; //initialProgressが1になってからのフレーム数
+		VIEW& view;
+		void Update();
+	};
 };
 
 

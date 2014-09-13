@@ -85,6 +85,16 @@ void IMAGE::AssignBuffer(void* newBuffer){
 	buffer = newBuffer;
 }
 
+void IMAGE::AssignBuffer(unsigned w, unsigned h, unsigned d){
+	if(buffer){
+		free(buffer);
+	}
+	buffer = malloc(w * h * d);
+	width = w;
+	height = h;
+	depth = d;
+}
+
 
 
 bool IMAGE::IsInRange(unsigned x, unsigned y) const{

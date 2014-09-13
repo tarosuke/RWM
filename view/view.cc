@@ -10,7 +10,7 @@
 #include "particleRiver.h"
 #include "reference.h"
 #include "../image/lightball.h"
-// #include "welcome.h"
+#include "welcome.h"
 
 
 
@@ -43,16 +43,17 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	skyboxColor.r =
 	skyboxColor.g =
 	skyboxColor.b = 1;
-	skyboxColor.a = 0; //起動デモの終わりで見えるようにする。
+	skyboxColor.a = 0;
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
-#if 0
-	new WELCOME; //ウエルカムメッセージ
+#if 1
+	new WELCOME("welcome.png"); //ウエルカムメッセージ
 #else
 	LIGHTBALL lb;
 	PARTICLES* const p(new PARTICLESRIVER(64, &lb, 5000, -500, 500, -2, -1, -500, 500, 0, 0, -0.02));
 	(*p).SetColor(1, 0.8, 0.7, 0.5);
 #endif
+	new READY(*this); //起動プログレス終了処理
 }
 
 
@@ -145,3 +146,20 @@ void VIEW::Run(){
 
 float VIEW::fov(90);
 float VIEW::tanFov(1); //fovが更新されたらtanf(fov * M_PI / 360)で再計算
+
+
+//初期化五の処理
+VIEW::READY::READY(VIEW& v) : fai(0), view(v){
+	RegisterStickies(*this);
+}
+void VIEW::READY::Update(){
+	if(fai || 1.0 <= view.InitialProgress()){
+		if(faiFrames <= ++fai){
+			view.SetSkyboxColor(1,1,1,1);
+			delete this;
+		}else{
+			view.SetSkyboxColor(1,1,1,(float)fai / faiFrames);
+		}
+	}
+}
+

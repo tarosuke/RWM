@@ -8,7 +8,7 @@ all: rwm
 COPTS += -Wall -Werror -ggdb -IX11
 
 
-libs = GL GLU GLEW m X11 Xmu Xi Xext Xcomposite Xdamage stdc++ gdbm pthread
+libs = GL GLU GLEW m X11 Xmu Xi Xext Xcomposite Xdamage stdc++ gdbm pthread png
 LIBOPTS = $(addprefix -l, $(libs))
 
 

@@ -8,6 +8,7 @@ public:
 	IMAGE(const IMAGE&, int x, int y, unsigned w, unsigned h);
 	IMAGE(const void*, unsigned w, unsigned h, unsigned bytesDepth);
 	IMAGE(unsigned w, unsigned h, unsigned bytesDepth);
+
 	virtual ~IMAGE();
 
 	void Update(const IMAGE&, int x, int y);
@@ -23,6 +24,7 @@ public:
 	void* WritableBuffer() const{ return buffer; };
 protected:
 	void AssignBuffer(void*);
+	void AssignBuffer(unsigned w, unsigned h, unsigned d);
 	bool IsInRange(unsigned x, unsigned y) const;
 	unsigned GetOffset(unsigned x, unsigned y) const;
 	void* GetPoint(unsigned, unsigned);

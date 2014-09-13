@@ -10,6 +10,7 @@
 #include "particleRiver.h"
 #include "reference.h"
 #include "../image/lightball.h"
+// #include "welcome.h"
 
 
 
@@ -45,9 +46,13 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	skyboxColor.a = 0; //起動デモの終わりで見えるようにする。
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
+#if 0
+	new WELCOME; //ウエルカムメッセージ
+#else
 	LIGHTBALL lb;
 	PARTICLES* const p(new PARTICLESRIVER(64, &lb, 5000, -500, 500, -2, -1, -500, 500, 0, 0, -0.02));
 	(*p).SetColor(1, 0.8, 0.7, 0.5);
+#endif
 }
 
 

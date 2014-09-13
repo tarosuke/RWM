@@ -17,15 +17,19 @@ void WELCOME::Update(){
 }
 
 void WELCOME::Draw()const{
+	const float angle(duration * 90 - 90);
+
 	glPushMatrix();
 
 	glTranslatef(0,-0.075,-0.5);
-	glRotatef(duration * 90, 0, 1, 0);
+	glRotatef(angle, 0, 1, 0);
 
 	GL::TEXTURE::BINDER b(texture);
 
-// 	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_FRONT);
+	if(duration < 0.2){
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_FRONT);
+	}
 
 	glColor3f(1,1,1);
 	glBegin(GL_TRIANGLE_STRIP);

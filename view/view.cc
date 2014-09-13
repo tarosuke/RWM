@@ -46,8 +46,8 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	skyboxColor.a = 0; //起動デモの終わりで見えるようにする。
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
-#if 0
-	new WELCOME; //ウエルカムメッセージ
+#if 1
+	new WELCOME("welcome.png"); //ウエルカムメッセージ
 #else
 	LIGHTBALL lb;
 	PARTICLES* const p(new PARTICLESRIVER(64, &lb, 5000, -500, 500, -2, -1, -500, 500, 0, 0, -0.02));

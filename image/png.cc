@@ -60,18 +60,26 @@ PNG::PNG(const char* path){
 	png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,
 		&interlace_type,&compression_type,&filter_type);
 
-	switch(bit_depth){
-	case 24 :
-	case 32 :
-		//サポートされている形式なので色深度をビットからバイトへ変換
-		bit_depth = (bit_depth + 7) >> 3;
+	//16/chanelなら8ビットにして取り出す
+	if(16 == bit_depth){
+		png_set_strip_16(png_ptr);
+	}
+
+//	png_size_t rowbytes=png_get_rowbytes(png_ptr,info_ptr);//行データのバイト数
+
+	//チャンネル数取得
+	const unsigned channels(png_get_channels(png_ptr, info_ptr));
+
+	switch(channels){
+	case 3 :
+	case 4 :
 		break;
 	default:
-		throw "PNG:知らない色深度";
+		throw "PNG:サポートしていないチャネル数";
 	}
 
 	//画像メモリの割り当て
-	AssignBuffer(width, height, bit_depth);
+	AssignBuffer(width, height, channels);
 
 	//各行の先頭を配列に
 	rows = new void*[height];

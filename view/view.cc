@@ -43,7 +43,7 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	skyboxColor.r =
 	skyboxColor.g =
 	skyboxColor.b = 1;
-	skyboxColor.a = 0; //起動デモの終わりで見えるようにする。
+	skyboxColor.a = 0;
 
 	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
 #if 1

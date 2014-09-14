@@ -2,6 +2,7 @@
 
 #include "view.h"
 #include "../gl/texture.h"
+#include "../image/progressBar.h"
 
 
 class WELCOME : public VIEW::DRAWER{
@@ -12,7 +13,7 @@ public:
 	WELCOME(VIEW&, const char* pngFile);
 private:
 	void Update();
-	void Draw()const;
+	void Draw();
 	float duration;
 	static const float frameDuration = 1.0 / 75;
 	GL::TEXTURE texture;
@@ -20,6 +21,7 @@ private:
 	bool vanish;
 	VIEW& view;
 	float angle;
+	PROGRESSBAR pBar;
 
 	static const float width = 652.0 / 10000;
 	static const float height = 1045.0 / 10000;

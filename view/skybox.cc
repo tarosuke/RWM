@@ -114,7 +114,7 @@ void SKYBOX::Register(const IMAGE& org){
 	VIEW::RegisterSkybox(*this);
 }
 
-void SKYBOX::Draw() const{
+void SKYBOX::Draw(){
 	displayList.Playback();
 }
 

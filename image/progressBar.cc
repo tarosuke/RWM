@@ -16,7 +16,7 @@ PROGRESSBAR::PROGRESSBAR(unsigned width, unsigned height, float progress) :
 void PROGRESSBAR::Update(float progress){
 	//範囲正弦
 	if(progress < 0.0){
-		progress = 0.0;
+		Error();
 	}
 	if(1.0 < progress){
 		progress = 1.0;
@@ -25,7 +25,7 @@ void PROGRESSBAR::Update(float progress){
 	for(unsigned y(0); y < Height(); ++y){
 		for(unsigned x(0); x < Width() * progress; ++x){
 			char* const p((char*)GetPoint(x, y));
-			p[0] = p[1] = p[2] = 0x80; //TODO:仮の値
+			p[0] = p[1] = p[2] = 0x40; //TODO:仮の値
 		}
 	}
 }

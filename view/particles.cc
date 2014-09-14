@@ -63,7 +63,7 @@ void PARTICLES::Update(){
 	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
 
-void PARTICLES::DrawTransparent()const{
+void PARTICLES::DrawTransparent(){
 	glDisable(GL_LIGHTING);
 	drawList.Playback();
 }

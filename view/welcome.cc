@@ -9,18 +9,27 @@
 
 
 WELCOME::WELCOME(VIEW& view, const char* pngFile) :
-	texture(PNG(pngFile)), finished(false), vanish(false), view(view){
+	texture(PNG(pngFile)),
+	finished(false),
+	vanish(false),
+	view(view),
+	pBar(326, 20, 0){
 	VIEW::RegisterStickies(*this);
 }
 
 
 void WELCOME::Update(){
+	const float progress(view.InitialProgress());
 	angle = duration * 90 - 90;
 
 	duration += frameDuration;
-	if(1.0 <= view.InitialProgress()){
+	if(1.0 <= progress){
 		finished = true;
 	}
+
+	//プログレスバー更新
+	pBar.Update(progress);
+	texture.Update(pBar, 163, 500);
 
 	//消滅処理
 	const float co(cosf(angle * M_PI / 180));
@@ -32,7 +41,7 @@ void WELCOME::Update(){
 	}
 }
 
-void WELCOME::Draw()const{
+void WELCOME::Draw(){
 	glPushMatrix();
 
 	glTranslatef(0,-0.075,-0.5);

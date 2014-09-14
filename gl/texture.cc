@@ -99,7 +99,7 @@ namespace GL{
 			y,
 			image.Width(),
 			image.Height(),
-			GL_BGRA,
+			image.Depth()==4 ? GL_BGRA : GL_BGR,
 			GL_UNSIGNED_BYTE,
 			image.Buffer());
 	}

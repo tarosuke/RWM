@@ -12,7 +12,7 @@ public:
 	PARTICLES(float size, const class IMAGE* particleImage = 0);
 	~PARTICLES();
 	void Update();
-	void DrawTransparent() const;
+	void DrawTransparent();
 	void SetColor(float r, float g, float b, float a = 1);
 
 protected:

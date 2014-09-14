@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <math.h>
 
 #include "../gl/gl.h"
 #include "welcome.h"
@@ -7,18 +8,31 @@
 #include "../image/tga.h"
 
 
-WELCOME::WELCOME(const char* pngFile) : texture(PNG(pngFile)){
+WELCOME::WELCOME(VIEW& view, const char* pngFile) :
+	texture(PNG(pngFile)), finished(false), vanish(false), view(view){
 	VIEW::RegisterStickies(*this);
 }
 
 
 void WELCOME::Update(){
+	angle = duration * 90 - 90;
+
 	duration += frameDuration;
+	if(1.0 <= view.InitialProgress()){
+		finished = true;
+	}
+
+	//消滅処理
+	const float co(cosf(angle * M_PI / 180));
+	if(finished && 0 <= co){
+		vanish = true;
+	}
+	if(vanish && co < 0){
+		delete this;
+	}
 }
 
 void WELCOME::Draw()const{
-	const float angle(duration * 90 - 90);
-
 	glPushMatrix();
 
 	glTranslatef(0,-0.075,-0.5);
@@ -26,7 +40,7 @@ void WELCOME::Draw()const{
 
 	GL::TEXTURE::BINDER b(texture);
 
-	if(duration < 0.2){
+	if(duration < 1.2 || vanish){
 		glEnable(GL_CULL_FACE);
 		glFrontFace(GL_FRONT);
 	}

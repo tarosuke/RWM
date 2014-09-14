@@ -13,7 +13,7 @@ WELCOME::WELCOME(VIEW& view, const char* pngFile) :
 	finished(false),
 	vanish(false),
 	view(view),
-	pBar(326, 25, 0){
+	pBar(326, 20, 0){
 	VIEW::RegisterStickies(*this);
 }
 

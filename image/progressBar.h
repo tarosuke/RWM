@@ -11,5 +11,8 @@ class PROGRESSBAR : public IMAGE{
 public:
 	PROGRESSBAR(unsigned width, unsigned height, float progress);
 	void Update(float progress);
-	void Error();
+private:
+	static const unsigned char barColor[3];
+	static const unsigned char white[3];
+	static const unsigned char errorColor[3];
 };

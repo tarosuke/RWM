@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../toolbox/factory/factory.h"
-#include "../x/xDisplay.h"
 #include "../toolbox/queue/queue.h"
 #include "../toolbox/complex/complex.h"
 
@@ -35,12 +34,25 @@ public:
 		TOOLBOX::NODE<DRAWER> node;
 	};
 
+	//XDISPLAY用
+	class DISPLAY{
+	public:
+		virtual void Update()=0;
+		virtual void Run()=0;
+	protected:
+		DISPLAY() : node(*this){ node.Attach(VIEW::xDisplays); };
+		virtual ~DISPLAY(){};
+		static void Quit(){ VIEW::Quit(); };
+	private:
+		TOOLBOX::NODE<DISPLAY> node;
+	};
+
 	//環境をチェックして適切なViewを返す。引数は画面サイズ
 	static VIEW& New() throw(const char*);
 
 	void Run();
 
-	virtual ~VIEW(){};
+	virtual ~VIEW();
 
 
 	//描画オブジェクトの登録
@@ -77,14 +89,17 @@ protected:
 	virtual const POSE& Pose() const=0; //頭の位置と向きを反映
 
 private:
-	//X画面
-	XDISPLAY xDisplay;
+	class XDISPLAY* const xDisplay; //表示用画面
 
 	//描画対象物
 	static TOOLBOX::QUEUE<DRAWER> stickeies;
 	static TOOLBOX::QUEUE<DRAWER> externals;
-	static TOOLBOX::QUEUE<DRAWER> skyboxes;;
+	static TOOLBOX::QUEUE<DRAWER> skyboxes;
 
+	//X画面
+	static TOOLBOX::QUEUE<DISPLAY> xDisplays;
+
+	//視野角
 	static float fov;
 	static float tanFov;
 
@@ -104,6 +119,10 @@ private:
 		VIEW& view;
 		void Update();
 	};
+
+	//終了？
+	static bool keep;
+	static void Quit(){ keep = false; };
 };
 
 

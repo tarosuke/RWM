@@ -6,6 +6,7 @@
 #include "view/skybox.h"
 #include "rift/rift.h"
 #include "settings/settings.h"
+#include "x/xDisplay.h"
 
 
 int main(int argc, char *argv[]){
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]){
 	//wOCE本体
 	try{
 		VIEW& v(VIEW::New());
+		XDISPLAY* xd(new XSLAVEDISPLAY(":15"));
 		SKYBOX* sb(0);
 		if(!noSkybox && skyboxPath){
 			sb = SKYBOX::New(skyboxPath);
@@ -63,6 +65,7 @@ int main(int argc, char *argv[]){
 			settings.Store(skyboxKey, skyboxPath, 255);
 		}
 		delete &v;
+		if(xd){ delete xd; };
 	}
 	catch(const char* m){
 		printf("エラー：%s.\n", m);

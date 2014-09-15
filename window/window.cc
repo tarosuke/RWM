@@ -1,6 +1,7 @@
 
 
 #include <stdio.h>
+#include "../gl/gl.h"
 
 #include "window.h"
 

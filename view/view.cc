@@ -1,6 +1,5 @@
 
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include "../gl/gl.h"
 
 #include <stdio.h>
 
@@ -11,13 +10,15 @@
 #include "reference.h"
 #include "../image/lightball.h"
 #include "welcome.h"
-
+#include "../x/xDisplay.h"
 
 
 template<> FACTORY<VIEW>* FACTORY<VIEW>::start(0);
 TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::stickeies;
 TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::externals;
 TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::skyboxes;
+TOOLBOX::QUEUE<VIEW::DISPLAY> VIEW::xDisplays;
+bool VIEW::keep(true);
 
 
 VIEW& VIEW::New() throw(const char*){
@@ -31,7 +32,7 @@ VIEW& VIEW::New() throw(const char*){
 
 
 
-VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
+VIEW::VIEW(unsigned w, unsigned h) : xDisplay(new XDISPLAY(w, h)){
 	//基本設定
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_BLEND);
@@ -45,7 +46,7 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	skyboxColor.b = 1;
 	skyboxColor.a = 0;
 
-	//TODO:起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
+	//起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
 #if 1
 	new WELCOME(*this, "welcome.png"); //ウエルカムメッセージ
 #else
@@ -56,12 +57,19 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(w, h){
 	new READY(*this); //起動プログレス終了処理
 }
 
-
+VIEW::~VIEW(){
+	if(xDisplay){
+		delete xDisplay;
+	}
+};
 
 
 void VIEW::Run(){
 	//周期処理
-	while(xDisplay.Run()){
+	while(keep){
+		//Xのイベント処理
+		xDisplays.Each(&DISPLAY::Run);
+
 		//頭の向きやイベントに合わせて窓を更新
 		const POSE p(Pose());
 		WINDOW::UpdateAll(p.direction);
@@ -80,7 +88,7 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
-// 		WINDOW::DrawAll(); //非透過窓描画
+		WINDOW::DrawAll(); //非透過窓描画
 
 		//頭の向きと位置をModel-View行列に反映
 		const COMPLEX<4>::ROTATION r(p.direction);
@@ -129,7 +137,7 @@ void VIEW::Run(){
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
-// 		WINDOW::DrawTransparentAll(); //透過窓描画
+		WINDOW::DrawTransparentAll(); //透過窓描画
 		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
 		//収差修正用参照物体描画
@@ -139,7 +147,7 @@ void VIEW::Run(){
 		PostDraw();
 
 		//VSYNCを待って表示
-		xDisplay.Update();
+		xDisplays.Each(&DISPLAY::Update);
 	}
 }
 

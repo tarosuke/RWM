@@ -10,6 +10,7 @@
 #include <linux/input.h>
 #include <linux/hidraw.h>
 
+#include "../gl/gl.h"
 #include "rift.h"
 #include "../settings/settings.h"
 

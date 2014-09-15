@@ -11,7 +11,6 @@
 
 
 #include "xDisplay.h"
-#include "../view/view.h"
 #include "../window/event.h"
 #include "xWindow.h"
 
@@ -41,7 +40,6 @@ XDISPLAY::XDISPLAY(unsigned w, unsigned h) : xDisplay(XOpenDisplay("")){
 	if(!xDisplay){
 		throw "表示先画面と接続できませんでした。";
 	}
-
 
 	//根窓設定
 #ifdef TEST
@@ -162,7 +160,7 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 void XDISPLAY::AtXKeyDown(const XKeyEvent& xe){
 	const unsigned testState(ShiftMask | ControlMask);
 	if((xe.state & testState) == testState && xe.keycode == 0x16){
-		keep = false;
+		Quit();
 		return;
 	}
 	KEY_DOWN_EVENT e;
@@ -207,10 +205,7 @@ void XDISPLAY::AtXMouse(MOUSE_EVENT& e, const XButtonEvent& xe){
 	WINDOW::AtMouse(e);
 }
 
-
-bool XDISPLAY::keep(true);
-
-bool XDISPLAY::Run(){
+void XDISPLAY::Run(){
 	//Xのイベントを取得してEVENTを起こす
 	XEvent e;
 	while(XPending(xDisplay)){
@@ -260,7 +255,6 @@ bool XDISPLAY::Run(){
 			break;
 		}
 	}
-	return keep;
 }
 
 void XDISPLAY::Update(){

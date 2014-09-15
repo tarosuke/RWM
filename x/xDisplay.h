@@ -3,18 +3,21 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
+#include "../view/view.h"
 
 
-class XDISPLAY{
+class XDISPLAY : public VIEW::DISPLAY{
 	XDISPLAY();
 	XDISPLAY(const XDISPLAY&);
 	void operator=(const XDISPLAY&);
 public:
 	XDISPLAY(unsigned w, unsigned h);
-	XDISPLAY(const char*);
 	~XDISPLAY();
-	bool Run();  //falseになったら終了(イベントを受け取るこのクラスが判定)
+	void Run();
 	void Update(); //描画終了後、VSYNCを待って画面切り替え
+	
+protected:
+	XDISPLAY(const char*);
 
 private:
 	//GL関連
@@ -48,4 +51,11 @@ private:
 	static void AtXMouse(class MOUSE_EVENT&, const XButtonEvent&);
 };
 
+
+class XSLAVEDISPLAY : public XDISPLAY{
+public:
+	XSLAVEDISPLAY(const char* server) : XDISPLAY(server){};
+private:
+	void Update(){};
+};
 

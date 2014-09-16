@@ -76,7 +76,7 @@ protected:
 	virtual ~WINDOW(){};
 
 
-	void SetVisibility(bool v){ visible = v; };
+	void SetVisibility(bool);
 	bool IsVisible(){ return visible; };
 	unsigned Width(){ return width; };
 	unsigned Height(){ return height; };

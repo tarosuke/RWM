@@ -76,7 +76,6 @@ void WINDOW::DrawAll(){
 	glPushMatrix();
 	glTranslatef(lookingPoint.x, lookingPoint.y, 0);
 
-
 	//フォーカス窓描画
 	if(focused){
 		glColor4f(1,1,1,1); //白、不透明
@@ -127,7 +126,7 @@ void WINDOW::Draw(float distance){
 	}
 
 	//テクスチャ割り当て
-	GL::TEXTURE::BINDER binder(texture);
+// 	GL::TEXTURE::BINDER binder(texture);
 
 	//移動
 	glPushMatrix();
@@ -208,7 +207,10 @@ WINDOW::WINDOW(float h, float v, int wi, int hi) :
 	visible(false),
 	position((POINT){ h, v }),
 	width(wi),
-	height(hi){}
+	height(hi){
+	node.Insert(invisibleWindowList);
+}
+
 WINDOW::WINDOW(float h, float v, const IMAGE& image) :
 	node(*this),
 	texture(image),
@@ -216,6 +218,14 @@ WINDOW::WINDOW(float h, float v, const IMAGE& image) :
 	position((POINT){ h, v }),
 	width(image.Width()),
 	height(image.Height()){
+	node.Insert(windowList);
 }
+
+
+void WINDOW::SetVisibility(bool v){
+	visible = v;
+	node.Insert(v ? windowList : invisibleWindowList);
+}
+
 
 

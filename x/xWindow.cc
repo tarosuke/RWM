@@ -145,7 +145,7 @@ void XWINDOW::AssignXTexture(){
 		AllPlanes, ZPixmap));
 	if(wImage && (*wImage).data){
 		//テクスチャの割り当て
-		Assign(IMAGE((void*)(*wImage).data, width, height, 4));
+		Assign(IMAGE((void*)(*wImage).data, width, height, 3));
 		XDestroyImage(wImage);
 	}else{
 		//取得できなかったけど後でdamageで送られてくるので割り当てておく

@@ -126,7 +126,7 @@ void WINDOW::Draw(float distance){
 	}
 
 	//テクスチャ割り当て
-// 	GL::TEXTURE::BINDER binder(texture);
+	GL::TEXTURE::BINDER binder(texture);
 
 	//移動
 	glPushMatrix();

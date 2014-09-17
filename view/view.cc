@@ -71,6 +71,7 @@ void VIEW::Run(){
 		xDisplays.Each(&DISPLAY::Run);
 
 		//頭の向きやイベントに合わせて窓を更新
+		glEnable(GL_DEPTH_TEST);
 		const POSE p(Pose());
 		WINDOW::UpdateAll(p.direction);
 		stickeies.Each(&DRAWER::Update);

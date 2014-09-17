@@ -84,8 +84,8 @@ void XWINDOW::AtXCreate(Display* const d, Window w, unsigned hc, unsigned vc){
 	//マップされていたらテクスチャ貼り付け
 	if(IsUnmapped != attr.map_state){
 		(*nxw).AssignXTexture();
+		(*nxw).SetVisibility(true);
 	}
-
 }
 
 void XWINDOW::AtXCreate(const XCreateWindowEvent& e, unsigned hc, unsigned vc){
@@ -149,13 +149,13 @@ void XWINDOW::AssignXTexture(){
 		XDestroyImage(wImage);
 	}else{
 		//取得できなかったけど後でdamageで送られてくるので割り当てておく
-		void* dummyData(malloc(width * height * 4));
-		Assign(IMAGE(dummyData, width, height, 4));
+		void* dummyData(malloc(width * height * 3));
+		Assign(IMAGE(dummyData, width, height, 3));
 		free(dummyData);
 	}
 
 	//窓を可視に設定
-	SetVisibility(true);
+// 	SetVisibility(true);
 }
 
 

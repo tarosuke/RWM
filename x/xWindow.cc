@@ -149,8 +149,8 @@ void XWINDOW::AssignXTexture(){
 		XDestroyImage(wImage);
 	}else{
 		//取得できなかったけど後でdamageで送られてくるので割り当てておく
-		void* dummyData(malloc(width * height * 4));
-		Assign(IMAGE(dummyData, width, height, 4));
+		void* dummyData(malloc(width * height * 3));
+		Assign(IMAGE(dummyData, width, height, 3));
 		free(dummyData);
 	}
 

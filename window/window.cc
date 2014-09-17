@@ -72,17 +72,18 @@ void WINDOW::DrawAll(){
 		return;
 	}
 
-	//視線の先を中心に
-	glPushMatrix();
-	glTranslatef(lookingPoint.x, lookingPoint.y, 0);
-
 	//フォーカス窓描画
+	focused = windowList.Peek();
 	if(focused){
+		//視線の先を中心に
+		glPushMatrix();
+		glTranslatef(lookingPoint.x, lookingPoint.y, 0);
+
 		glColor4f(1,1,1,1); //白、不透明
 		(*focused).Draw(baseDistance);
-	}
 
-	glPopMatrix();
+		glPopMatrix();
+	}
 }
 
 void WINDOW::DrawTransparentAll(){
@@ -99,12 +100,10 @@ void WINDOW::DrawTransparentAll(){
 	glColor4f(1,1,1,0.7); //白、半透明
 	float d(baseDistance);
 	for(WINDOW::Q::ITOR i(WINDOW::windowList, WINDOW::Q::ITOR::backward); i; --i){
+		d += 0.03;
 		WINDOW* const w(i);
-		if((*w).visible){
-			if(w != focused){
-				(*w).Draw(d);
-			}
-			d += 0.03;
+		if(w != focused){
+			(*w).Draw(d);
 		}
 	}
 
@@ -124,6 +123,7 @@ void WINDOW::Draw(float distance){
 		//エイリアスやどのみち見えない領域は描画しない
 		return;
 	}
+	glColor4f(1,1,1,1); //白、不透明
 
 	//テクスチャ割り当て
 	GL::TEXTURE::BINDER binder(texture);
@@ -161,7 +161,9 @@ void WINDOW::AtMouse(MOUSE_EVENT& e){
 		return;
 	}
 	WINDOW& w(*lookingWindow);
-	w.position = w.GetLocalPoint(lookingPoint);
+	const POINT p(w.GetLocalPoint(lookingPoint));
+	e.x = p.x;
+	e.y = p.y;
 	e.Handle(w);
 }
 
@@ -223,6 +225,7 @@ WINDOW::WINDOW(float h, float v, const IMAGE& image) :
 
 
 void WINDOW::SetVisibility(bool v){
+printf("%p to be %s.\n", this, v ? "visible" : "invisible");
 	visible = v;
 	node.Insert(v ? windowList : invisibleWindowList);
 }

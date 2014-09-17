@@ -210,7 +210,7 @@ WINDOW::WINDOW(float h, float v, int wi, int hi) :
 	position((POINT){ h, v }),
 	width(wi),
 	height(hi){
-	node.Insert(invisibleWindowList);
+	SetVisibility(false);
 }
 
 WINDOW::WINDOW(float h, float v, const IMAGE& image) :
@@ -220,14 +220,15 @@ WINDOW::WINDOW(float h, float v, const IMAGE& image) :
 	position((POINT){ h, v }),
 	width(image.Width()),
 	height(image.Height()){
-	node.Insert(windowList);
+	SetVisibility(true);
 }
 
 
 void WINDOW::SetVisibility(bool v){
-printf("%p to be %s.\n", this, v ? "visible" : "invisible");
-	visible = v;
-	node.Insert(v ? windowList : invisibleWindowList);
+	if(v != visible){
+		node.Attach(v ? windowList : invisibleWindowList);
+		visible = v;
+	}
 }
 
 

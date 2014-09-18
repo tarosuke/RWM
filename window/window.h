@@ -73,7 +73,7 @@ protected:
 	 */
 	WINDOW(float h, float v, const IMAGE&);
 
-	virtual ~WINDOW(){};
+	virtual ~WINDOW();
 
 
 	void SetVisibility(bool);

@@ -145,7 +145,7 @@ void XWINDOW::AssignXTexture(){
 		AllPlanes, ZPixmap));
 	if(wImage && (*wImage).data){
 		//テクスチャの割り当て
-		Assign(IMAGE((void*)(*wImage).data, width, height, 3));
+		Assign(IMAGE((void*)(*wImage).data, width, height, ((unsigned)(*wImage).depth +7) / 8));
 		XDestroyImage(wImage);
 	}else{
 		//取得できなかったけど後でdamageで送られてくるので割り当てておく
@@ -153,9 +153,6 @@ void XWINDOW::AssignXTexture(){
 		Assign(IMAGE(dummyData, width, height, 3));
 		free(dummyData);
 	}
-
-	//窓を可視に設定
-// 	SetVisibility(true);
 }
 
 

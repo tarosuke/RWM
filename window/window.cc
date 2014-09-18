@@ -49,7 +49,6 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 			break;
 		}
 	}
-
 	//Enter/Leaveイベント生成
 	if(oldLookingWindow != lookingWindow){
 		if(oldLookingWindow){
@@ -221,6 +220,12 @@ WINDOW::WINDOW(float h, float v, const IMAGE& image) :
 	width(image.Width()),
 	height(image.Height()){
 	SetVisibility(true);
+}
+
+WINDOW::~WINDOW(){
+	if(this == lookingWindow){
+		lookingWindow = 0;
+	}
 }
 
 

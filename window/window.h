@@ -34,6 +34,10 @@ public:
 	virtual void OnMouseMove(const MOUSE_EVENT&){}; //ポインタが窓の中を移動中
 	virtual void OnMouseLeave(const MOUSE_EVENT&){}; //ポインタが窓から出た
 	virtual void OnClick(const MOUSE_EVENT&){}; //クリックとその回数
+	//視線イベント(視野の中心)
+	virtual void OnSightEnter(const SIGHT_EVENT&){};
+	virtual void OnSightMove(const SIGHT_EVENT&){};
+	virtual void OnSightLeave(const SIGHT_EVENT&){};
 	//キーイベント
 	virtual void OnKeyDown(const KEY_EVENT&){}; //キーが押された
 	virtual void OnKeyRepeat(const KEY_EVENT&){}; //キーリピート
@@ -49,6 +53,8 @@ public:
 	virtual void OnResize(unsigned w, unsigned h){};
 	virtual void OnFocused(){};
 	virtual void OnUnfocused(){};
+
+	//TODO:以下の２つは廃止予定(OnMouseEnter/Leaveへ統合)
 	virtual void OnEnter(WINDOW*){};
 	virtual void OnLeave(){};
 

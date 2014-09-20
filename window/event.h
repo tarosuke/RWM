@@ -81,3 +81,22 @@ class JS_EVENT : public EVENT{
 	unsigned movedAxis; //前回から変化があった軸
 	float axis[8]; //各軸の値(-1.0〜+1.0)
 };
+
+class SIGHT_EVENT : public EVENT{
+public:
+	float x;
+	float y;
+};
+class SIGHT_ENTER_EVENT : public SIGHT_EVENT{
+public:
+	void Handle(WINDOW&)const;
+};
+class SIGHT_MOVE_EVENT : public SIGHT_EVENT{
+public:
+	void Handle(WINDOW&)const;
+};
+class SIGHT_LEAVE_EVENT : public SIGHT_EVENT{
+public:
+	void Handle(WINDOW&)const;
+};
+

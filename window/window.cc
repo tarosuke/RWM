@@ -162,8 +162,8 @@ void WINDOW::AtMouse(MOUSE_EVENT& e){
 	}
 	WINDOW& w(*lookingWindow);
 	const POINT p(w.GetLocalPoint(lookingPoint));
-	e.x = p.x;
-	e.y = p.y;
+	e.x = 0.5 * w.width + p.x;
+	e.y = 0.5 * w.height - p.y;
 	e.Handle(w);
 }
 

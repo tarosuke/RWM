@@ -17,3 +17,6 @@ void KEY_DOWN_EVENT::Handle(WINDOW& w)const{ w.OnKeyDown(*this); };
 void KEY_REPEAT_EVENT::Handle(WINDOW& w)const{ w.OnKeyRepeat(*this); };
 void KEY_UP_EVENT::Handle(WINDOW& w)const{ w.OnKeyUp(*this); };
 
+void SIGHT_MOVE_EVENT::Handle(WINDOW& w)const{ w.OnSightMove(*this); };
+void SIGHT_ENTER_EVENT::Handle(WINDOW& w)const{ w.OnSightEnter(*this); };
+void SIGHT_LEAVE_EVENT::Handle(WINDOW& w)const{ w.OnSightLeave(*this); };

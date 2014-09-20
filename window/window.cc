@@ -30,8 +30,9 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 		return;
 	}
 	lookingFront = true;
-	lookingPoint.x = v[0] * motionDistance / v[2];
-	lookingPoint.y = v[1] * motionDistance / v[2];
+	const float vs(1.0 / (v[2] * scale));
+	lookingPoint.x = -v[0] * motionDistance * vs;
+	lookingPoint.y = -v[1] * motionDistance * vs;
 
 	//窓視点チェック
 	WINDOW* const oldLookingWindow(lookingWindow);
@@ -76,7 +77,7 @@ void WINDOW::DrawAll(){
 	if(focused){
 		//視線の先を中心に
 		glPushMatrix();
-		glTranslatef(lookingPoint.x, lookingPoint.y, 0);
+		glTranslatef(-lookingPoint.x * scale, -lookingPoint.y * scale, 0);
 
 		glColor4f(1,1,1,1); //白、不透明
 		(*focused).Draw(baseDistance);
@@ -93,7 +94,7 @@ void WINDOW::DrawTransparentAll(){
 
 	//視線の先を中心に
 	glPushMatrix();
-	glTranslatef(lookingPoint.x, lookingPoint.y, 0);
+	glTranslatef(-lookingPoint.x * scale, -lookingPoint.y * scale, 0);
 
 	//非フォーカス
 	glColor4f(1,1,1,0.7); //白、半透明
@@ -161,8 +162,8 @@ void WINDOW::AtMouse(MOUSE_EVENT& e){
 	}
 	WINDOW& w(*lookingWindow);
 	const POINT p(w.GetLocalPoint(lookingPoint));
-	e.x = p.x;
-	e.y = p.y;
+	e.x = 0.5 * w.width + p.x;
+	e.y = 0.5 * w.height - p.y;
 	e.Handle(w);
 }
 

@@ -31,8 +31,15 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 	}
 	lookingFront = true;
 	const float vs(1.0 / (v[2] * scale));
-	lookingPoint.x = -v[0] * motionDistance * vs;
-	lookingPoint.y = -v[1] * motionDistance * vs;
+	const POINT newLookingPont = {
+		(float)-v[0] * motionDistance * vs,
+		(float)-v[1] * motionDistance * vs };
+	bool moved(false);
+	if((int)lookingPoint.x != (int)newLookingPont.x
+		|| (int)lookingPoint.y != (int)newLookingPont.y){
+		moved = true;
+		lookingPoint = newLookingPont;
+	}
 
 	//窓視点チェック
 	WINDOW* const oldLookingWindow(lookingWindow);
@@ -40,7 +47,7 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 	POINT localPoint;
 	for(WINDOW::Q::ITOR i(windowList); i; i++){
 		WINDOW& w(*i);
-		const POINT lp(lookingPoint - w.position);
+		const POINT lp(w.GetLocalPoint(lookingPoint));
 		const float hw(w.width * 0.5);
 		const float hh(w.height * 0.5);
 		if(-hw <= lp.x && lp.x < hw && -hh <= lp.y && lp.y < hh){
@@ -48,18 +55,26 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 			lookingWindow = i;
 			localPoint = lp;
 			break;
+		}else{
+			moved = false;
 		}
 	}
 	//Enter/Leaveイベント生成
 	if(oldLookingWindow != lookingWindow){
 		if(oldLookingWindow){
 			//Leave
-			(*oldLookingWindow).OnLeave();
+			MOUSE_LEAVE_EVENT e;
+			(*oldLookingWindow).AtMouse(e);
 		}
 		if(lookingWindow){
 			//Enter
-			(*lookingWindow).OnEnter(oldLookingWindow);
+			MOUSE_ENTER_EVENT e;
+			(*lookingWindow).AtMouse(e);
 		}
+	}else if(moved && lookingWindow){
+		//movedイベント生成
+		MOUSE_MOVE_EVENT e;
+		(*lookingWindow).AtMouse(e);
 	}
 
 	//ディスプレイリストとかやるのは後
@@ -121,6 +136,7 @@ void WINDOW::Draw(float distance){
 	const float v(position.y * scale);
 	if(M_PI*0.5 <= h*h + v*v){
 		//エイリアスやどのみち見えない領域は描画しない
+		//TODO:計算が大雑把で大嘘なのでただす
 		return;
 	}
 	glColor4f(1,1,1,1); //白、不透明
@@ -151,7 +167,7 @@ void WINDOW::Draw(float distance){
 
 
 WINDOW::POINT WINDOW::GetLocalPoint(const WINDOW::POINT& p){
-	return (POINT){ p.x - position.x, p.y - position.y};
+	return (POINT){ p.x - position.x + width/2, p.y - position.y + height/2 };
 }
 
 

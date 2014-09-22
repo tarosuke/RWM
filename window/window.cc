@@ -40,7 +40,6 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 		moved = true;
 		lookingPoint = newLookingPont;
 	}
-
 	//窓視点チェック
 	WINDOW* const oldLookingWindow(lookingWindow);
 	lookingWindow = 0;
@@ -48,9 +47,7 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 	for(WINDOW::Q::ITOR i(windowList); i; i++){
 		WINDOW& w(*i);
 		const POINT lp(w.GetLocalPoint(lookingPoint));
-		const float hw(w.width * 0.5);
-		const float hh(w.height * 0.5);
-		if(-hw <= lp.x && lp.x < hw && -hh <= lp.y && lp.y < hh){
+		if(0 <= lp.x && lp.x < w.width && 0 <= lp.y && lp.y < w.height){
 			//lookingPointが窓に含まれる
 			lookingWindow = i;
 			localPoint = lp;
@@ -167,7 +164,7 @@ void WINDOW::Draw(float distance){
 
 
 WINDOW::POINT WINDOW::GetLocalPoint(const WINDOW::POINT& p){
-	return (POINT){ p.x - position.x + width/2, p.y - position.y + height/2 };
+	return (POINT){ p.x - position.x + width/2, position.y - p.y - height/2 };
 }
 
 

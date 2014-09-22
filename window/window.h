@@ -54,11 +54,6 @@ public:
 	virtual void OnFocused(){};
 	virtual void OnUnfocused(){};
 
-	//TODO:以下の２つは廃止予定(OnMouseEnter/Leaveへ統合)
-	virtual void OnEnter(WINDOW*){};
-	virtual void OnLeave(){};
-
-
 protected:
 	/** 新規窓
 	 * 新規に窓を精製する。

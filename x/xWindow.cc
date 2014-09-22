@@ -241,7 +241,7 @@ void XWINDOW::AtXConfigure(const XConfigureEvent& e){
 void XWINDOW::OnMoved(int x, int y){
 	vx = x;
 	vy = y;
-	Move((float)x - xCenter + Width() / 2, (float)y - yCenter + Height() / 2);
+	Move((float)x - xCenter, (float)y - yCenter);
 }
 
 void XWINDOW::OnResized(unsigned w, unsigned h){

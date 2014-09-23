@@ -30,7 +30,6 @@ public:
 	unsigned button; //操作されたボタン
 	unsigned buttonState; //ボタンの状態
 	unsigned clicks; //クリック回数(動いたり違うボタンでクリア)
-	WINDOW* prevWindow; //Enterした時に直前にLeaveした窓(それ以外は無意味)
 protected:
 	MOUSE_EVENT(){};
 };

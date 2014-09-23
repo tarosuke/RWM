@@ -20,6 +20,7 @@ public:
 	static void AtMouse(MOUSE_EVENT&);
 	static void AtKey(KEY_EVENT&);
 	static void AtJS(JS_EVENT&);
+	static void AtSight(WINDOW&, SIGHT_EVENT&);
 
 
 	static void UpdateAll(const COMPLEX<4>&);
@@ -115,6 +116,7 @@ private:
 	unsigned height;
 
 	POINT GetLocalPoint(const POINT&);
+	POINT localPoint;
 
 	static float motionDistance;
 	static bool lookingFront;

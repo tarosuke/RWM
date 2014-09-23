@@ -73,8 +73,7 @@ void XWINDOW::AtXCreate(Display* const d, Window w, unsigned hc, unsigned vc){
 	XWINDOW* const nxw(new XWINDOW(
 		(float)attr.x - hc + attr.width / 2,
 		(float)attr.y - vc + attr.height / 2,
-		attr.width,
-		attr.height, w, d));
+		attr.width, attr.height, w, d));
 	assert(nxw);
 	(*nxw).vx = attr.x;
 	(*nxw).vy = attr.y;
@@ -95,8 +94,7 @@ void XWINDOW::AtXCreate(const XCreateWindowEvent& e, unsigned hc, unsigned vc){
 		XWINDOW* const nxw(new XWINDOW(
 			(float)e.x - hc + e.width / 2,
 			(float)e.y - vc + e.height / 2,
-			e.width, e.height,
-			e.window, e.display));
+			e.width, e.height, e.window, e.display));
 		(*nxw).vx = e.x;
 		(*nxw).vy = e.y;
 		(*nxw).xCenter = hc;
@@ -299,7 +297,7 @@ void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
 }
 
 void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
-// 	printf("mouseMove:(%f %f) %08x.\n", e.x, e.y, e.buttonState);
+// 	printf("mouseMove:(%f %f) %p.\n", e.x, e.y, this);
 	XMotionEvent xe;
 	xe.time = 0;
 	xe.serial = 0;
@@ -312,6 +310,34 @@ void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
 	xe.y_root = e.y + vy;
 	xe.root = RootWindow(display, 0);
 	XSendEvent(display, wID, true, 0, (XEvent*)&xe);
+}
+
+void XWINDOW::OnMouseEnter(const MOUSE_EVENT& e){
+};
+void XWINDOW::OnMouseLeave(const MOUSE_EVENT& e){
+};
+
+//X窓の場合、Sight->Mouseに変換
+void XWINDOW::OnSightEnter(const SIGHT_EVENT& e){
+printf("SightEnter:(%f %f) %p.\n", e.x, e.y, this);
+	MOUSE_ENTER_EVENT me;
+	me.x = e.x;
+	me.y = e.y;
+	OnMouseEnter(me);
+}
+void XWINDOW::OnSightMove(const SIGHT_EVENT& e){
+printf("NightMove:(%f %f) %p.\n", e.x, e.y, this);
+	MOUSE_MOVE_EVENT me;
+	me.x = e.x;
+	me.y = e.y;
+	OnMouseMove(me);
+}
+void XWINDOW::OnSightLeave(const SIGHT_EVENT& e){
+printf("NightLeave:(%f %f) %p.\n", e.x, e.y, this);
+	MOUSE_LEAVE_EVENT me;
+	me.x = e.x;
+	me.y = e.y;
+	OnMouseLeave(me);
 }
 
 

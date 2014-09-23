@@ -30,6 +30,8 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 		return;
 	}
 	lookingFront = true;
+
+	//移動監視
 	const float vs(1.0 / (v[2] * scale));
 	const POINT newLookingPont = {
 		(float)-v[0] * motionDistance * vs,
@@ -40,38 +42,39 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 		moved = true;
 		lookingPoint = newLookingPont;
 	}
+
 	//窓視点チェック
 	WINDOW* const oldLookingWindow(lookingWindow);
 	lookingWindow = 0;
-	POINT localPoint;
 	for(WINDOW::Q::ITOR i(windowList); i; i++){
 		WINDOW& w(*i);
 		const POINT lp(w.GetLocalPoint(lookingPoint));
 		if(0 <= lp.x && lp.x < w.width && 0 <= lp.y && lp.y < w.height){
 			//lookingPointが窓に含まれる
 			lookingWindow = i;
-			localPoint = lp;
+			w.localPoint = lp;
 			break;
 		}else{
 			moved = false;
 		}
 	}
+
 	//Enter/Leaveイベント生成
 	if(oldLookingWindow != lookingWindow){
 		if(oldLookingWindow){
 			//Leave
-			MOUSE_LEAVE_EVENT e;
-			(*oldLookingWindow).AtMouse(e);
+			SIGHT_LEAVE_EVENT e;
+			AtSight(*oldLookingWindow, e);
 		}
 		if(lookingWindow){
 			//Enter
-			MOUSE_ENTER_EVENT e;
-			(*lookingWindow).AtMouse(e);
+			SIGHT_ENTER_EVENT e;
+			AtSight(*lookingWindow, e);
 		}
 	}else if(moved && lookingWindow){
 		//movedイベント生成
-		MOUSE_MOVE_EVENT e;
-		(*lookingWindow).AtMouse(e);
+		SIGHT_MOVE_EVENT e;
+		AtSight(*lookingWindow, e);
 	}
 
 	//ディスプレイリストとかやるのは後
@@ -170,6 +173,7 @@ WINDOW::POINT WINDOW::GetLocalPoint(const WINDOW::POINT& p){
 
 ////////////////////////////////////////////////////////イベントの一次ハンドラ
 void WINDOW::AtMouse(MOUSE_EVENT& e){
+	//TODO:これはマウスグラブできるまでの仮ハンドラなので後で正しいハンドラに直す
 	if(!lookingWindow){
 		return;
 	}
@@ -193,6 +197,12 @@ void WINDOW::AtKey(KEY_EVENT& e){
 void WINDOW::AtJS(JS_EVENT& e){
 }
 
+void WINDOW::AtSight(WINDOW& w, SIGHT_EVENT& e){
+	const POINT& p(w.localPoint);
+	e.x = p.x;
+	e.y = p.y;
+	e.Handle(w);
+}
 
 
 

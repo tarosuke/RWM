@@ -253,7 +253,6 @@ void XWINDOW::OnResized(unsigned w, unsigned h){
 
 
 void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
-// 	printf("mouseDown:(%f %f %d %d) %08x.\n", e.x, e.y, vx, vy, e.buttonState);
 	XButtonEvent xe;
 	XButtonEvent& org(*(XButtonEvent*)e.orgEvent);
 	xe.time = org.time;
@@ -275,7 +274,6 @@ void XWINDOW::OnMouseDown(const MOUSE_EVENT& e){
 }
 
 void XWINDOW::OnMouseUp(const MOUSE_EVENT& e){
-// 	printf("mouseUp:(%f %f %d %d) %08x.\n", e.x, e.y, vx, vy, e.buttonState);
 	XButtonEvent xe;
 	XButtonEvent& org(*(XButtonEvent*)e.orgEvent);
 	xe.time = org.time;
@@ -313,27 +311,26 @@ void XWINDOW::OnMouseMove(const MOUSE_EVENT& e){
 }
 
 void XWINDOW::OnMouseEnter(const MOUSE_EVENT& e){
+	//TODO:XCrossingEventを発行する
 };
 void XWINDOW::OnMouseLeave(const MOUSE_EVENT& e){
+	//TODO:XCrossingEventを発行する
 };
 
 //X窓の場合、Sight->Mouseに変換
 void XWINDOW::OnSightEnter(const SIGHT_EVENT& e){
-printf("SightEnter:(%f %f) %p.\n", e.x, e.y, this);
 	MOUSE_ENTER_EVENT me;
 	me.x = e.x;
 	me.y = e.y;
 	OnMouseEnter(me);
 }
 void XWINDOW::OnSightMove(const SIGHT_EVENT& e){
-printf("NightMove:(%f %f) %p.\n", e.x, e.y, this);
 	MOUSE_MOVE_EVENT me;
 	me.x = e.x;
 	me.y = e.y;
 	OnMouseMove(me);
 }
 void XWINDOW::OnSightLeave(const SIGHT_EVENT& e){
-printf("NightLeave:(%f %f) %p.\n", e.x, e.y, this);
 	MOUSE_LEAVE_EVENT me;
 	me.x = e.x;
 	me.y = e.y;

@@ -35,12 +35,13 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 	const float vs(1.0 / (v[2] * scale));
 	const POINT newLookingPont = {
 		(float)-v[0] * motionDistance * vs,
-		(float)-v[1] * motionDistance * vs };
+		(float)v[1] * motionDistance * vs };
 	bool moved(false);
 	if((int)lookingPoint.x != (int)newLookingPont.x
 		|| (int)lookingPoint.y != (int)newLookingPont.y){
 		moved = true;
 		lookingPoint = newLookingPont;
+printf("%f %f.\n", lookingPoint.x, lookingPoint.y);
 	}
 
 	//窓視点チェック
@@ -54,8 +55,6 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 			lookingWindow = i;
 			w.localPoint = lp;
 			break;
-		}else{
-			moved = false;
 		}
 	}
 
@@ -92,7 +91,7 @@ void WINDOW::DrawAll(){
 	if(focused){
 		//視線の先を中心に
 		glPushMatrix();
-		glTranslatef(-lookingPoint.x * scale, -lookingPoint.y * scale, 0);
+		glTranslatef(-lookingPoint.x * scale, lookingPoint.y * scale, 0);
 
 		glColor4f(1,1,1,1); //白、不透明
 		(*focused).Draw(baseDistance);
@@ -109,7 +108,7 @@ void WINDOW::DrawTransparentAll(){
 
 	//視線の先を中心に
 	glPushMatrix();
-	glTranslatef(-lookingPoint.x * scale, -lookingPoint.y * scale, 0);
+	glTranslatef(-lookingPoint.x * scale, lookingPoint.y * scale, 0);
 
 	//非フォーカス
 	glColor4f(1,1,1,0.7); //白、半透明
@@ -139,7 +138,6 @@ void WINDOW::Draw(float distance){
 		//TODO:計算が大雑把で大嘘なのでただす
 		return;
 	}
-	glColor4f(1,1,1,1); //白、不透明
 
 	//テクスチャ割り当て
 	GL::TEXTURE::BINDER binder(texture);
@@ -167,7 +165,7 @@ void WINDOW::Draw(float distance){
 
 
 WINDOW::POINT WINDOW::GetLocalPoint(const WINDOW::POINT& p){
-	return (POINT){ p.x - position.x + width/2, position.y - p.y - height/2 };
+	return (POINT){ p.x - position.x + width/2, p.y - position.y + height/2 };
 }
 
 

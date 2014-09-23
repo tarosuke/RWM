@@ -30,48 +30,50 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 		return;
 	}
 	lookingFront = true;
+
+	//移動監視
 	const float vs(1.0 / (v[2] * scale));
 	const POINT newLookingPont = {
 		(float)-v[0] * motionDistance * vs,
-		(float)-v[1] * motionDistance * vs };
+		(float)v[1] * motionDistance * vs };
 	bool moved(false);
 	if((int)lookingPoint.x != (int)newLookingPont.x
 		|| (int)lookingPoint.y != (int)newLookingPont.y){
 		moved = true;
 		lookingPoint = newLookingPont;
+printf("%f %f.\n", lookingPoint.x, lookingPoint.y);
 	}
+
 	//窓視点チェック
 	WINDOW* const oldLookingWindow(lookingWindow);
 	lookingWindow = 0;
-	POINT localPoint;
 	for(WINDOW::Q::ITOR i(windowList); i; i++){
 		WINDOW& w(*i);
 		const POINT lp(w.GetLocalPoint(lookingPoint));
 		if(0 <= lp.x && lp.x < w.width && 0 <= lp.y && lp.y < w.height){
 			//lookingPointが窓に含まれる
 			lookingWindow = i;
-			localPoint = lp;
+			w.localPoint = lp;
 			break;
-		}else{
-			moved = false;
 		}
 	}
+
 	//Enter/Leaveイベント生成
 	if(oldLookingWindow != lookingWindow){
 		if(oldLookingWindow){
 			//Leave
-			MOUSE_LEAVE_EVENT e;
-			(*oldLookingWindow).AtMouse(e);
+			SIGHT_LEAVE_EVENT e;
+			AtSight(*oldLookingWindow, e);
 		}
 		if(lookingWindow){
 			//Enter
-			MOUSE_ENTER_EVENT e;
-			(*lookingWindow).AtMouse(e);
+			SIGHT_ENTER_EVENT e;
+			AtSight(*lookingWindow, e);
 		}
 	}else if(moved && lookingWindow){
 		//movedイベント生成
-		MOUSE_MOVE_EVENT e;
-		(*lookingWindow).AtMouse(e);
+		SIGHT_MOVE_EVENT e;
+		AtSight(*lookingWindow, e);
 	}
 
 	//ディスプレイリストとかやるのは後
@@ -89,7 +91,7 @@ void WINDOW::DrawAll(){
 	if(focused){
 		//視線の先を中心に
 		glPushMatrix();
-		glTranslatef(-lookingPoint.x * scale, -lookingPoint.y * scale, 0);
+		glTranslatef(-lookingPoint.x * scale, lookingPoint.y * scale, 0);
 
 		glColor4f(1,1,1,1); //白、不透明
 		(*focused).Draw(baseDistance);
@@ -106,7 +108,7 @@ void WINDOW::DrawTransparentAll(){
 
 	//視線の先を中心に
 	glPushMatrix();
-	glTranslatef(-lookingPoint.x * scale, -lookingPoint.y * scale, 0);
+	glTranslatef(-lookingPoint.x * scale, lookingPoint.y * scale, 0);
 
 	//非フォーカス
 	glColor4f(1,1,1,0.7); //白、半透明
@@ -136,7 +138,6 @@ void WINDOW::Draw(float distance){
 		//TODO:計算が大雑把で大嘘なのでただす
 		return;
 	}
-	glColor4f(1,1,1,1); //白、不透明
 
 	//テクスチャ割り当て
 	GL::TEXTURE::BINDER binder(texture);
@@ -164,12 +165,13 @@ void WINDOW::Draw(float distance){
 
 
 WINDOW::POINT WINDOW::GetLocalPoint(const WINDOW::POINT& p){
-	return (POINT){ p.x - position.x + width/2, position.y - p.y - height/2 };
+	return (POINT){ p.x - position.x + width/2, p.y - position.y + height/2 };
 }
 
 
 ////////////////////////////////////////////////////////イベントの一次ハンドラ
 void WINDOW::AtMouse(MOUSE_EVENT& e){
+	//TODO:これはマウスグラブできるまでの仮ハンドラなので後で正しいハンドラに直す
 	if(!lookingWindow){
 		return;
 	}
@@ -193,6 +195,12 @@ void WINDOW::AtKey(KEY_EVENT& e){
 void WINDOW::AtJS(JS_EVENT& e){
 }
 
+void WINDOW::AtSight(WINDOW& w, SIGHT_EVENT& e){
+	const POINT& p(w.localPoint);
+	e.x = p.x;
+	e.y = p.y;
+	e.Handle(w);
+}
 
 
 

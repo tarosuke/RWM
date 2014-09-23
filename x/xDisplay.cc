@@ -157,6 +157,7 @@ int XDISPLAY::XErrorHandler(Display* d, XErrorEvent* e){
 }
 
 
+//一次イベントハンドラ
 void XDISPLAY::AtXKeyDown(const XKeyEvent& xe){
 	const unsigned testState(ShiftMask | ControlMask);
 	if((xe.state & testState) == testState && xe.keycode == 0x16){
@@ -197,7 +198,7 @@ void XDISPLAY::AtXMouse(MOUSE_EVENT& e, const XButtonEvent& xe){
 	e.x =
 	e.y = 0.0; //Rift上の座標には意味がない
 	e.hScroll =
-	e.vScroll = 0; //TODO:スクロールのサポート
+	e.vScroll = 0;
 	e.buttonState = xe.button;
 	e.button =
 	e.clicks = 0;
@@ -243,7 +244,7 @@ void XDISPLAY::Run(){
 			break;
 		case MappingNotify:
 			XRefreshKeyboardMapping(&e.xmapping);
-			//TODO:小窓への転送
+			//TODO:子窓への転送
 			break;
 		default:
 			if(e.type == damageBase + XDamageNotify){

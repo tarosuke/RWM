@@ -41,7 +41,6 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 		|| (int)lookingPoint.y != (int)newLookingPont.y){
 		moved = true;
 		lookingPoint = newLookingPont;
-printf("%f %f.\n", lookingPoint.x, lookingPoint.y);
 	}
 
 	//窓視点チェック

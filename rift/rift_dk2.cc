@@ -46,7 +46,7 @@ RIFT_DK2::RIFT_DK2(int f) : RIFT(f, width, height){
 
 			P2 tc = {(float)u / hh - (float)0.5, (float)v / hh - (float)0.5};
 			float dd(tc.u*tc.u + tc.v*tc.v);
-			dd = 1.0 + 0.625 * dd + 0.5 * dd*dd + 0.125 * dd*dd*dd;
+			dd = 1.0 + 0.45 * dd + 0.5 * dd*dd + 0.9 * dd*dd*dd;
 			tc.u *= dd;
 			tc.v *= dd;
 

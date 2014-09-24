@@ -87,14 +87,11 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 	//磁力情報取得
 	VECTOR<3> mag(axis);
 
-	//キャリブレーション
 	if(!magReady){
-		//磁化情報をある程度得たらそれ以上は更新しない。
+		//磁石で狂わないために磁化情報をある程度得たらそれ以上は更新しない。
 		magMax.Max(mag);
 		magMin.Min(mag);
 	}
-	const VECTOR<3> deGain(magMax - magMin);
-	const double* const d(deGain);
 
 	if(magReady){
 		//磁化分を除去
@@ -105,7 +102,7 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		//絶対座標系に変換
 		mag.Rotate(pose.direction);
 		double* v(mag);
-		v[1] = 0; //邪魔なので鉛直を消去
+		v[1] = 0; //欲しいのは方位角であり鉛直方向は邪魔なので除去
 		mag.Normalize();
 
 		//平均化処理
@@ -113,6 +110,10 @@ void RIFT::UpdateMagneticField(const int axis[3]){
 		magneticField += mag;;
 		magneticField.Normalize();;
 	}else{
+		//キャリブレーション
+		const VECTOR<3> deGain(magMax - magMin);
+		const double* const d(deGain);
+
 		//キャリブレーション可能判定
 		if(6000 < abs(d[0]) && 6000 < abs(d[1]) && 6000 < abs(d[2])){
 			magReady = true;
@@ -137,12 +138,14 @@ void RIFT::ErrorCorrection(){
 	diff *= gdiff;
 
 	//磁気補正
-	COMPLEX<4> mdiff(magneticField, vNorth);
-	mdiff.FilterAxis(2);
-	mdiff.Normalize();
-	mdiff *= correctionGain;
-	magneticField.Rotate(mdiff);
-	diff *= mdiff;
+	if(magReady){
+		COMPLEX<4> mdiff(magneticField, vNorth);
+		mdiff.FilterAxis(2);
+		mdiff.Normalize();
+		mdiff *= correctionGain;
+		magneticField.Rotate(mdiff);
+		diff *= mdiff;
+	}
 
 	diff *= pose.direction;
 	pose.direction = diff;

@@ -16,10 +16,17 @@ WINDOW::POINT WINDOW::lookingPoint = {0, 0};
 bool WINDOW::lookingFront(false);
 WINDOW* WINDOW::lookingWindow(0);
 const float WINDOW::baseDistance(0.7);
-float WINDOW::distance;
+double WINDOW::rotation(0);
 
 
 void WINDOW::UpdateAll(const COMPLEX<4>& pose){
+	//ロール情報を保存しておく
+	COMPLEX<4> p(pose);
+	p.FilterAxis(4);
+	COMPLEX<4>::ROTATION r;
+	p.GetRotation(r);
+	rotation = -r.axis[2] * r.angle * 180 / 3.14;
+
 	//仮想画面上の視線の先を算出
 	VECTOR<3> viewLine((const double[]){ 0, 0, 1 });
 	viewLine.Rotate(pose);
@@ -40,7 +47,13 @@ void WINDOW::UpdateAll(const COMPLEX<4>& pose){
 	if((int)lookingPoint.x != (int)newLookingPont.x
 		|| (int)lookingPoint.y != (int)newLookingPont.y){
 		moved = true;
-		lookingPoint = newLookingPont;
+	}
+	lookingPoint = newLookingPont;
+
+	//距離設定
+	float d(baseDistance);
+	for(WINDOW::Q::ITOR i(windowList); i; i++, d += 0.03){
+		(*i).drawingDistance = d;
 	}
 
 	//窓視点チェック
@@ -90,10 +103,11 @@ void WINDOW::DrawAll(){
 	if(focused){
 		//視線の先を中心に
 		glPushMatrix();
+		glRotated(rotation, 0, 0, 1);
 		glTranslatef(-lookingPoint.x * scale, lookingPoint.y * scale, 0);
 
 		glColor4f(1,1,1,1); //白、不透明
-		(*focused).Draw(baseDistance);
+		(*focused).Draw();
 
 		glPopMatrix();
 	}
@@ -107,16 +121,15 @@ void WINDOW::DrawTransparentAll(){
 
 	//視線の先を中心に
 	glPushMatrix();
+	glRotated(rotation, 0, 0, 1);
 	glTranslatef(-lookingPoint.x * scale, lookingPoint.y * scale, 0);
 
 	//非フォーカス
 	glColor4f(1,1,1,0.7); //白、半透明
-	float d(baseDistance);
 	for(WINDOW::Q::ITOR i(WINDOW::windowList, WINDOW::Q::ITOR::backward); i; --i){
-		d += 0.03;
 		WINDOW* const w(i);
 		if(w != focused){
-			(*w).Draw(d);
+			(*w).Draw();
 		}
 	}
 
@@ -128,7 +141,7 @@ void WINDOW::DrawTransparentAll(){
 
 const float WINDOW::scale(0.0011);
 
-void WINDOW::Draw(float distance){
+void WINDOW::Draw(){
 	//描画位置算出
 	const float h(position.x * scale);
 	const float v(position.y * scale);
@@ -143,20 +156,20 @@ void WINDOW::Draw(float distance){
 
 	//移動
 	glPushMatrix();
-	glTranslatef(h, -v, 0);
+	glTranslatef(h, -v, -drawingDistance);
 
 	//描画
 	const float w2(width * scale * 0.5);
 	const float h2(height * scale * 0.5);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2f(0, 0);
-	glVertex3f(-w2, h2, -distance);
+	glVertex3f(-w2, h2, 0);
 	glTexCoord2f(0, 1);
-	glVertex3f(-w2, -h2, -distance);
+	glVertex3f(-w2, -h2, 0);
 	glTexCoord2f(1, 0);
-	glVertex3f(w2, h2, -distance);
+	glVertex3f(w2, h2, 0);
 	glTexCoord2f(1, 1);
-	glVertex3f(w2, -h2, -distance);
+	glVertex3f(w2, -h2, 0);
 	glEnd();
 
 	glPopMatrix();

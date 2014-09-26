@@ -94,7 +94,8 @@ private:
 	Q::NODE node;
 
 	static WINDOW* focused;
-	void Draw(float);
+	float drawingDistance;
+	void Draw();
 	GL::TEXTURE texture; //描画内容を保持
 	bool visible;
 
@@ -123,8 +124,9 @@ private:
 	static POINT lookingPoint;
 	static WINDOW* lookingWindow;
 	static const float baseDistance;
-	static float distance;
 	static const float scale; //窓表示スケール[m/px]
+
+	static double rotation; //頭のロール軸の傾き(deg)
 
 };
 

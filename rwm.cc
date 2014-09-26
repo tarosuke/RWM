@@ -29,7 +29,14 @@ int main(int argc, char *argv[]){
 			break;
 		case 'S' :
 			//天箱指定
-			skyboxPath = &arg[2];
+			if(arg[2]){
+				skyboxPath = &arg[2];
+			}else{
+				++n;
+				if(n < argc){
+					skyboxPath = argv[n];
+				}
+			}
 			break;
 		case 'M' :
 			//磁化情報削除

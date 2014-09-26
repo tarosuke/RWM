@@ -46,12 +46,12 @@ VIEW::VIEW(unsigned w, unsigned h) : xDisplay(new XDISPLAY(w, h)){
 	skyboxColor.b = 1;
 	skyboxColor.a = 0;
 
-	//起動画面を登録(起動画面は自分でdeteleして消えるのでnewするだけでおｋ)
-#if 1
-	new WELCOME(*this, "welcome.png"); //ウエルカムメッセージ
-#else
+	//ウエルカムメッセージ
+	new WELCOME(*this, "welcome.png");
+#if 0
+	//ヘッドトラックチェックなどで使う
 	LIGHTBALL lb;
-	PARTICLES* const p(new PARTICLESRIVER(64, &lb, 5000, -500, 500, -2, -1, -500, 500, 0, 0, -0.02));
+	PARTICLES* const p(new PARTICLESRIVER(64, &lb, 1000, -1, 1, -1, 1, -500, 50, 0, 0, 0.02));
 	(*p).SetColor(1, 0.8, 0.7, 0.5);
 #endif
 	new READY(*this); //起動プログレス終了処理

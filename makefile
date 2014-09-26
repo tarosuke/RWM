@@ -32,7 +32,7 @@ install: rwm
 	sudo cp rwm /usr/local/bin/
 
 test: rwm.test rwmSoundd
-	./rwm.test -Sskybox.tga
+	./rwm.test
 
 run: rwm
 	./rwm

@@ -13,9 +13,10 @@
 *.a
 
 # Target files
-wODM
-wOLM
-wOSD
+/wODM
+/wOLM
+/wOSD
+/*.test
 
 # Files kde creates
 .directory

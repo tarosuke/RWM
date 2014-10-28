@@ -28,7 +28,7 @@ wODMObjs = objs/rift_dk1.o objs/rift_dk2.o
 
 ######################################################################## RULES
 
-test: wODM.test wOSD
+test: wODM.test wOSD wOLM
 	./wODM.test
 
 run: wODM

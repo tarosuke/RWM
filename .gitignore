@@ -13,9 +13,10 @@
 *.a
 
 # Target files
-rwm.test
-rwm
-rwmSoundd
+/wODM
+/wOLM
+/wOSD
+/*.test
 
 # Files kde creates
 .directory

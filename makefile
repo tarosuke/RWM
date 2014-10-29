@@ -1,4 +1,4 @@
-all: rwm
+all: wODM wOSD wOLM
 
 .PHONY : clean test
 
@@ -22,33 +22,33 @@ dmds= $(addprefix objs/, $(mods))
 objs = $(addsuffix .o, $(dmds))
 deps = $(addsuffix .d, $(dmds))
 
-rwmObjs = objs/rift_dk1.o objs/rift_dk2.o
+wODMObjs = objs/rift_dk1.o objs/rift_dk2.o
 
 
 
 ######################################################################## RULES
 
-install: rwm
-	sudo cp rwm /usr/local/bin/
+test: wODM.test wOSD wOLM
+	./wODM.test
 
-test: rwm.test rwmSoundd
-	./rwm.test
+run: wODM
+	./wODM
 
-run: rwm
-	./rwm
+wODM: makefile wODM.cc $(wODMObjs) userLib.a wOSD
+	gcc -Xlinker "-Map=wODM.map" -o $@ wODM.cc $(wODMObjs) userLib.a $(LIBOPTS)
 
-rwm: makefile rwm.cc $(rwmObjs) userLib.a rwmSoundd
-	gcc -Xlinker "-Map=rwm.map" -o $@ rwm.cc $(rwmObjs) userLib.a $(LIBOPTS)
+wODM.test: COPTS+=-DTEST
+wODM.test: makefile wODM.cc $(wODMObjs) userLib.a
+	gcc -ggdb -Xlinker "-Map=wODM.map" -o $@ wODM.cc $(wODMObjs) userLib.a $(LIBOPTS)
 
-rwm.test: COPTS+=-DTEST
-rwm.test: makefile rwm.cc $(rwmObjs) userLib.a
-	gcc -ggdb -Xlinker "-Map=rwm.map" -o $@ rwm.cc $(rwmObjs) userLib.a $(LIBOPTS)
+wOSD: makefile wOSD.cc userLib.a
+	gcc -Xlinker "-Map=wOSD.map" -o $@ wOSD.cc userLib.a $(LIBOPTS)
 
-rwmSoundd: makefile rwmSoundd.cc userLib.a
-	gcc -Xlinker "-Map=rwmSoundd.map" -o $@ rwmSoundd.cc userLib.a $(LIBOPTS)
+wOLM: makefile wOLM.cc userLib.a
+	gcc -Xlinker "-Map=wOLM.map" -o $@ wOLM.cc userLib.a $(LIBOPTS)
 
 clean:
-	rm -fr rwm rwm.test rwmSoundd *.map userLib.a objs/*
+	rm -fr wODM wODM.test wOSD wOLM *.map userLib.a objs/*
 
 
 userLib.a: $(objs)

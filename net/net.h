@@ -18,9 +18,10 @@ namespace NET{
 			UNKNOWN,
 		};
 		void Receive(SOCKET&);
-		Packet(Type, unsigned len);
-	private:
 		Packet(); //受信するための空パケット準備
+		Packet(Type, unsigned len, void* b = 0); //送信するためのパケット
+		~Packet();
+	private:
 		static unsigned sequence;
 		TOOLBOX::NODE<Packet> node;
 		struct Head{
@@ -30,7 +31,7 @@ namespace NET{
 		}__attribute__((packed));
 		Head head;
 		Packet* result;
-		unsigned* body;
+		void* body;
 	};
 
 

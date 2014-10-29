@@ -10,17 +10,37 @@ namespace NET{
 
 	unsigned Packet::sequence;
 
-	Packet::Packet(Type type, unsigned len) :
+	Packet::Packet() :
+		node(*this),
+		head((Head){ 0, ++sequence, 0 }),
+		result(0),
+		body(0){}
+
+	Packet::Packet(Type type, unsigned len, void* b) :
 		node(*this),
 		head((Head){ type, ++sequence, len }),
 		result(0),
-		body((unsigned*)malloc(len)){
+		body(malloc(len)){
+		if(b){
+			//元データが設定されているのでコピー
+			memmove(body, b, len);
+		}
 	}
 
 	void Packet::Receive(SOCKET& sock){
 		//例外が出る時はソケットを閉じるときなのでcatchしない
 		sock.Receive((void*)&head, sizeof(Head));
+		if(body){
+			free(body);
+		}
+		body = malloc(head.length);
 		sock.Receive(body, head.length);
+	}
+
+	Packet::~Packet(){
+		if(body){
+			free(body);
+		}
 	}
 
 
@@ -33,13 +53,17 @@ namespace NET{
 	Node::~Node(){
 		pthread_exit(0);
 	}
-	
+
 	void* Node::_Thread(void* p){
 		(*(Node*)p).Thread();
 		return 0;
 	}
 	void Node::Thread(){
 		//TODO:パケットを受信してハンドラを呼ぶ
+		for(;;){
+			Packet pack;
+			pack.Receive(sock);
+		}
 	}
 
 }

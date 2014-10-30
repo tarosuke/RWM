@@ -37,33 +37,50 @@ namespace NET{
 		sock.Receive(body, head.length);
 	}
 
+	void Packet::Send(SOCKET& sock){
+		sock.Send((void*)&head, sizeof(Head));
+		if(body){
+			sock.Send(body, head.length);
+		}
+	}
+
 	Packet::~Packet(){
 		if(body){
 			free(body);
 		}
 	}
 
+	bool Packet::Handle(const Handler handlers[]){
+		for(const Handler* h(handlers); (*h).type; ++h){
+			if((*h).type == head.type){
+				(*h).handler(*this);
+				return true;
+			}
+		}
+		return false;
+	}
 
-	Node::Node(SOCKET& s, const Handler h[]) : sock(s), handlers(h){
+
+	Node::Node(SOCKET& s, const Packet::Handler h[]) : sock(s), handlers(h){
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-		pthread_create(&thread, &attr, _Thread, (void*)this);
+		pthread_create(&thread, &attr, Thread, (void*)this);
 	}
 	Node::~Node(){
 		pthread_exit(0);
 	}
 
-	void* Node::_Thread(void* p){
-		(*(Node*)p).Thread();
-		return 0;
-	}
-	void Node::Thread(){
-		//TODO:パケットを受信してハンドラを呼ぶ
+	void* Node::Thread(void* p){
+		Node& n(*(Node*)p);
 		for(;;){
 			Packet pack;
-			pack.Receive(sock);
+			pack.Receive(n.sock);
+			if(!pack.Handle(n.handlers)){
+				//TODO:デフォルトハンドラを呼ぶ
+			}
 		}
+		return 0;
 	}
 
 }

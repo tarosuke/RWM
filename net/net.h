@@ -17,7 +17,14 @@ namespace NET{
 			OK,
 			UNKNOWN,
 		};
+		struct Handler{
+			Type type;
+			void (*handler)(Packet&);
+		};
 		void Receive(SOCKET&);
+		void Send(SOCKET&);
+		class Node;
+		bool Handle(const Handler[]);
 		Packet(); //受信するための空パケット準備
 		Packet(Type, unsigned len, void* b = 0); //送信するためのパケット
 		~Packet();
@@ -42,23 +49,18 @@ namespace NET{
 		Node(const Node&);
 		void operator=(const Node&);
 	public:
-		struct Handler{
-			unsigned type;
-			void (*handler)(Packet&);
-		};
 	protected:
-		Node(SOCKET& sock, const Handler[]);
+		Node(SOCKET& sock, const Packet::Handler[]);
 		~Node(); //自分でdeleteすること
 	private:
 		SOCKET& sock;
-		const Handler* const handlers;
+		const Packet::Handler* const handlers;
 		unsigned seqence;
 		TOOLBOX::QUEUE<Packet> sentPackets; //応答待ち
 
 		//スレッド関連
 		pthread_t thread;
-		static void* _Thread(void*);
-		void Thread();
+		static void* Thread(void*);
 	};
 
 

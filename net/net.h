@@ -1,8 +1,7 @@
 #pragma once
 
-#include <pthread.h>
-
 #include "../toolbox/queue/queue.h"
+#include "../common/thread.h"
 #include "socket.h"
 
 
@@ -44,23 +43,22 @@ namespace NET{
 
 	//NOTE:鯖とクライアントは結局同じもので、パケットハンドラが違うだけ
 	//スレッドとして動作し、ソケットが閉じられたらthreadを終了しつつdelete this。
-	class Node{
+	class Node : public THREAD{
 		Node();
 		Node(const Node&);
 		void operator=(const Node&);
 	public:
 	protected:
 		Node(SOCKET& sock, const Packet::Handler[]);
-		~Node(); //自分でdeleteすること
+		void Close();
 	private:
 		SOCKET& sock;
 		const Packet::Handler* const handlers;
 		unsigned seqence;
 		TOOLBOX::QUEUE<Packet> sentPackets; //応答待ち
+		bool keep;
 
-		//スレッド関連
-		pthread_t thread;
-		static void* Thread(void*);
+		void Thread();
 	};
 
 

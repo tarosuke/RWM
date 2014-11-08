@@ -1,17 +1,17 @@
 #pragma once
 
-#include <pthread.h>
-
 #include "../net.h"
+#include "../../common/thread.h"
 
 
 
 namespace NET{
 
-	class Server{
+	class Server : public THREAD{
 	public:
 		Server(SERVERSOCKET&, const Packet::Handler[]);
-		~Server(){ keep = false; };
+	protected:
+		void Close(){ keep = false; };
 	private:
 		class ServerNode : public Node{
 		public:
@@ -23,10 +23,7 @@ namespace NET{
 		const Packet::Handler* const handlers;
 
 		//スレッド関連
-		pthread_t thread; //接続待ちのためのスレッド
-		static void* Thread(void*);
+		void Thread();
 	};
 
 }
-
-//鯖はclientと違って接続時にスレッドを起こす(消滅処理はdereteしたあとでdeleteした人が)

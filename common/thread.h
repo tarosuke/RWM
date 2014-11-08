@@ -1,5 +1,8 @@
 /**************************************************************** pthreadなオブジェクト
  * スレッドを使うオブジェクトは自己deleteできないため代わりに別スレッドでdeleteする
+ * 子クラスでvoid Thread()を定義し、その中で処理を実行する。
+ * Threadを抜けるとスレッド終了かつdelete。ただしdeleteは少し遅延する。
+ * NOTE:セルフdeleteしないこと！
  */
 #pragma once
 
@@ -12,7 +15,7 @@
 class THREAD : public TOOLBOX::NODE<class THREAD>{
 private:
 protected:
-	THREAD(); //スレッドを起こしてスレッドからBodyを呼ぶ。
+	THREAD(); //スレッドを起こしてスレッドからThreadを呼ぶ。
 	virtual void Thread()=0; //本処理:終了するとpthread_extiしdelete待ちになる。
 	virtual ~THREAD(){};
 private:

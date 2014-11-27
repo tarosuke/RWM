@@ -36,17 +36,17 @@ run: wODM
 	./wODM
 
 wODM: makefile wODM.cc $(wODMObjs) userLib.a wOSD
-	gcc -Xlinker "-Map=wODM.map" -o $@ wODM.cc $(wODMObjs) userLib.a $(LIBOPTS)
+	gcc  $(COPTS) $(CCOPTS) -Xlinker "-Map=wODM.map" -o $@ wODM.cc $(wODMObjs) userLib.a $(LIBOPTS)
 
 wODM.test: COPTS+=-DTEST
 wODM.test: makefile wODM.cc $(wODMObjs) userLib.a
-	gcc -ggdb -Xlinker "-Map=wODM.map" -o $@ wODM.cc $(wODMObjs) userLib.a $(LIBOPTS)
+	gcc  $(COPTS) $(CCOPTS) -ggdb -Xlinker "-Map=wODM.map" -o $@ wODM.cc $(wODMObjs) userLib.a $(LIBOPTS)
 
 wOSD: makefile wOSD.cc userLib.a
-	gcc -Xlinker "-Map=wOSD.map" -o $@ wOSD.cc userLib.a $(LIBOPTS)
+	gcc  $(COPTS) $(CCOPTS) -Xlinker "-Map=wOSD.map" -o $@ wOSD.cc userLib.a $(LIBOPTS)
 
 wOLM: makefile wOLM.cc userLib.a
-	gcc -Xlinker "-Map=wOLM.map" -o $@ wOLM.cc userLib.a $(LIBOPTS)
+	gcc  $(COPTS) $(CCOPTS) -Xlinker "-Map=wOLM.map" -o $@ wOLM.cc userLib.a $(LIBOPTS)
 
 clean:
 	rm -fr wODM wODM.test wOSD wOLM *.map userLib.a objs/*

@@ -18,6 +18,7 @@ TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::stickeies;
 TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::externals;
 TOOLBOX::QUEUE<VIEW::DRAWER> VIEW::skyboxes;
 TOOLBOX::QUEUE<VIEW::DISPLAY> VIEW::xDisplays;
+ViewWidget VIEW::widget;
 bool VIEW::keep(true);
 
 

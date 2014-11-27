@@ -6,6 +6,8 @@
 
 float Widget::sightX(0);
 float Widget::sightY(0);
+float Widget::distance;
+const float ViewWidget::baseDistance(0.7);
 
 
 void BranchWidget::Draw(){

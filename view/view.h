@@ -8,6 +8,9 @@
 #include "../toolbox/queue/queue.h"
 #include "../toolbox/complex/complex.h"
 
+#include <widget.h>
+
+
 
 class VIEW{
 	VIEW();
@@ -59,6 +62,7 @@ public:
 	static void RegisterStickies(DRAWER& d){ d.Add(stickeies); };
 	static void RegisterExternals(DRAWER& d){ d.Add(externals); };
 	static void RegisterSkybox(DRAWER& d){ d.Add(skyboxes); };
+	static void RegisterWidget(Widget& w){ widget.Register(w); };
 
 	//描画オブジェクトの抹消(自動削除されるので普通は不要)
 	void Unregister(DRAWER& d){ d.Detach(); };
@@ -95,6 +99,9 @@ private:
 	static TOOLBOX::QUEUE<DRAWER> stickeies;
 	static TOOLBOX::QUEUE<DRAWER> externals;
 	static TOOLBOX::QUEUE<DRAWER> skyboxes;
+
+	//窓関連
+	static ViewWidget widget;
 
 	//X画面
 	static TOOLBOX::QUEUE<DISPLAY> xDisplays;

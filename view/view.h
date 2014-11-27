@@ -8,6 +8,9 @@
 #include "../toolbox/queue/queue.h"
 #include "../toolbox/complex/complex.h"
 
+#include <widget.h>
+
+
 
 class VIEW{
 	VIEW();

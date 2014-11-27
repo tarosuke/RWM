@@ -7,7 +7,6 @@
 #pragma once
 
 #include <event.h>
-#include <view.h>
 #include "../toolbox/container/list.h"
 #include "../gl/texture.h"
 
@@ -22,6 +21,7 @@ protected:
 	//頭が向いている点(仮想画面上、毎フレーム更新)
 	static float sightX;
 	static float sightY;
+	static float distance;
 	//中央の位置(仮想画面上)
 	float horiz;
 	float vert;
@@ -36,7 +36,6 @@ private:
 	float height;
 	//テクスチャ
 	GL::TEXTURE texture;
-
 
 	void Draw();
 	void DrawTransparent();
@@ -59,6 +58,10 @@ public:
 	void Update(float x, float y){
 		sightX = x;
 		sightY = y;
+		distance = baseDistance;
 	};
+
+
+	static const float baseDistance;
 };
 

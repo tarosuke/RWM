@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
 	bool noSkybox(false);
 
 	//コマンドライン解釈
-	for(unsigned n(1); n < argc; ++n){
+	for(int n(1); n < argc; ++n){
 		const char* const arg(argv[n]);
 		if('-' != *arg){
 			printf("オプション：%s は解釈できない。\n", arg);

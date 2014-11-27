@@ -13,6 +13,9 @@
 
 class Widget : public wO::List<Widget>::Node{
 public:
+	Widget() : wO::List<Widget>::Node(*this){};
+	virtual ~Widget(){};
+
 	virtual void Draw()=0;
 	virtual void DrawTransparent()=0;
 
@@ -44,6 +47,10 @@ private:
 
 class BranchWidget : public Widget{
 public:
+	void Register(Widget& w){
+		children.Insert(w);
+	};
+
 	void Draw();
 	void DrawTransparent();
 private:
@@ -54,6 +61,7 @@ private:
 //VIEWから直接呼び出されるWidget。ある意味ルート
 class ViewWidget : public BranchWidget{
 public:
+	ViewWidget(){};
 	//頭の向きを記録(毎フレーム更新される)
 	void Update(float x, float y){
 		sightX = x;

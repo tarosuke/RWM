@@ -1,11 +1,12 @@
 all: wODM wOSD wOLM
 
 .PHONY : clean test
+.DELETE_ON_ERROR : $(wildcard objs/*)
 
 
 ####################################################################### VALUES
 
-COPTS += -Wall -Werror -ggdb -IX11
+COPTS += -Wall -Werror -ggdb -IX11 -I./include -I./view
 
 
 libs = GL GLU GLEW m X11 Xmu Xi Xext Xcomposite Xdamage stdc++ gdbm pthread png

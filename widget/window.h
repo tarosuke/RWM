@@ -11,7 +11,7 @@
 #include "../toolbox/complex/complex.h"
 #include "../view/view.h"
 #include "../gl/texture.h"
-#include "event.h"
+#include <event.h>
 #include "../image/image.h"
 
 

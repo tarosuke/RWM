@@ -12,7 +12,7 @@
 #include <GL/glx.h>
 
 #include "../toolbox/queue/queue.h"
-#include "../window/window.h"
+#include "../widget/window.h"
 
 
 

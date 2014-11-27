@@ -5,7 +5,7 @@
 
 #include "view.h"
 #include "../rift/rift.h"
-#include "../window/window.h"
+#include "../widget/window.h"
 #include "particleRiver.h"
 #include "reference.h"
 #include "../image/lightball.h"

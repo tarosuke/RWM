@@ -11,7 +11,7 @@
 
 
 #include "xDisplay.h"
-#include "../window/event.h"
+#include <event.h>
 #include "xWindow.h"
 
 

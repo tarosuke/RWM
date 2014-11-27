@@ -3,7 +3,6 @@
 #include <widget.h>
 
 
-
 float Widget::sightX(0);
 float Widget::sightY(0);
 float Widget::distance;

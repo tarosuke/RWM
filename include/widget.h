@@ -39,9 +39,6 @@ private:
 	float height;
 	//テクスチャ
 	GL::TEXTURE texture;
-
-	void Draw();
-	void DrawTransparent();
 };
 
 
@@ -61,7 +58,6 @@ private:
 //VIEWから直接呼び出されるWidget。ある意味ルート
 class ViewWidget : public BranchWidget{
 public:
-	ViewWidget(){};
 	//頭の向きを記録(毎フレーム更新される)
 	void Update(float x, float y){
 		sightX = x;

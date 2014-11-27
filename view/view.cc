@@ -90,7 +90,8 @@ void VIEW::Run(){
 		glColor3f(1, 1, 1);
 
 		//各段階描画
-		WINDOW::DrawAll(); //非透過窓描画
+		widget.Draw(); //非透過窓描画
+		WINDOW::DrawAll(); //非透過窓描画(absolute)
 
 		//頭の向きと位置をModel-View行列に反映
 		const COMPLEX<4>::ROTATION r(p.direction);
@@ -139,7 +140,10 @@ void VIEW::Run(){
 		//透過窓描画
 		glPopMatrix(); //窓描画直後の状態に戻す
 		glDisable(GL_LIGHTING); //GUI関連は照明は無関係
-		WINDOW::DrawTransparentAll(); //透過窓描画
+
+		widget.DrawTransparent(); //透過窓描画
+		WINDOW::DrawTransparentAll(); //透過窓描画(obsolute)
+
 		stickeies.Each(&DRAWER::Draw);; //視界に貼り付いている物体を描画
 
 		//収差修正用参照物体描画
